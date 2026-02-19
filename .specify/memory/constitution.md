@@ -1,50 +1,79 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# AI Semantic Layer Generation Platform Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Compiler, Not Chatbot
+The product is a deterministic “Semantic Model Compiler” orchestrated by LLMs: given explicit inputs, it must produce deployable artifacts (TMDL/BIM) plus a QA report. Conversational UX is allowed (e.g., Teams), but the contract is inputs → outputs, not open-ended chat.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Contract-First I/O
+All capabilities must be exposed behind a stable, versioned contract:
+- Inputs: table schema (DDL/JSON), KPI glossary, mode (Direct Lake/Import), RLS requirements.
+- Outputs: proposed star schema, relationships + directions, date dimension strategy, documented DAX measures, deployable TMDL/BIM, validation report.
+The contract must support a machine-readable format (JSON) and a human-readable format.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Quality Gates Are Non-Negotiable
+No model artifact is “done” unless it passes automated checks at minimum:
+- relationship validity (keys, cardinality, filter direction),
+- naming convention compliance,
+- KPI/DAX coverage against the glossary,
+- RLS presence/shape when requested,
+- basic model hygiene (required dimensions, date strategy declared).
+If checks fail, output must be an explicit failure with actionable diagnostics.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Minimal, Standardized Architecture (MVP)
+Phase 1 targets standardized tabular patterns over breadth:
+- star schema by default,
+- central date dimension strategy,
+- KPI glossary-driven measures,
+- optional RLS scaffolding.
+Advanced DAX performance tuning, legacy refactoring, dashboard generation, and large-scale change impact analysis are explicitly out of scope for MVP.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Safety, Traceability, and Human Approval
+Every generation must be traceable:
+- store inputs, prompts/agent decisions (or summaries), and outputs with a correlation id,
+- produce a QA report that explains what was validated and what was assumed.
+Deployment must be gated: automated generation may prepare artifacts, but a human approval step is required before deploying to a Fabric workspace.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Constraints (MVP Requirements)
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Scope
+- In scope: generating semantic model artifacts from schema + KPI glossary; basic validation; RLS scaffolding; multi-agent orchestration; Teams-based collaboration.
+- Out of scope: automatic refactoring of complex legacy models; advanced DAX optimization; automatic dashboards; enterprise-wide impact analysis.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### Technology Boundaries
+- Orchestration: Azure AI Studio / Foundry (or equivalent) may be used, but orchestration must remain replaceable (no hard lock-in assumptions in the core compiler).
+- Interface: Teams is the primary interface for MVP; core compiler must be runnable headlessly (CI-friendly).
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### Security & Compliance
+- Do not persist customer data beyond what is necessary for traceability and troubleshooting; prefer redaction/minimization.
+- Separate secrets/config from code; never log secrets.
+- Treat generated artifacts as code: reviewable, diffable, and suitable for source control.
+
+## Development Workflow
+
+### Definition of Done
+- Input/output contract documented.
+- Automated quality gates implemented and running in CI.
+- Generated artifacts are reproducible for the same inputs (within a defined tolerance for LLM variability; if non-deterministic, the output must include the exact run metadata).
+- Human approval step is enforced prior to any deployment action.
+
+### Testing
+- Unit tests for parsing, transformation, naming rules, and validators.
+- Integration tests for end-to-end generation from a small sample schema + glossary to TMDL/BIM + QA report.
+- Regression tests for KPI glossary changes (golden outputs for representative scenarios).
+
+### Versioning
+- Version the I/O contract and the KPI glossary schema.
+- Breaking changes require a migration note and explicit version bump.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Operational Guardrails
+- Multi-agent roles must remain explicit (Architect/Modeler/DAX/Governance/Reviewer) and produce auditable intermediate outputs.
+- Reviewer/QA step cannot be bypassed.
+- Any “assumption” made by the system must be listed in the QA report.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Change Control
+- Amendments to this constitution require: rationale, impact assessment (MVP vs later phases), and an update to tests/quality gates.
+
+**Version**: 0.1.0 | **Ratified**: 2026-02-19 | **Last Amended**: 2026-02-19
