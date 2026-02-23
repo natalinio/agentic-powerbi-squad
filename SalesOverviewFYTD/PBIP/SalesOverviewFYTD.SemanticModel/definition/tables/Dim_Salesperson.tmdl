@@ -1,4 +1,4 @@
-table Dim_Salesperson
+﻿table Dim_Salesperson
 	lineageTag: eef62634-7803-4e5e-882b-99a84ccebb0f
 
 	column SalespersonKey
@@ -19,7 +19,7 @@ table Dim_Salesperson
 		mode: import
 		source =
 			let
-				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\dim_salesperson.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\SalesOverviewFYTD\data\dim_salesperson.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
 				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
 				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
 					{"SalespersonKey", Int64.Type}, 

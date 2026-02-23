@@ -7,8 +7,8 @@ Perform a comprehensive cross-check of ALL generated artifacts before the user o
 Before starting the review:
 1. **Read** `.github/references/tmdl-syntax-reference.md` for syntax validation rules.
 2. **Read** `.github/references/naming-conventions.md` for naming compliance.
-3. **Load** all generated TMDL files from `PBIP/<ProjectName>.SemanticModel/definition/`.
-4. **Load** the CSV mock data files from `PBIP/data/`.
+3. **Load** all generated TMDL files from `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`.
+4. **Load** the CSV mock data files from `<ProjectName>/data/`.
 5. **Verify** any uncertain TMDL syntax using `microsoft_docs_search` or `microsoft_docs_fetch` MCP tool.
 
 ## Review Checklist
@@ -74,7 +74,7 @@ For EACH measure in `_Measures.tmdl`:
 - [ ] The generated date range covers the full reporting period.
 
 ### 7. CSV Mock Data Validation
-- [ ] ALL CSV files exist in `PBIP/data/` folder.
+- [ ] ALL CSV files exist in `<ProjectName>/data/` folder.
 - [ ] Files are comma-delimited and UTF-8 encoded.
 - [ ] Column names in CSV headers EXACTLY match `sourceColumn` values in TMDL.
 - [ ] ALL FK values in Fact table CSVs exist as PK values in corresponding Dimension CSVs (referential integrity).

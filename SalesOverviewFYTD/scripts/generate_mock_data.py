@@ -1,4 +1,4 @@
-"""
+﻿"""
 Mock Data Generator for Sales Overview FYTD Semantic Model
 Generates realistic CSV files for all dimension and fact tables.
 
@@ -22,7 +22,7 @@ random.seed(42)
 Faker.seed(42)
 
 # Output directory
-OUTPUT_DIR = "PBIP/data"
+OUTPUT_DIR = "SalesOverviewFYTD/data"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 print("=" * 60)
@@ -439,8 +439,8 @@ if __name__ == "__main__":
     print("  ✓ measure_info.csv      (11 rows)")
     print("  ✓ parameters.csv        (2 rows)")
     print("\nNext steps:")
-    print("  1. Review generated CSV files in PBIP/data/")
-    print("  2. Open SalesOverviewFYTD.pbip in Power BI Desktop")
+    print("  1. Review generated CSV files in SalesOverviewFYTD/data/")
+    print("  2. Open SalesOverviewFYTD/PBIP/SalesOverviewFYTD.pbip in Power BI Desktop")
     print("  3. Refresh all tables to load data")
     print("  4. Validate model and measures")
     print("\n" + "=" * 60)

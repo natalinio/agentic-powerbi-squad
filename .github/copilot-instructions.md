@@ -7,32 +7,84 @@ This repository contains a **GitHub Copilot Custom Agent** (`@semantic-modeler`)
 
 ```
 aisemanticlayer/
-├── .github/
-│   ├── copilot-instructions.md       ← You are here (global instructions)
+├── .github/                           ← Agentic system core (universal, project-agnostic)
+│   ├── copilot-instructions.md        ← You are here (global instructions)
 │   ├── agents/
-│   │   └── semantic-modeler.agent.md ← Main invocable agent (@semantic-modeler)
+│   │   └── semantic-modeler.agent.md  ← Main invocable agent (@semantic-modeler)
 │   ├── skills/                        ← Step-by-step execution skills (7 files)
 │   ├── references/                    ← TMDL, DAX, PBIP reference material (7 files)
 │   │   ├── tmdl-syntax-reference.md
 │   │   ├── naming-conventions.md
 │   │   ├── pbip-folder-structure.md
 │   │   ├── dax-patterns.md
-│   │   ├── relationship-patterns.md   ← NEW: Advanced relationship patterns
-│   │   ├── dax-optimization-framework.md ← NEW: DAX performance optimization
-│   │   └── bpa-rules-reference.md     ← NEW: Best Practice Analyzer rules
+│   │   ├── relationship-patterns.md
+│   │   ├── dax-optimization-framework.md
+│   │   └── bpa-rules-reference.md
+│   ├── scripts/                       ← Universal tools (project-agnostic)
+│   │   ├── fix_lineage_tags.py        ← GUID lineageTag regeneration
+│   │   ├── remove_tmdl_comments.py    ← TMDL comment removal
+│   │   └── run_tests.py              ← Automated test execution engine
 │   └── prompts/                       ← Reusable prompt files
-├── PBIP/                              ← Power BI project output folder
-│   ├── <ProjectName>.SemanticModel/
-│   │   └── definition/                ← TMDL files go here
-│   │       ├── model.tmdl
-│   │       ├── database.tmdl
-│   │       ├── tables/
-│   │       ├── relationships.tmdl
-│   │       └── expressions.tmdl
-│   ├── <ProjectName>.Report/          ← Empty report canvas (user-created)
-│   └── data/                          ← Generated CSV mock data
-└── .venv/                             ← Python virtual environment (gitignored)
+├── .gitignore
+├── .venv/                             ← Python virtual environment (root-level)
+├── requirements.txt                   ← Python dependencies for all steps
+└── <ProjectName>/                     ← Project folder (1 per project)
+    ├── PBIP/                          ← Power BI files ONLY (canvas)
+    │   ├── <ProjectName>.pbip
+    │   ├── <ProjectName>.SemanticModel/
+    │   │   └── definition/            ← TMDL files go here
+    │   │       ├── model.tmdl
+    │   │       ├── database.tmdl
+    │   │       ├── tables/
+    │   │       ├── relationships.tmdl
+    │   │       └── expressions.tmdl
+    │   └── <ProjectName>.Report/
+    ├── data/                          ← Generated CSV mock data (Step 05)
+    ├── scripts/                       ← Project-specific scripts
+    │   └── generate_mock_data.py      ← Faker-based data generation
+    ├── tests/                         ← Functional test artifacts (Step 07)
+    │   ├── tests_definition.json      ← Test case definitions
+    │   ├── tests_definition.md        ← Manual test guide
+    │   ├── tests_execution.md         ← Test results report
+    │   └── tests_execution_raw.json   ← Raw test results
+    └── input/                         ← User specifications & inputs
+        └── <spec_file>.md
 ```
+
+## Prerequisites
+
+Before using the `@semantic-modeler` agent, ensure the following are installed and configured:
+
+### 1. Python 3.10+ (Required for Steps 05 and 07)
+```powershell
+python --version   # Must be 3.10 or higher
+```
+
+### 2. Python Virtual Environment
+The `.venv/` environment at the repository root is shared across all projects:
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### 3. Power BI Desktop (December 2025 or later)
+- Enable preview features:
+  - **Power BI Project (.pbip) save option**
+  - **Store semantic model using TMDL format**
+- Used for: creating the PBIP canvas, refreshing data, visual validation
+
+### 4. PBIP Canvas (per project)
+Each project requires an empty PBIP canvas created via Power BI Desktop:
+1. Open Power BI Desktop → Create blank report
+2. File → Save As → Power BI Project (.pbip)
+3. Save in: `<ProjectName>/PBIP/<ProjectName>.pbip`
+4. Close Power BI Desktop
+
+### 5. Optional Tools
+- **DAX Studio**: For discovering Analysis Services port (Step 07)
+- **Tabular Editor**: For BPA rule validation
+- **TMDL VS Code Extension**: `analysis-services.TMDL` for syntax highlighting
 
 ## Key Rules
 
@@ -44,26 +96,42 @@ aisemanticlayer/
 6. **Relationship Design**: Reference `.github/references/relationship-patterns.md` for role-playing dimensions, many-to-many, self-referencing hierarchies.
 7. **DAX Optimization**: Apply `.github/references/dax-optimization-framework.md` for performance-optimized measures.
 8. **BPA Compliance**: Apply `.github/references/bpa-rules-reference.md` Best Practice Analyzer rules for production-quality models (preventive guidelines + detective validation).
+9. **LineageTag Safety**: After generating TMDL files (Step 03), ALWAYS run `.github/scripts/fix_lineage_tags.py <ProjectName>` to ensure all GUIDs are cryptographically unique.
+10. **Project Isolation**: Each project lives in its own `<ProjectName>/` folder. Never mix artifacts across projects.
 
 ## How to Use the Agent
 
 Invoke the custom agent in GitHub Copilot Chat:
 
 ```
-@semantic-modeler PBIP/spec_sales_overview_fytd.md
+@semantic-modeler <ProjectName>/input/spec_sales_overview_fytd.md
 ```
 
 The agent will execute a 7-step workflow with mandatory approval gates, leveraging skills and references for anti-hallucination.
 
+## Universal Scripts (.github/scripts/)
+
+These tools are project-agnostic and are invoked by skills during the workflow:
+
+| Script | Purpose | Invoked by |
+|--------|---------|------------|
+| `fix_lineage_tags.py <ProjectName>` | Regenerate all lineageTag GUIDs with unique UUID v4 | Skill 03 (Physical Model) |
+| `remove_tmdl_comments.py <ProjectName>` | Remove unsupported TMDL comments | Skill 03 (Physical Model) |
+| `run_tests.py <ProjectName> [--port N]` | Execute automated DAX tests | Skill 07 (Functional Testing) |
+
 ## What's New
 
-**Recent Additions** (Priority: HIGH):
+**Architecture** (Priority: CRITICAL):
+- ✅ **New project folder structure**: `<ProjectName>/` with `PBIP/`, `data/`, `scripts/`, `tests/`, `input/` subfolders
+- ✅ **Universal scripts**: `.github/scripts/` contains project-agnostic tools (lineage fix, comment removal, test runner)
+- ✅ **Root requirements.txt**: Single Python dependency file for all workflow steps
+- ✅ **Prerequisites**: Documented in copilot-instructions.md (Python, PBI Desktop, canvas)
+
+**References** (Priority: HIGH):
 - ✅ **relationship-patterns.md**: Advanced patterns for role-playing dimensions, many-to-many, self-referencing hierarchies, troubleshooting
 - ✅ **dax-optimization-framework.md**: Comprehensive DAX performance optimization framework with testing patterns
 - ✅ **bpa-rules-reference.md**: Best Practice Analyzer rules (27+ rules, 6 categories) for preventive guidelines and detective validation
-- ✅ **07-functional-testing.md**: NEW SKILL — Comprehensive functional testing methodology for validating DAX measure correctness, parameter behavior, edge cases, and performance
-
-These references enhance the agent's capability to handle complex scenarios and generate production-quality optimized DAX code following industry-standard best practices from Tabular Editor.
+- ✅ **07-functional-testing.md**: Comprehensive functional testing methodology with mandatory Model Introspection
 
 ## Critical Lessons Learned (Historical Errors — MUST AVOID)
 

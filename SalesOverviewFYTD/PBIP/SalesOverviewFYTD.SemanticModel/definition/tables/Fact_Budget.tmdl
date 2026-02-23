@@ -1,4 +1,4 @@
-table Fact_Budget
+﻿table Fact_Budget
 	lineageTag: d4e09911-c92f-49d7-aecc-c3846c8f7293
 
 	column BudgetKey
@@ -40,7 +40,7 @@ table Fact_Budget
 		mode: import
 		source =
 			let
-				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\fact_budget.csv"), [Delimiter = ",", Columns = 5, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\SalesOverviewFYTD\data\fact_budget.csv"), [Delimiter = ",", Columns = 5, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
 				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
 				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
 					{"BudgetKey", Int64.Type}, 

@@ -1,0 +1,23 @@
+# Python dependencies for AI Semantic Layer Builder
+# Install with: pip install -r requirements.txt
+#
+# These packages are required across multiple workflow steps:
+# - Step 05 (Mock Data Generation): pandas, faker
+# - Step 07 (Functional Testing): pandas, pythonnet, python-dateutil, jsonschema
+# - Universal scripts: python stdlib only (no additional packages)
+
+# Data manipulation and analysis
+pandas>=2.0.0
+
+# Realistic mock data generation
+faker>=18.0.0
+
+# Analysis Services / ADOMD.NET connection via .NET interop
+# Required for automated functional testing (Step 07)
+pythonnet>=3.0.0
+
+# Date/time utilities
+python-dateutil>=2.8.2
+
+# JSON schema validation (test definition validation)
+jsonschema>=4.17.0

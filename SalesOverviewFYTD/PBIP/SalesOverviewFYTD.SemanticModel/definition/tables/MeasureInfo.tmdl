@@ -1,4 +1,4 @@
-table MeasureInfo
+﻿table MeasureInfo
 	lineageTag: 088ce2a9-e453-4534-b8fa-4b3ba87b63b3
 
 	column MeasureName
@@ -53,7 +53,7 @@ table MeasureInfo
 		mode: import
 		source =
 			let
-				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\measure_info.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\SalesOverviewFYTD\data\measure_info.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
 				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
 				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
 					{"MeasureName", type text}, 

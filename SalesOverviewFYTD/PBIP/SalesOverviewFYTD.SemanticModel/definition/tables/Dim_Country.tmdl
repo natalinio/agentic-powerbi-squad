@@ -1,4 +1,4 @@
-table Dim_Country
+﻿table Dim_Country
 	lineageTag: f47c9533-e4f0-4955-9946-2d802f8813fc
 
 	column CountryKey
@@ -26,7 +26,7 @@ table Dim_Country
 		mode: import
 		source =
 			let
-				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\dim_country.csv"), [Delimiter = ",", Columns = 3, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\SalesOverviewFYTD\data\dim_country.csv"), [Delimiter = ",", Columns = 3, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
 				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
 				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
 					{"CountryKey", Int64.Type}, 

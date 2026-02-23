@@ -1,4 +1,4 @@
-table Dim_Customer
+﻿table Dim_Customer
 	lineageTag: 677209d7-7659-4141-b9a9-b8e2c2bba0d4
 
 	column CustomerKey
@@ -33,7 +33,7 @@ table Dim_Customer
 		mode: import
 		source =
 			let
-				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\dim_customer.csv"), [Delimiter = ",", Columns = 4, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\SalesOverviewFYTD\data\dim_customer.csv"), [Delimiter = ",", Columns = 4, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
 				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
 				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
 					{"CustomerKey", Int64.Type}, 

@@ -20,9 +20,10 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Generated mock data (keep CSV tracked for PBIP ingestion)
+# Generated mock data (project-level data folders)
 # Uncomment below to exclude CSVs from source control:
-PBIP/**/data/*.csv
+# **/data/*.csv
 
-# Scripts python generated
-
+# Test execution outputs (regenerated on each run)
+**/tests/tests_execution.md
+**/tests/tests_execution_raw.json

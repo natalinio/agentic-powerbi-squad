@@ -110,7 +110,7 @@ There are ambiguous paths between 'Fact_Sales' and 'Dim_Country'
 
 ## File Generation Rules
 
-Generate the following TMDL files inside `PBIP/<ProjectName>.SemanticModel/definition/`:
+Generate the following TMDL files inside `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`:
 
 ### 1. `database.tmdl`
 
@@ -569,5 +569,27 @@ column <MeasureColumn>
 - [ ] `Dim_Date` has `isKey` on `DateKey` AND column named `Date` for time intelligence (BPA)
 - [ ] CRITICAL: All `lineageTag` and relationship GUIDs are unique UUIDv4 strings.
 - [ ] CRITICAL: No cyclic or repeating hex patterns (like `d1e2f3a...`) exist in any generated GUID.
+
+## ⚠️ Post-Generation: Universal Script Execution (MANDATORY)
+
+After generating ALL TMDL files, the agent MUST instruct the user to run the following universal scripts from the repository root:
+
+### 1. Fix LineageTags (Prevent GUID Collisions)
+```powershell
+python .github/scripts/fix_lineage_tags.py <ProjectName>
+```
+This regenerates all `lineageTag` values with cryptographically unique UUID v4, preventing "lineage-tag already exists" errors.
+
+### 2. Remove TMDL Comments (Prevent Parsing Errors)
+```powershell
+python .github/scripts/remove_tmdl_comments.py <ProjectName>
+```
+This removes any accidentally generated `///` or `//` comments at the TMDL structure level that would cause Power BI Desktop parsing failures.
+
+**Note**: Both scripts require Python 3.10+ and the `.venv` environment activated. If not set up yet, guide the user:
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
 **STOP here. Await user validation before proceeding to Step 4.**

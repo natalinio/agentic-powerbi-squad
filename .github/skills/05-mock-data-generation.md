@@ -5,7 +5,7 @@ Generate realistic mock data as CSV files to validate the PBIP semantic model lo
 
 ## Python Environment Setup
 
-Before generating data, guide the user to set up the Python virtual environment:
+Before generating data, verify the Python virtual environment is set up:
 
 ### Prerequisites
 The user must have **Python 3.10+** installed on their local machine.
@@ -15,14 +15,14 @@ The user must have **Python 3.10+** installed on their local machine.
 # Navigate to the repository root
 cd <repository-root>
 
-# Create virtual environment
+# Create virtual environment (if not already done)
 python -m venv .venv
 
 # Activate virtual environment (Windows PowerShell)
 .\.venv\Scripts\Activate.ps1
 
-# Install required packages
-pip install pandas faker
+# Install required packages (all steps)
+pip install -r requirements.txt
 ```
 
 ### Verify Installation
@@ -34,8 +34,8 @@ python -c "import pandas; import faker; print('OK')"
 
 ### Technology
 - Use **Python** with `pandas` and `faker` libraries.
-- Generate ONE script file: `PBIP/generate_mock_data.py`
-- Output CSV files to `PBIP/data/` folder.
+- Generate ONE script file: `<ProjectName>/scripts/generate_mock_data.py`
+- Output CSV files to `<ProjectName>/data/` folder.
 
 ### Data Quality Requirements
 1. **Referential Integrity**: ALL Foreign Keys in Fact tables MUST exist as Primary Keys in the corresponding Dimension tables.
@@ -97,12 +97,12 @@ def generate_fact_sales(dim_date, dim_customer, dim_area, n_rows=1000):
 ```
 
 ### CSV Output
-- Files go to `PBIP/data/` folder
+- Files go to `<ProjectName>/data/` folder
 - Use comma delimiter, UTF-8 encoding, no index
 - Filename convention: lowercase table name (e.g., `dim_date.csv`, `fact_sales.csv`)
 
 ```python
-df.to_csv('PBIP/data/dim_date.csv', index=False, encoding='utf-8')
+df.to_csv('<ProjectName>/data/dim_date.csv', index=False, encoding='utf-8')
 ```
 
 ## TMDL Partition Update
@@ -113,7 +113,7 @@ The M expression should use **absolute paths** for local development:
 ```
 source =
 	let
-		Source = Csv.Document(File.Contents("C:\path\to\repo\PBIP\data\dim_date.csv"), [Delimiter = ",", Columns = 12, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		Source = Csv.Document(File.Contents("C:\path\to\repo\<ProjectName>\data\dim_date.csv"), [Delimiter = ",", Columns = 12, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
 		PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true])
 	in
 		PromotedHeaders
@@ -121,7 +121,7 @@ source =
 
 Alternatively, use a **parameterized path** via `expressions.tmdl`:
 ```
-expression DataPath = "C:\path\to\repo\PBIP\data" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+expression DataPath = "C:\path\to\repo\<ProjectName>\data" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
 ```
 
 ## Validation Before Output

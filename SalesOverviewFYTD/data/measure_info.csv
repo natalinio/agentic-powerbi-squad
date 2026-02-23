@@ -1,0 +1,12 @@
+MeasureName,LowerBoundary,UpperBoundary,MeasureFormat,HighIsGood,IconHigh,IconMedium,IconLow
+Adjusted Profit %,25,35,%,True,CircleHigh,CircleMedium,CircleLow
+Item Profit %,25,35,%,True,CircleHigh,CircleMedium,CircleLow
+Resource Profit %,15,20,%,True,CircleHigh,CircleMedium,CircleLow
+Sales YOY %,-10,0,%,True,TriangleHigh,TriangleMedium,TriangleLow
+Item Discount %,3,5,%,False,CircleHigh,CircleMedium,CircleLow
+Period over Comparison %,-1,1,%,True,TriangleHigh,TriangleMedium,TriangleLow
+Budget Variance %,-10,0,%,True,FlagHigh,FlagMedium,FlagLow
+Item Budget Variance %,-10,0,%,True,FlagHigh,FlagMedium,FlagLow
+Delivery Days Variance,0,2,Days,False,FlagHigh,FlagMedium,FlagLow
+On Time Delivery %,70,80,%,True,CircleHigh,CircleMedium,CircleLow
+Fill Rate %,70,80,%,True,CircleHigh,CircleMedium,CircleLow

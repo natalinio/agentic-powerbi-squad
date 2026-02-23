@@ -1,0 +1,101 @@
+CustomerKey,CustomerName,CountryKey,IndustryKey
+1,"Rodriguez, Figueroa and Sanchez",4,1
+2,Doyle Ltd,9,4
+3,"Mcclain, Miller and Henderson",8,3
+4,Davis and Sons,4,9
+5,"Guzman, Hoffman and Baldwin",3,10
+6,"Gardner, Robinson and Lawrence",14,1
+7,Blake and Sons,1,2
+8,"Henderson, Ramirez and Lewis",7,4
+9,Garcia-James,1,9
+10,Abbott-Munoz,7,9
+11,Blair PLC,14,4
+12,Dudley Group,15,10
+13,Arnold Ltd,9,1
+14,"Mcclure, Ward and Lee",6,7
+15,Williams and Sons,11,5
+16,Galloway-Wyatt,5,4
+17,James Group,11,2
+18,"Flowers, Martin and Kelly",3,7
+19,"Adams, Zuniga and Wong",4,6
+20,"Reid, Ferguson and Sanchez",12,10
+21,Gray-Mayo,9,1
+22,"Watts, Robinson and Nguyen",15,9
+23,Perez Inc,4,7
+24,Morales-Jones,3,9
+25,"Walter, Edwards and Rios",10,10
+26,Wilkerson-Day,12,10
+27,Baker and Sons,7,2
+28,"Hoffman, Baker and Richards",2,4
+29,"Ross, Robinson and Bright",10,2
+30,"Snyder, Campos and Callahan",8,2
+31,Burton Ltd,13,5
+32,Carlson-Cruz,15,6
+33,"Ferrell, Rice and Maddox",6,6
+34,Frazier Inc,12,4
+35,"Dyer, Potter and Mack",9,2
+36,Rodriguez-Graham,6,9
+37,Smith-Bowen,8,3
+38,"Baker, Mason and White",15,7
+39,Harrell LLC,9,9
+40,"Romero, Gonzalez and Brooks",8,6
+41,Ryan PLC,2,4
+42,George Group,2,6
+43,Rodriguez LLC,13,5
+44,Allen-Allen,3,4
+45,"Arroyo, Miller and Tucker",11,4
+46,Spence PLC,16,7
+47,Anderson Group,15,3
+48,"Martin, Rose and Obrien",9,3
+49,Hickman Ltd,8,9
+50,"Harris, Collins and Carney",9,10
+51,"Brooks, Lam and Hayes",14,10
+52,Walker LLC,13,6
+53,Chapman and Sons,8,3
+54,"Robinson, Jones and Welch",16,2
+55,Jones Inc,2,2
+56,Jones-Young,5,3
+57,"Washington, Ryan and Cummings",14,10
+58,"Johnston, Sanchez and Kennedy",3,7
+59,Lee-Davis,13,10
+60,Gomez-Jenkins,15,9
+61,"Brown, Valdez and Lucas",9,9
+62,Powell LLC,1,2
+63,Wright and Sons,9,6
+64,"West, Henderson and Ramirez",4,5
+65,Baxter Inc,14,3
+66,Morton-Chase,15,1
+67,Williams PLC,9,9
+68,Novak and Sons,6,9
+69,Russell Group,4,5
+70,Hancock Inc,7,3
+71,Gray Group,12,3
+72,House-Glover,1,10
+73,Henderson-Bernard,11,8
+74,"Stanley, Tucker and Lee",1,2
+75,Novak PLC,12,5
+76,"Daniels, Adkins and Brown",8,1
+77,"Woods, Calhoun and Schmidt",8,10
+78,Yu Inc,3,2
+79,Jones Inc,16,2
+80,"Hensley, Powell and David",5,3
+81,"Sanchez, Wheeler and Harvey",16,9
+82,Sandoval-Cunningham,6,5
+83,Donovan-Harris,14,4
+84,"Edwards, Baker and Anderson",7,5
+85,"Evans, Stewart and Walton",13,6
+86,Smith PLC,15,9
+87,"Ferrell, Jones and Lewis",15,2
+88,Anderson-Bailey,8,4
+89,Suarez LLC,3,6
+90,Moore-Bass,1,10
+91,"Turner, Riggs and Roman",8,10
+92,"Smith, Montoya and Evans",8,1
+93,"Garcia, Humphrey and Baker",3,1
+94,Newton and Sons,8,2
+95,Campbell-Clark,2,6
+96,Harris-Walters,3,9
+97,Wagner-King,8,5
+98,Davis Group,16,4
+99,Williams-Cook,5,10
+100,Walsh LLC,16,4

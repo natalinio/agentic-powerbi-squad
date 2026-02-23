@@ -36,8 +36,8 @@ Before starting the testing phase:
 **Duration**: ~20 minutes (agent execution) + ~10 minutes (user review)  
 **Best for**: Large models (30+ measures), regression testing, CI/CD integration  
 **Output Files**:
-- `PBIP/<ProjectName>/tests/tests_definition.json` — Critical test cases definition
-- `PBIP/<ProjectName>/tests/tests_execution.md` — Test results with pass/fail status and recommendations
+- `<ProjectName>/tests/tests_definition.json` — Critical test cases definition
+- `<ProjectName>/tests/tests_execution.md` — Test results with pass/fail status and recommendations
 
 **Workflow**:
 1. **Agent analyzes** functional specifications + generated DAX measures
@@ -59,7 +59,7 @@ Before starting the testing phase:
 **Root Cause (Historical Error)**: In previous executions, the agent generated DAX queries using assumed column names with spaces (e.g., `Dim_Area[Area Name]`, `Dim_Customer[Customer Name]`) instead of the actual PascalCase names without spaces defined in the model (e.g., `Dim_Area[AreaName]`, `Dim_Customer[CustomerName]`). This caused 100% of dimensional and derived tests to fail with "Column not found" errors.
 
 **Agent Actions (ALL MANDATORY)**:
-1. **List** all TMDL table files: `PBIP/<ProjectName>.SemanticModel/definition/tables/*.tmdl`
+1. **List** all TMDL table files: `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/tables/*.tmdl`
 2. **Read** each table TMDL file and extract:
    - **Table name** (exact `table` declaration)
    - **Column names** (exact `column` declarations — these are the TMDL object names used in DAX)
@@ -113,7 +113,7 @@ RELATIONSHIPS:
 ### Step B.1: Requirements & Measures Analysis
 
 **Agent Actions**:
-1. **Read** functional specification file (e.g., `PBIP/spec_sales_overview_fytd.md`)
+1. **Read** functional specification file (e.g., `<ProjectName>/input/spec_sales_overview_fytd.md`)
 2. **Extract** KPIs, measures, and business rules:
    - Primary KPIs (e.g., "Sales vs Budget FYTD", "Adjusted Profit %")
    - Dimensions (Area, Customer, Industry, Date)
@@ -134,7 +134,7 @@ RELATIONSHIPS:
 ### Step B.2: Generate Test Definitions
 
 **Agent Actions**:
-1. **Create** folder structure: `PBIP/<ProjectName>/tests/`
+1. **Create** folder structure: `<ProjectName>/tests/`
 2. **Generate** `tests_definition.json` with critical test cases
 
 **Test Definition Schema**:
@@ -235,7 +235,7 @@ Measure names in DAX references (`[Measure Name]`) MUST match the exact TMDL `me
 }
 ```
 
-**File Location**: `PBIP/<ProjectName>/tests/tests_definition.json`
+**File Location**: `<ProjectName>/tests/tests_definition.json`
 
 **Agent outputs**: 
 - **Console message**: "Test definition file created with X test cases (Y CRITICAL, Z HIGH priority)"
@@ -256,7 +256,12 @@ Measure names in DAX references (`[Measure Name]`) MUST match the exact TMDL `me
 1. **Detect** local Analysis Services workspace:
    - Windows: Check `$env:LOCALAPPDATA\Microsoft\Power BI Desktop\AnalysisServicesWorkspaces\`
    - Identify active workspace port (e.g., `localhost:12345`)
-2. **Generate** Python test execution script: `PBIP/<ProjectName>/tests/run_tests.py`
+2. **Generate** Python test execution script: `<ProjectName>/tests/run_tests.py`
+
+   **NOTE**: A universal test runner is available at `.github/scripts/run_tests.py`. The agent should reference this universal tool instead of generating a new script for each project. Invoke it with:
+   ```powershell
+   python .github/scripts/run_tests.py <ProjectName> --port <port> --verbose
+   ```
 3. **Execute** DAX queries via Python `pyadomd` library:
    ```python
    import pyodbc
@@ -317,7 +322,7 @@ Measure names in DAX references (`[Measure Name]`) MUST match the exact TMDL `me
 
 6. **Generate** `tests_execution.md` with detailed results and recommendations
 
-**Output File**: `PBIP/<ProjectName>/tests/tests_execution.md`
+**Output File**: `<ProjectName>/tests/tests_execution.md`
 
 ---
 
@@ -339,7 +344,7 @@ Measure names in DAX references (`[Measure Name]`) MUST match the exact TMDL `me
 # Test Execution Report — Sales Overview FYTD
 
 **Execution Date**: 2026-02-23 15:30:00  
-**Model**: PBIP/SalesOverviewFYTD.SemanticModel  
+**Model**: SalesOverviewFYTD/PBIP/SalesOverviewFYTD.SemanticModel  
 **Test Plan**: tests_definition.json (v1.0.0)  
 **Execution Mode**: Automated (Python + pyadomd)  
 **Analysis Services**: localhost:12345
@@ -578,8 +583,8 @@ CALCULATE(
 import pandas as pd
 
 # Load CSV files
-fact_sales = pd.read_csv('PBIP/data/Fact_Sales.csv')
-fact_budget = pd.read_csv('PBIP/data/Fact_Budget.csv')
+fact_sales = pd.read_csv('<ProjectName>/data/fact_sales.csv')
+fact_budget = pd.read_csv('<ProjectName>/data/fact_budget.csv')
 
 # Calculate totals
 sales_total = fact_sales['Sales Amount LC'].sum()
@@ -628,13 +633,13 @@ print(f"CSV Budget Total: {budget_total}")
 
 ## Appendix: Test Artifacts
 
-- **Test Definition**: `PBIP/SalesOverviewFYTD/tests/tests_definition.json`
-- **Test Script**: `PBIP/SalesOverviewFYTD/tests/run_tests.py`
-- **Raw Results**: `PBIP/SalesOverviewFYTD/tests/tests_execution_raw.json`
-- **This Report**: `PBIP/SalesOverviewFYTD/tests/tests_execution.md`
+- **Test Definition**: `<ProjectName>/tests/tests_definition.json`
+- **Test Runner**: `.github/scripts/run_tests.py` (universal)
+- **Raw Results**: `<ProjectName>/tests/tests_execution_raw.json`
+- **This Report**: `<ProjectName>/tests/tests_execution.md`
 ```
 
-**File Location**: `PBIP/<ProjectName>/tests/tests_execution.md`
+**File Location**: `<ProjectName>/tests/tests_execution.md`
 
 ---
 
@@ -1065,7 +1070,7 @@ python-dateutil>=2.8.2
 ## Test Execution Workflow
 
 ### Step 1: Setup Test Environment
-1. Open [PBIP/SalesOverviewFYTD.pbip](PBIP/SalesOverviewFYTD.pbip) in Power BI Desktop
+1. Open the `<ProjectName>/PBIP/<ProjectName>.pbip` file in Power BI Desktop
 2. Verify model loads without errors (Check Step 6 completion)
 3. Create new report page named **"Test Suite"**
 4. Enable **Performance Analyzer** (View ribbon)
@@ -1230,8 +1235,9 @@ Before marking **Step 7: Functional Testing** as complete:
 
 ## References
 
-- **Specification**: [PBIP/spec_sales_overview_fytd.md](PBIP/spec_sales_overview_fytd.md) — Business requirements and KPI definitions
+- **Specification**: `<ProjectName>/input/<spec_file>.md` — Business requirements and KPI definitions
 - **DAX Patterns**: `.github/references/dax-patterns.md` — Measure formula templates
 - **DAX Optimization**: `.github/references/dax-optimization-framework.md` — Performance tuning guidance
 - **BPA Rules**: `.github/references/bpa-rules-reference.md` — Best practice compliance validation
-- **Mock Data**: `PBIP/data/*.csv` — Source data for cross-validation
+- **Mock Data**: `<ProjectName>/data/*.csv` — Source data for cross-validation
+- **Test Runner**: `.github/scripts/run_tests.py` — Universal automated test execution engine

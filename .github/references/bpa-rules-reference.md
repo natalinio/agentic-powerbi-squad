@@ -864,7 +864,7 @@ Before writing any TMDL or DAX code, verify syntax against Microsoft official do
 **Created**: 2026-02-22  
 **Purpose**: Comprehensive BPA rules reference for semantic model quality assurance  
 **Dependencies**: 
-- Tabular Editor BPA rules (`PBIP/BPARules-standard.json`)
+- Tabular Editor BPA rules (`<ProjectName>/PBIP/BPARules-standard.json`)
 - `.github/references/naming-conventions.md`
 - `.github/references/dax-optimization-framework.md`
 - `.github/references/relationship-patterns.md`

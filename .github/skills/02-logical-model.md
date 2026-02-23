@@ -1,7 +1,7 @@
 # Skill: Logical Data Model Design (Kimball Methodology)
 
 ## Prerequisites
-- Read `PBIP/kimball.md` reference for Kimball methodology principles.
+- Reference `.github/references/relationship-patterns.md` for advanced relationship patterns.
 - Reference `.github/references/naming-conventions.md` for naming rules.
 
 ## Design Rules
