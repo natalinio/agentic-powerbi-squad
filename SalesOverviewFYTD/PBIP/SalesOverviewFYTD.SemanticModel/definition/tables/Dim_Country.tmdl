@@ -1,4 +1,4 @@
-﻿table Dim_Country
+table Dim_Country
 	lineageTag: f47c9533-e4f0-4955-9946-2d802f8813fc
 
 	column CountryKey

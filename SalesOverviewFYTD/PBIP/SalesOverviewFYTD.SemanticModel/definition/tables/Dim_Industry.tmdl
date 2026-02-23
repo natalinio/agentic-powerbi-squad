@@ -1,4 +1,4 @@
-﻿table Dim_Industry
+table Dim_Industry
 	lineageTag: 315416c9-2a4f-467c-8649-534dd5ab25c7
 
 	column IndustryKey

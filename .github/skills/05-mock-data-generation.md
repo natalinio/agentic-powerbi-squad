@@ -98,12 +98,14 @@ def generate_fact_sales(dim_date, dim_customer, dim_area, n_rows=1000):
 
 ### CSV Output
 - Files go to `<ProjectName>/data/` folder
-- Use comma delimiter, UTF-8 encoding, no index
+- Use comma delimiter, **UTF-8 encoding WITHOUT BOM**, no index
 - Filename convention: lowercase table name (e.g., `dim_date.csv`, `fact_sales.csv`)
 
 ```python
 df.to_csv('<ProjectName>/data/dim_date.csv', index=False, encoding='utf-8')
 ```
+
+**CRITICAL**: Pandas `encoding='utf-8'` generates UTF-8 **without BOM** by default, which is the format required by Power BI Desktop for TMDL parsing. Do NOT use other tools (like PowerShell `WriteAllText`) to modify CSV files after generation, as they may add a BOM and cause parsing errors.
 
 ## TMDL Partition Update
 
@@ -123,6 +125,80 @@ Alternatively, use a **parameterized path** via `expressions.tmdl`:
 ```
 expression DataPath = "C:\path\to\repo\<ProjectName>\data" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
 ```
+
+Then reference in partition source:
+```
+Source = Csv.Document(File.Contents(DataPath & "\dim_date.csv"), [Delimiter = ",", Columns = 12, Encoding = 65001, QuoteStyle = QuoteStyle.None])
+```
+
+## Lift and Shift Strategy — Transition to Production Data Source
+
+**Important**: CSV files are intended as **temporary mock data** for local development and validation. In production, the semantic model will connect directly to a database (SQL Server, Azure SQL, Fabric Lakehouse, etc.).
+
+### Recommended Approach for Easy Migration
+
+#### Option 1: Parameterized Source (Recommended)
+Create a shared M parameter in `expressions.tmdl` that controls the data source type:
+
+```tmdl
+expression SourceType = "CSV" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+
+expression DataPath = "C:\path\to\repo\<ProjectName>\data" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+
+expression DatabaseConnectionString = "Server=myserver;Database=mydb" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = false]
+```
+
+Then in each table partition, use conditional logic:
+```m
+source =
+	let
+		CSVSource = Csv.Document(File.Contents(DataPath & "\dim_date.csv"), [Delimiter = ",", Columns = 12, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		DatabaseSource = Sql.Database("myserver", "mydb"){[Schema="dbo",Item="Dim_Date"]}[Data],
+		Source = if SourceType = "CSV" then CSVSource else DatabaseSource,
+		PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true])
+	in
+		PromotedHeaders
+```
+
+**Advantage**: Switch between CSV and database by changing a single parameter value.
+
+#### Option 2: Replace Partition Source (Simpler)
+When ready for production, replace the entire partition `source` expression in each table's TMDL file:
+
+**Before (CSV mock)**:
+```m
+source =
+	let
+		Source = Csv.Document(File.Contents("C:\...\<ProjectName>\data\dim_date.csv"), ...),
+```
+
+**After (SQL Database)**:
+```m
+source =
+	let
+		Source = Sql.Database("myserver.database.windows.net", "mydatabase"){[Schema="dbo",Item="Dim_Date"]}[Data],
+```
+
+**Advantage**: Simpler partition expressions (no conditional logic). Use Power BI Desktop's "Transform Data" UI to reconnect to the database, then save the TMDL changes.
+
+#### Option 3: Fabric Lakehouse (Direct Lake)
+For Fabric-based deployments, the partition mode changes from `import` to `directLake`:
+
+```tmdl
+partition Dim_Date = entity
+	mode: directLake
+	source
+		schemaName: dbo
+		tableName: Dim_Date
+		expressionSource: DatabaseQuery
+```
+
+**Note**: This requires the semantic model to be published to a Fabric workspace and connected to a Lakehouse.
+
+### Best Practice Recommendation
+- Use **Option 1** (parameterized source) during Step 05 if you anticipate frequent switching between mock and real data during development.
+- Use **Option 2** (replace partition source) for simpler models where the transition happens only once before production deployment.
+- For Fabric deployments, plan for **Option 3** (Direct Lake) from the beginning if your target data platform is Fabric Lakehouse.
 
 ## Validation Before Output
 - [ ] All FK values in fact tables exist in corresponding dimension PKs

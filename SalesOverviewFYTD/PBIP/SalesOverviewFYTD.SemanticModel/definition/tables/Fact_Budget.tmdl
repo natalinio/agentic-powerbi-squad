@@ -1,4 +1,4 @@
-﻿table Fact_Budget
+table Fact_Budget
 	lineageTag: d4e09911-c92f-49d7-aecc-c3846c8f7293
 
 	column BudgetKey

@@ -1,4 +1,4 @@
-﻿table Dim_Customer
+table Dim_Customer
 	lineageTag: 677209d7-7659-4141-b9a9-b8e2c2bba0d4
 
 	column CustomerKey

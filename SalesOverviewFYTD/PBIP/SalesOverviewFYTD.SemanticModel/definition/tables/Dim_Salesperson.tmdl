@@ -1,4 +1,4 @@
-﻿table Dim_Salesperson
+table Dim_Salesperson
 	lineageTag: eef62634-7803-4e5e-882b-99a84ccebb0f
 
 	column SalespersonKey

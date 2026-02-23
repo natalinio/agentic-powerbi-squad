@@ -1,4 +1,4 @@
-﻿table Dim_Date
+table Dim_Date
 	lineageTag: 2ca48147-094d-4d3c-9e92-819cba4466e9
 
 	column DateKey

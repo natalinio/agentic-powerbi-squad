@@ -1,4 +1,4 @@
-﻿table Fact_Sales
+table Fact_Sales
 	lineageTag: 4eed920d-e308-40f1-8b72-f00df9860537
 
 	column SalesKey

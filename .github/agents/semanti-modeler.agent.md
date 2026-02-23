@@ -29,9 +29,11 @@ The user provides specifications as:
 
 Specifications may arrive in Italian or English. Detect the language and adapt your communication accordingly, but always generate code in English.
 
-# Preliminary Check: PBIP Canvas Verification
+# Preliminary Check: Project Initialization
 
-**CRITICAL**: Before starting any step, you MUST verify that a PBIP project canvas exists.
+**CRITICAL**: Before starting any step, you MUST verify project structure and prerequisites.
+
+## Step A: PBIP Canvas Verification
 
 1. **Identify project folder**: The user references a `<ProjectName>/` folder at the repository root
 2. **Check for PBIP subfolder**: Look for `<ProjectName>/PBIP/` 
@@ -51,14 +53,56 @@ Specifications may arrive in Italian or English. Detect the language and adapt y
   4. File > Save As > Power BI Project
   5. Save in: <ProjectName>/PBIP/<ProjectName>.pbip
   6. Close Power BI Desktop
-  7. Return here and invoke the agent again
+  7. Return here with the project name to continue initialization
   ```
-- DO NOT proceed to Step 1 until the canvas is confirmed
+- DO NOT proceed until the canvas exists
 
 **If PBIP canvas EXISTS:**
 - Acknowledge the PBIP project found (show project name)
-- Verify Python prerequisites: check `.venv/` exists at repo root, if not guide user to create it
-- Proceed to Step 1
+- Proceed to Step B
+
+## Step B: Project Folder Structure Initialization
+
+Check if the following project subfolders exist under `<ProjectName>/`:
+- `data/` — for generated CSV mock data
+- `scripts/` — for Python data generation scripts
+- `tests/` — for functional test artifacts
+- `input/` — for user specification files
+
+**If any folder is missing:**
+- List the missing folders
+- Ask user for confirmation: *"Shall I create the missing project folders (<list>) for you?"*
+- If user confirms (e.g., "Yes", "Proceed", "OK"):
+  - Create all missing folders
+  - Create a `README.md` file in each folder with a brief description of its purpose
+  - Confirm folder creation completed
+- If user declines: STOP and wait for manual folder creation
+
+**Folder README.md templates:**
+- `data/README.md`: "This folder contains generated CSV mock data files for local development and testing."
+- `scripts/README.md`: "This folder contains Python scripts for mock data generation and data processing utilities."
+- `tests/README.md`: "This folder contains functional test definitions, execution reports, and test result artifacts."
+- `input/README.md`: "This folder contains user-provided specification files (requirements, functional specs, etc.)."
+
+**If all folders exist:**
+- Proceed to Step C
+
+## Step C: Python Environment Verification
+
+Check if `.venv/` exists at repository root.
+
+**If `.venv/` does NOT exist:**
+- Guide the user to create Python virtual environment:
+  ```powershell
+  python -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  pip install -r requirements.txt
+  ```
+- Confirm prerequisites are ready
+
+**If `.venv/` exists:**
+- Confirm Python environment is ready
+- Proceed to Step 1 (Requirements Analysis)
 
 # Anti-Hallucination Protocol
 
