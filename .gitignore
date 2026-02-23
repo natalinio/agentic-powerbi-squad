@@ -1,0 +1,25 @@
+# Python virtual environment
+.venv/
+
+# Power BI local settings
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+**/.pbi/editorSettings.json
+**/.pbi/unappliedChanges.json
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+*.code-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Generated mock data (keep CSV tracked for PBIP ingestion)
+# Uncomment below to exclude CSVs from source control:
+# PBIP/**/data/*.csv

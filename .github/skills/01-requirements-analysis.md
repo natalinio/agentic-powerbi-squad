@@ -1,0 +1,81 @@
+# Skill: Requirements Analysis and Specification Extraction
+
+## Input Handling
+
+- **Markdown files** (`.md`): Read the file content directly.
+- **Word documents** (`.docx`): Ask the user to paste or convert the content. Do NOT attempt binary parsing.
+- Detect the input language (Italian or English) and communicate in that language throughout the session.
+
+## Extraction Procedure
+
+When analyzing the functional specifications document, perform the following extractions systematically:
+
+### 1. Identify Metrics (Facts / KPIs)
+- List ALL required quantitative metrics with their specific aggregation rules (SUM, AVERAGE, COUNT, etc.).
+- For each KPI, specify:
+  - **Name** (in English for code, original language for descriptions)
+  - **Aggregation type** (additive, semi-additive, non-additive)
+  - **Formula or calculation logic** (if provided)
+  - **Format** (currency, percentage, integer, etc.)
+  - **Time intelligence requirements** (YTD, PY, MoM, etc.)
+
+### 2. Identify Dimensions
+- List ALL qualitative attributes used for filtering or grouping.
+- For each dimension, identify:
+  - **Attributes** (columns for filtering/grouping)
+  - **Hierarchies** (drill-down paths, e.g., Area → Country → Customer)
+  - **Cardinality estimate** (high/medium/low)
+  - **Whether it's shared** across multiple fact tables (conformed dimension per Kimball)
+
+### 3. Determine Granularity (Grain)
+- Explicitly state the **lowest level of detail** (grain) for each Fact table.
+- Example: "One row per sales transaction per day per customer" vs. "One row per month per area".
+- If the specs are ambiguous about grain, **flag it and ask the user**.
+
+### 4. Extract RLS Rules
+- Map out any **Row-Level Security** requirements:
+  - Which user roles exist
+  - Which dimension tables each role filters
+  - The DAX filter expression logic
+- If no RLS is mentioned, explicitly note: "No RLS requirements detected."
+
+### 5. Identify Fact Table Separation
+- Determine if facts should be in **separate tables** (e.g., Sales Fact vs. Budget Fact).
+- Identify the grain of each fact table independently.
+- Note any many-to-many relationships that may require bridge tables.
+
+## Validation Gate
+
+Before declaring Step 1 complete, check:
+- [ ] All KPIs have clear aggregation rules
+- [ ] All dimensions have defined attributes
+- [ ] Grain is explicitly defined for each fact table
+- [ ] Data types are specified or inferrable for all fields
+- [ ] RLS requirements are documented (or explicitly none)
+- [ ] Time intelligence requirements are clear (fiscal year start month, etc.)
+
+If ANY of these are missing or ambiguous, **flag them explicitly and ask the user** before proceeding.
+
+## Output Format
+
+Present the analysis as a structured table:
+
+```
+### KPIs Identified
+| # | KPI Name | Aggregation | Formula | Format | Time Intelligence |
+|---|----------|------------|---------|--------|-------------------|
+
+### Dimensions Identified
+| # | Dimension | Key Attributes | Hierarchy | Shared? |
+|---|-----------|---------------|-----------|---------|
+
+### Fact Tables
+| # | Fact Table | Grain | Related Dimensions |
+|---|-----------|-------|-------------------|
+
+### RLS Rules
+| Role | Filtered Dimension | Filter Logic |
+|------|-------------------|-------------|
+```
+
+**STOP here. Await user validation before proceeding to Step 2.**
