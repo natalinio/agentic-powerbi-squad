@@ -1,0 +1,131 @@
+table Fact_Sales
+	lineageTag: 4eed920d-e308-40f1-8b72-f00df9860537
+
+	column SalesKey
+		dataType: int64
+		isHidden
+		sourceColumn: SalesKey
+		summarizeBy: none
+		lineageTag: a19d4392-ff4c-4727-be00-df60fbe50758
+
+	column SalesID
+		dataType: string
+		sourceColumn: SalesID
+		summarizeBy: none
+		lineageTag: d7d32c00-7b51-4205-8fcb-f48c6ab5c263
+
+	column DateKey
+		dataType: int64
+		isHidden
+		sourceColumn: DateKey
+		summarizeBy: none
+		lineageTag: cf30d27d-3fb2-49fd-af2b-fe1eb797c5e4
+
+	column CustomerKey
+		dataType: int64
+		isHidden
+		sourceColumn: CustomerKey
+		summarizeBy: none
+		lineageTag: 3d41c132-b0f3-42b4-803c-b00bc142d821
+
+	column CountryKey
+		dataType: int64
+		isHidden
+		sourceColumn: CountryKey
+		summarizeBy: none
+		lineageTag: 5471c88a-9cc7-4e45-9788-b67af67c5721
+
+	column AreaKey
+		dataType: int64
+		isHidden
+		sourceColumn: AreaKey
+		summarizeBy: none
+		lineageTag: 930024ce-7693-428d-9ad3-83c0d3b08bec
+
+	column IndustryKey
+		dataType: int64
+		isHidden
+		sourceColumn: IndustryKey
+		summarizeBy: none
+		lineageTag: e56f48fb-1c1c-4ff0-8c3e-67dbedca9909
+
+	column SalespersonKey
+		dataType: int64
+		isHidden
+		sourceColumn: SalespersonKey
+		summarizeBy: none
+		lineageTag: 91d752ed-6e18-4aec-903b-c1feca036500
+
+	column 'Sales Amount LC'
+		dataType: decimal
+		formatString: #,##0.00
+		sourceColumn: SalesAmountLC
+		summarizeBy: none
+		lineageTag: e9eb678b-8fe0-4708-aeb0-7fa43752161b
+
+	column 'Adjusted Profit LC'
+		dataType: decimal
+		formatString: #,##0.00
+		sourceColumn: AdjustedProfitLC
+		summarizeBy: none
+		lineageTag: 368c4365-2f1e-4fd8-805a-287d1dac7574
+
+	column 'Item Profit LC'
+		dataType: decimal
+		formatString: #,##0.00
+		sourceColumn: ItemProfitLC
+		summarizeBy: none
+		lineageTag: b9d6ce36-f56c-4bd6-b7e9-7b1933213bc3
+
+	column 'Resource Profit LC'
+		dataType: decimal
+		formatString: #,##0.00
+		sourceColumn: ResourceProfitLC
+		summarizeBy: none
+		lineageTag: 6ed2a484-3934-4e98-8141-5d91280cfc1b
+
+	column 'Discount Amount LC'
+		dataType: decimal
+		formatString: #,##0.00
+		sourceColumn: DiscountAmountLC
+		summarizeBy: none
+		lineageTag: f717ba91-8109-4d99-a25a-50348150e239
+
+	column 'Actual Delivery Days'
+		dataType: int64
+		sourceColumn: ActualDeliveryDays
+		summarizeBy: none
+		lineageTag: 870b0dcc-bbbe-43b8-b18c-43e69180355e
+
+	column 'Expected Delivery Days'
+		dataType: int64
+		sourceColumn: ExpectedDeliveryDays
+		summarizeBy: none
+		lineageTag: e694d7df-cecc-4ae5-b601-867423992e4e
+
+	partition Fact_Sales = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\fact_sales.csv"), [Delimiter = ",", Columns = 15, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
+					{"SalesKey", Int64.Type}, 
+					{"SalesID", type text}, 
+					{"DateKey", Int64.Type}, 
+					{"CustomerKey", Int64.Type}, 
+					{"CountryKey", Int64.Type}, 
+					{"AreaKey", Int64.Type}, 
+					{"IndustryKey", Int64.Type}, 
+					{"SalespersonKey", Int64.Type}, 
+					{"SalesAmountLC", type number}, 
+					{"AdjustedProfitLC", type number}, 
+					{"ItemProfitLC", type number}, 
+					{"ResourceProfitLC", type number}, 
+					{"DiscountAmountLC", type number}, 
+					{"ActualDeliveryDays", Int64.Type}, 
+					{"ExpectedDeliveryDays", Int64.Type}
+				})
+			in
+				ChangedTypes
+

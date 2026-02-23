@@ -21,6 +21,30 @@ Before writing ANY DAX code:
 - One expression per line.
 - Indent consistently with tabs.
 
+### DAX Comments (Allowed)
+- **DAX expressions support comments**: `//` for single-line, `/* */` for multi-line.
+- Use comments to explain complex business logic, time intelligence parameters, or non-obvious calculations.
+- **TMDL structure does NOT support comments**: Do NOT add `///` comments before measure declarations (outside the DAX expression).
+
+**Example**:
+```tmdl
+measure 'Sales Amount FYTD' =
+		// Calculate fiscal year-to-date sales using dynamic fiscal year parameter
+		VAR FiscalYearEndMonth =
+			VAR FYStartMonth = SELECTEDVALUE(Parameters[ParameterValue], "1")
+			VAR StartMonthNum = VALUE(FYStartMonth)
+			VAR EndMonth = IF(StartMonthNum = 1, 12, StartMonthNum - 1)
+			RETURN FORMAT(EndMonth, "0") & "/30"  // Format as MM/DD
+		VAR FYTDSales =
+			CALCULATE(
+				[Sales Amount],
+				DATESYTD(Dim_Date[Date], FiscalYearEndMonth)
+			)
+		RETURN FYTDSales
+	formatString: "#,##0.00"
+	displayFolder: "Time Intelligence"
+```
+
 ### Example:
 ```tmdl
 	measure 'Sales Amount FYTD' =
@@ -48,6 +72,61 @@ Before writing ANY DAX code:
   - **Previous Year**: `CALCULATE([Measure], SAMEPERIODLASTYEAR(Dim_Date[Date]))`
   - **Month-over-Month**: `CALCULATE([Measure], DATEADD(Dim_Date[Date], -1, MONTH))`
   - **YoY Variance**: Use VAR pattern to calculate both periods, then subtract.
+
+### ⚠️ Time Intelligence with Dynamic Parameters (CRITICAL)
+
+**WARNING**: Functions like `DATESYTD`, `TOTALYTD`, `DATESMTD`, `TOTALMTD` require **constant literal values** for year-end date parameters. They do NOT accept variables or dynamic expressions.
+
+**Example of ERROR**:
+```dax
+❌ WRONG (causes warning: "Only constant date value is allowed"):
+VAR FiscalYearEndMonth = ... // Dynamic calculation
+RETURN
+    CALCULATE([Sales Amount], DATESYTD(Dim_Date[Date], FiscalYearEndMonth))
+```
+
+**Solution**: Use manual filtering logic when parameters must be dynamic:
+
+```dax
+✅ CORRECT (supports dynamic fiscal year parameters):
+measure 'Sales Amount FYTD' =
+    // Manual fiscal YTD calculation with dynamic parameter support
+    VAR CurrentDate = MAX(Dim_Date[Date])
+    VAR FYStartMonth = VALUE(SELECTEDVALUE(Parameters[ParameterValue], "1"))
+    VAR CurrentYear = YEAR(CurrentDate)
+    VAR CurrentMonth = MONTH(CurrentDate)
+    // Calculate current fiscal year
+    VAR FiscalYear = 
+        IF(
+            CurrentMonth >= FYStartMonth,
+            CurrentYear,
+            CurrentYear - 1
+        )
+    VAR FYStartDate = DATE(FiscalYear, FYStartMonth, 1)
+    VAR Result =
+        CALCULATE(
+            [Sales Amount],
+            FILTER(
+                ALL(Dim_Date[Date]),
+                Dim_Date[Date] >= FYStartDate && Dim_Date[Date] <= CurrentDate
+            )
+        )
+    RETURN Result
+```
+
+**Functions Requiring Constant Parameters**:
+- `DATESYTD(dates, [year_end_date])` → year_end_date must be literal like `"6/30"`
+- `TOTALYTD(expression, dates, [year_end_date])` → year_end_date must be literal
+- `DATESMTD`, `TOTALMTD`, `DATESQTD`, `TOTALQTD` → No year-end parameter, but similar optimization constraints
+
+**When to Use Manual Logic**:
+- Fiscal year start month is user-selectable (parameter table)
+- Multiple fiscal year scenarios in same model
+- Dynamic calendar logic based on business rules
+
+**When `DATESYTD` is OK**:
+- Fixed fiscal year end (e.g., always June 30): `DATESYTD(Dim_Date[Date], "6/30")`
+- Calendar year only: `DATESYTD(Dim_Date[Date])` (defaults to Dec 31)
 
 ### Filter Context
 - Use `CALCULATE()` with explicit filter modifications.

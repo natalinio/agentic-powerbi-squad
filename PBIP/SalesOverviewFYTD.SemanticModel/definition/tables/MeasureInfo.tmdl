@@ -1,0 +1,70 @@
+table MeasureInfo
+	lineageTag: 088ce2a9-e453-4534-b8fa-4b3ba87b63b3
+
+	column MeasureName
+		dataType: string
+		sourceColumn: MeasureName
+		summarizeBy: none
+		lineageTag: af22e625-0b12-4312-b45a-46a891a2468a
+
+	column LowerBoundary
+		dataType: decimal
+		sourceColumn: LowerBoundary
+		summarizeBy: none
+		lineageTag: 4253ce02-3b55-4907-98c6-4e124167bf00
+
+	column UpperBoundary
+		dataType: decimal
+		sourceColumn: UpperBoundary
+		summarizeBy: none
+		lineageTag: 7b5ab50a-dc9d-409c-a958-9f7c96f2ce18
+
+	column MeasureFormat
+		dataType: string
+		sourceColumn: MeasureFormat
+		summarizeBy: none
+		lineageTag: 6c41530c-7363-48c6-a630-59fa49f446f9
+
+	column HighIsGood
+		dataType: boolean
+		sourceColumn: HighIsGood
+		summarizeBy: none
+		lineageTag: 49d63251-0352-4f50-a913-12283926d34e
+
+	column IconHigh
+		dataType: string
+		sourceColumn: IconHigh
+		summarizeBy: none
+		lineageTag: 9c436324-cc19-4d22-a7bc-87e1761c5afa
+
+	column IconMedium
+		dataType: string
+		sourceColumn: IconMedium
+		summarizeBy: none
+		lineageTag: 22448c5d-5cd3-4355-ac5f-5497333efa0d
+
+	column IconLow
+		dataType: string
+		sourceColumn: IconLow
+		summarizeBy: none
+		lineageTag: 91bb0cee-cd53-4506-a7ea-f92dc0f5e986
+
+	partition MeasureInfo = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\measure_info.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
+					{"MeasureName", type text}, 
+					{"LowerBoundary", type number}, 
+					{"UpperBoundary", type number}, 
+					{"MeasureFormat", type text}, 
+					{"HighIsGood", type logical}, 
+					{"IconHigh", type text}, 
+					{"IconMedium", type text}, 
+					{"IconLow", type text}
+				})
+			in
+				ChangedTypes
+

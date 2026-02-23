@@ -1,0 +1,30 @@
+table Dim_Industry
+	lineageTag: 315416c9-2a4f-467c-8649-534dd5ab25c7
+
+	column IndustryKey
+		dataType: int64
+		isKey
+		isHidden
+		sourceColumn: IndustryKey
+		summarizeBy: none
+		lineageTag: 79af3454-ca46-490d-a270-2b6cc40fa323
+
+	column IndustryName
+		dataType: string
+		sourceColumn: IndustryName
+		summarizeBy: none
+		lineageTag: d95da52f-47d4-4cd1-b7d8-1357db5dc5c9
+
+	partition Dim_Industry = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\dim_industry.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
+					{"IndustryKey", Int64.Type}, 
+					{"IndustryName", type text}
+				})
+			in
+				ChangedTypes
+

@@ -1,0 +1,30 @@
+table Dim_Area
+	lineageTag: 569eb060-3daf-4a1b-a46d-9c267218c892
+
+	column AreaKey
+		dataType: int64
+		isKey
+		isHidden
+		sourceColumn: AreaKey
+		summarizeBy: none
+		lineageTag: 9bb47b6a-d23d-4364-8432-bfe3bf299ac2
+
+	column AreaName
+		dataType: string
+		sourceColumn: AreaName
+		summarizeBy: none
+		lineageTag: 683ef558-9cfe-493c-9930-bbbf9e670b53
+
+	partition Dim_Area = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\dim_area.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
+					{"AreaKey", Int64.Type}, 
+					{"AreaName", type text}
+				})
+			in
+				ChangedTypes
+

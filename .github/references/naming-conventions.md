@@ -80,7 +80,7 @@ relationship a1b2c3d4-e5f6-7890-abcd-ef1234567890
 ```
 
 - Generate a unique GUID for each relationship.
-- Use comments (`///`) above the relationship to describe it if needed.
+- **Note**: TMDL does NOT support comments. Do not add `///` or `//` comments anywhere in TMDL files.
 
 ---
 

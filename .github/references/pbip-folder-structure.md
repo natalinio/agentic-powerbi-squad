@@ -84,8 +84,10 @@ ref table _Measures
 Defines the database name and compatibility level:
 ```tmdl
 database SalesOverview
-	compatibilityLevel: 1567
+	compatibilityLevel: 1600
 ```
+
+**Note**: CompatibilityLevel must match Power BI Desktop version (1600 for December 2025, 1567 for September 2024).
 
 ### `relationships.tmdl`
 Contains ALL relationships in a single file:

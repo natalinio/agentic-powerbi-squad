@@ -328,6 +328,68 @@ measure 'Sales for Selected Products' =
 		FilteredSales
 ```
 
+### Problem: Multiple "Both" Security Filtering Behavior on Same Table
+
+**Symptom**: Power BI load error: "Table 'X' already has a relationship where Security Filtering Behavior is set to Both. Only one relationship per table with this setting is allowed."
+
+**Cause**: More than one relationship touching the same table has `securityFilteringBehavior: bothDirections`
+
+**Example of VIOLATION**:
+```tmdl
+-- ❌ ERROR: Dim_Customer has 2 relationships with bothDirections
+relationship rel1
+	fromColumn: Dim_Customer.CountryKey
+	toColumn: Dim_Country.CountryKey
+	securityFilteringBehavior: bothDirections  -- First bothDirections
+
+relationship rel2
+	fromColumn: Fact_Sales.CustomerKey
+	toColumn: Dim_Customer.CustomerKey
+	securityFilteringBehavior: bothDirections  -- Second bothDirections ❌ VIOLATION
+```
+
+**Detection**:
+1. Search all `.tmdl` files for `securityFilteringBehavior: bothDirections`
+2. Group by table name (`fromColumn` and `toColumn` table names)
+3. If any table appears in more than one `bothDirections` relationship → ERROR
+
+**Fix Options**:
+1. **Standard Star Schema (Recommended)**: Change ALL relationships to `securityFilteringBehavior: oneDirection`
+```tmdl
+-- ✅ CORRECT: All relationships use oneDirection
+relationship rel1
+	fromColumn: Dim_Customer.CountryKey
+	toColumn: Dim_Country.CountryKey
+	securityFilteringBehavior: oneDirection  -- ✅
+	crossFilteringBehavior: oneDirection
+
+relationship rel2
+	fromColumn: Fact_Sales.CustomerKey
+	toColumn: Dim_Customer.CustomerKey
+	securityFilteringBehavior: oneDirection  -- ✅
+	crossFilteringBehavior: oneDirection
+```
+
+2. **RLS Scenario (Advanced)**: If bidirectional RLS is required, keep ONLY ONE `bothDirections` per table
+```tmdl
+-- ✅ CORRECT: Only ONE bothDirections per table
+relationship rel1
+	fromColumn: Dim_Customer.CountryKey
+	toColumn: Dim_Country.CountryKey
+	securityFilteringBehavior: oneDirection  -- ✅
+
+relationship rel2
+	fromColumn: Fact_Sales.CustomerKey
+	toColumn: Dim_Customer.CustomerKey
+	securityFilteringBehavior: bothDirections  -- ✅ Only ONE bothDirections
+```
+
+**Key Distinction**:
+- **`securityFilteringBehavior`**: Row-Level Security (RLS) filter propagation (max 1 bothDirections per table)
+- **`crossFilteringBehavior`**: Query filter propagation (no limit on bothDirections)
+
+**Prevention**: Always use `securityFilteringBehavior: oneDirection` unless you have a documented RLS requirement for bidirectional security filtering.
+
 ---
 
 ## 5. Composite Model Relationship Patterns
@@ -424,6 +486,158 @@ measure 'Sales for Order' =
 	RETURN
 		OrderSales
 ```
+
+---
+
+## 7. Ambiguous Paths (Critical Anti-Pattern)
+
+### ⛔ Problem Description
+**Ambiguous paths** occur when there are MULTIPLE active relationship paths between the same two tables. Power BI cannot resolve which path to use for filtering, causing model load failure.
+
+### Error Signature
+```
+There are ambiguous paths between '<FactTable>' and '<DimensionTable>':
+'<FactTable>'->'<IntermediateDim>'->'<DimensionTable>' and 
+'<FactTable>'->'<DimensionTable>'
+```
+
+### Common Cause: Redundant Foreign Keys
+
+**INCORRECT Design** (creates 3 ambiguous paths):
+```
+Fact_Sales:
+  - CustomerKey FK → Dim_Customer
+  - CountryKey FK → Dim_Country  ❌ REDUNDANT
+  - AreaKey FK → Dim_Area        ❌ REDUNDANT
+  - IndustryKey FK → Dim_Industry ❌ REDUNDANT
+
+Dim_Customer:
+  - CountryKey FK → Dim_Country
+  - IndustryKey FK → Dim_Industry
+
+Dim_Country:
+  - AreaKey FK → Dim_Area
+```
+
+This creates:
+1. **Path A**: `Fact_Sales → Dim_Country` (direct)  
+   **Path B**: `Fact_Sales → Dim_Customer → Dim_Country` (indirect) ❌ CONFLICT
+2. **Path A**: `Fact_Sales → Dim_Area` (direct)  
+   **Path B**: `Fact_Sales → Dim_Customer → Dim_Country → Dim_Area` (indirect) ❌ CONFLICT
+3. **Path A**: `Fact_Sales → Dim_Industry` (direct)  
+   **Path B**: `Fact_Sales → Dim_Customer → Dim_Industry` (indirect) ❌ CONFLICT
+
+### ✅ CORRECT Design (snowflake with single path)
+```
+Fact_Sales:
+  - CustomerKey FK → Dim_Customer  ✅ ONLY this FK
+  - ProductKey FK → Dim_Product
+  - DateKey FK → Dim_Date
+  - SalespersonKey FK → Dim_Salesperson
+
+Dim_Customer:
+  - CountryKey FK → Dim_Country
+  - IndustryKey FK → Dim_Industry
+
+Dim_Country:
+  - AreaKey FK → Dim_Area
+```
+
+**Result**: Each dimension is reachable through EXACTLY ONE active path.
+
+### TMDL Example (Corrected Relationships)
+
+```tmdl
+relationship a1b2c3d4-e5f6-7890-abcd-ef1234567890
+	fromColumn: Fact_Sales.CustomerKey
+	toColumn: Dim_Customer.CustomerKey
+	fromCardinality: many
+	toCardinality: one
+	isActive: true
+	securityFilteringBehavior: oneDirection
+	relyOnReferentialIntegrity: false
+	crossFilteringBehavior: oneDirection
+
+relationship b2c3d4e5-f6a7-8901-bcde-f01234567890
+	fromColumn: Dim_Customer.CountryKey
+	toColumn: Dim_Country.CountryKey
+	fromCardinality: many
+	toCardinality: one
+	isActive: true
+	securityFilteringBehavior: oneDirection
+	relyOnReferentialIntegrity: false
+	crossFilteringBehavior: oneDirection
+
+relationship c3d4e5f6-a7b8-9012-cdef-012345678901
+	fromColumn: Dim_Country.AreaKey
+	toColumn: Dim_Area.AreaKey
+	fromCardinality: many
+	toCardinality: one
+	isActive: true
+	securityFilteringBehavior: oneDirection
+	relyOnReferentialIntegrity: false
+	crossFilteringBehavior: oneDirection
+
+relationship d4e5f6a7-b8c9-0123-def0-123456789012
+	fromColumn: Dim_Customer.IndustryKey
+	toColumn: Dim_Industry.IndustryKey
+	fromCardinality: many
+	toCardinality: one
+	isActive: true
+	securityFilteringBehavior: oneDirection
+	relyOnReferentialIntegrity: false
+	crossFilteringBehavior: oneDirection
+```
+
+### Detection Rules
+
+Before generating `relationships.tmdl`, **ALWAYS** check:
+
+1. **List all FKs**: For each Fact table, list ALL Foreign Key columns
+2. **Trace paths**: For each FK, identify which dimension(s) it connects to (directly or indirectly)
+3. **Check for duplicates**: If TWO FKs reach the SAME dimension through different paths → AMBIGUOUS
+4. **Remove redundancy**: Keep ONLY the FK to the most granular dimension in the hierarchy
+
+### Design Principle: **Connect to Lowest Grain Only**
+
+✅ **Correct**: Fact connects to the **leaf dimension** in a hierarchy  
+❌ **Incorrect**: Fact connects to BOTH the leaf AND parent dimensions
+
+**Example**: For geographic hierarchy (Area → Country → Customer):
+- ✅ Fact_Sales has `CustomerKey` (leaf) → walks up to Country and Area
+- ❌ Fact_Sales has `CustomerKey` AND `CountryKey` AND `AreaKey` (redundant)
+
+### When Snowflaking is Acceptable
+
+Snowflaking (dimension-to-dimension relationships) is acceptable ONLY IF:
+1. The hierarchy is natural and stable (e.g., geography: City → State → Country)
+2. Parent dimensions have descriptive attributes beyond the FK (e.g., CountryName, CountryCurrency)
+3. The fact table connects ONLY to the lowest grain (leaf dimension)
+
+**Never snowflake if it creates ambiguous paths.**
+
+### DAX Measure Impact
+
+With the corrected design, measures automatically use the single path:
+
+```dax
+measure 'Sales by Area' =
+    -- Power BI follows: Fact_Sales → Dim_Customer → Dim_Country → Dim_Area
+    SUM(Fact_Sales[SalesAmount])
+```
+
+No `USERELATIONSHIP()` needed because there's only ONE path.
+
+### Troubleshooting Checklist
+
+If you encounter ambiguous path error:
+- [ ] Identify ALL FK columns in the Fact table
+- [ ] Map each FK to its target dimension
+- [ ] Check if target dimension has FKs to other dimensions (creates hierarchy)
+- [ ] If hierarchy exists, remove direct FK from Fact to parent dimensions
+- [ ] Keep ONLY the FK to the most granular dimension
+- [ ] Regenerate `relationships.tmdl` without redundant relationships
+- [ ] Verify: Between any two tables, there is EXACTLY ONE active path
 
 ---
 

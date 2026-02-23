@@ -1,0 +1,30 @@
+table Dim_Salesperson
+	lineageTag: eef62634-7803-4e5e-882b-99a84ccebb0f
+
+	column SalespersonKey
+		dataType: int64
+		isKey
+		isHidden
+		sourceColumn: SalespersonKey
+		summarizeBy: none
+		lineageTag: 5e22e092-0d80-4936-a6e7-d3d458dbf5f0
+
+	column SalespersonName
+		dataType: string
+		sourceColumn: SalespersonName
+		summarizeBy: none
+		lineageTag: c1dc3ec4-cf13-46b7-9a77-42317b25df82
+
+	partition Dim_Salesperson = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\PBIP\data\dim_salesperson.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
+					{"SalespersonKey", Int64.Type}, 
+					{"SalespersonName", type text}
+				})
+			in
+				ChangedTypes
+

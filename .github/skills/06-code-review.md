@@ -27,7 +27,7 @@ Before starting the review:
 
 ### 2. Structural Integrity
 - [ ] `model.tmdl` contains `ref table` entries for ALL tables defined in `tables/` folder.
-- [ ] `database.tmdl` exists with correct `compatibilityLevel` (1567 or higher).
+- [ ] `database.tmdl` exists with correct `compatibilityLevel` matching Power BI Desktop version (1600 for December 2025, 1567 for September 2024).
 - [ ] `relationships.tmdl` contains entries for ALL FK-PK relationships.
 - [ ] One `.tmdl` file per table exists in `tables/` folder.
 - [ ] `_Measures.tmdl` table file exists with at least one measure.
@@ -38,10 +38,16 @@ For EACH relationship in `relationships.tmdl`:
 - [ ] `fromColumn` references an existing column in an existing Fact table.
 - [ ] `toColumn` references an existing column in an existing Dimension table (must have `isKey`).
 - [ ] Relationship is **single-directional** (unless explicitly bi-directional for RLS).
+- [ ] **CRITICAL**: `securityFilteringBehavior: oneDirection` for ALL relationships (unless specific RLS requirement). Max 1 `bothDirections` per table.
+- [ ] `crossFilteringBehavior: oneDirection` for standard Star Schema (Dim → Fact).
 - [ ] No **duplicate relationships** between the same column pairs.
 - [ ] No **circular dependency** chains (A→B→C→A).
 - [ ] FK columns in Fact tables are marked `isHidden`.
-- [ ] No ambiguous paths (multiple active relationships between same tables).
+- [ ] **CRITICAL: No ambiguous paths** — For EACH pair of tables, verify there is ONLY ONE active relationship path. Common ambiguities:
+  - [ ] Fact_Sales → Dim_Country (direct) AND Fact_Sales → Dim_Customer → Dim_Country (indirect)
+  - [ ] Fact_Sales → Dim_Area (direct) AND Fact_Sales → Dim_Customer → Dim_Country → Dim_Area (indirect)
+  - [ ] Fact_Sales → Dim_Industry (direct) AND Fact_Sales → Dim_Customer → Dim_Industry (indirect)
+  - **Fix**: Remove redundant direct relationships from fact tables. Keep only the path through the most granular dimension.
 
 ### 4. Data Type Consistency
 For EACH column across all tables:

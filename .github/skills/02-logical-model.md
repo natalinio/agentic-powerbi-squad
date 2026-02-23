@@ -43,6 +43,39 @@ When designing the logical data model, strictly adhere to Kimball dimensional mo
 ### Degenerate Dimensions
 - Transaction identifiers (e.g., `SalesID`, `InvoiceNumber`) that don't warrant a separate dimension table should be kept directly in the Fact table as **degenerate dimensions**.
 
+### ⛔ CRITICAL: Ambiguous Path Detection
+
+**Ambiguous paths** occur when there are MULTIPLE active relationship paths between the same two tables. This causes Power BI to fail with error:
+```
+There are ambiguous paths between '<FactTable>' and '<DimensionTable>': 
+'<FactTable>'->'<IntermediateDim>'->'<DimensionTable>' and '<FactTable>'->'<DimensionTable>'
+```
+
+**Common Cause**: Redundant Foreign Keys in Fact tables that create both direct and indirect paths.
+
+**Example of INCORRECT design** (creates ambiguity):
+- `Fact_Sales` has FK: `CustomerKey`, `CountryKey`, `AreaKey`, `IndustryKey`
+- `Dim_Customer` has FK: `CountryKey`, `IndustryKey`
+- `Dim_Country` has FK: `AreaKey`
+
+This creates THREE ambiguous paths:
+1. `Fact_Sales → Dim_Country` (direct) vs `Fact_Sales → Dim_Customer → Dim_Country` (indirect)
+2. `Fact_Sales → Dim_Area` (direct) vs `Fact_Sales → Dim_Customer → Dim_Country → Dim_Area` (indirect)
+3. `Fact_Sales → Dim_Industry` (direct) vs `Fact_Sales → Dim_Customer → Dim_Industry` (indirect)
+
+**CORRECT Design Rules**:
+1. **Remove redundant FKs**: If a dimension is reachable through another dimension, do NOT create a direct FK in the fact table
+2. **Choose ONE path**: Either direct FK OR through intermediate dimension, NEVER both
+3. **Snowflake when necessary**: For normalized hierarchies (Customer → Country → Area), keep only the Customer FK in the fact
+
+**Corrected Example**:
+- `Fact_Sales` has FK: `CustomerKey`, `ProductKey`, `DateKey`, `SalespersonKey` ONLY
+- `Dim_Customer` has FK: `CountryKey`, `IndustryKey`
+- `Dim_Country` has FK: `AreaKey`
+- Paths are now unambiguous: `Fact_Sales → Dim_Customer → Dim_Country → Dim_Area`
+
+**When to Use Inactive Relationships**: If you genuinely need multiple paths (e.g., role-playing dimensions like OrderDate/ShipDate), make all but ONE relationship `isActive: false` and use `USERELATIONSHIP()` in DAX.
+
 ## Output Format
 
 Output the proposed logical model using **Mermaid.js Entity-Relationship diagram** syntax:
@@ -80,5 +113,7 @@ erDiagram
 - [ ] All relationships are 1:N (Dim to Fact)
 - [ ] Conformed dimensions are identified
 - [ ] Naming follows conventions
+- [ ] **NO ambiguous paths**: Verify that between any two tables there is ONLY ONE active relationship path (no redundant FKs in fact tables)
+- [ ] If snowflaking is used, ensure fact tables connect only to the lowest-grain dimension in the hierarchy
 
 **STOP here. Present the ER diagram and await user validation before proceeding to Step 3.**
