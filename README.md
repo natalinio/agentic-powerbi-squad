@@ -253,6 +253,8 @@ aisemanticlayer/
 
 ### Agentic System Design
 
+![AI Semantic Modeler Architecture](.github/docs/architecture.png)
+
 The system follows a **composable agentic architecture**:
 
 ```
