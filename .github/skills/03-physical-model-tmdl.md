@@ -108,6 +108,99 @@ There are ambiguous paths between 'Fact_Sales' and 'Dim_Country'
 
 **Rule**: A fact table should connect to the **most granular dimension** in a hierarchy, NOT to every level of the hierarchy.
 
+## ⚠️ MANDATORY CHECKPOINT: Refresh Strategy Confirmation
+
+**BEFORE generating ANY TMDL partition definitions**, the agent MUST verify that the functional specification contains the following information:
+
+1. **Data Refresh Frequency** (e.g., Real-time, Hourly, Daily, Weekly)
+2. **Storage Mode Preference** (Import, DirectQuery, Composite)
+3. **Expected Data Volumes** (current and projected row counts for fact tables)
+4. **Incremental Refresh Requirements** (yes/no + audit field name if applicable)
+5. **Source System Update Pattern** (Append-only, Updates in place, Soft deletes, Hard deletes)
+
+**If ANY of these are missing or unclear:**
+- 🛑 **STOP execution**
+- 📋 Ask the user to provide the missing information
+- 💡 Provide guidance based on typical patterns:
+  - **Small datasets** (< 1M rows): Import mode with full refresh
+  - **Medium datasets** (1M-10M rows): Import mode with incremental refresh
+  - **Large datasets** (> 10M rows): Consider DirectQuery or Composite mode
+  - **Real-time requirements**: DirectQuery or Composite mode
+  - **Hourly/Daily refresh**: Import mode typically sufficient
+
+**Example Questions to Ask User:**
+```
+Missing Refresh Strategy Information:
+
+I need the following details to configure the physical model correctly:
+
+1. **Data Refresh Frequency**: How often should the report data be updated?
+   - Real-time (< 1 minute latency)
+   - Near real-time (5-15 minutes)
+   - Hourly
+   - Multiple times per day
+   - Daily
+   - Weekly
+
+2. **Expected Data Volumes**: What are the current and projected row counts for fact tables?
+   - Fact_Sales: ___ rows (current), ___ rows (12 months projection)
+
+3. **Incremental Refresh**: Do any fact tables support incremental refresh?
+   - If yes, what field tracks last modification? (e.g., LastModifiedDate, TransactionDate)
+
+4. **Storage Mode**: What is your preference?
+   - Import (best performance, scheduled refresh)
+   - DirectQuery (real-time, slower queries)
+   - Composite (hybrid approach)
+   - Undecided (let me recommend based on requirements)
+
+Please update your specification file (Section 9.1 - Data Refresh Strategy) with these details.
+```
+
+## Data Refresh Strategy & Storage Mode Selection
+
+### Decision Tree: Import vs DirectQuery vs Composite
+
+**Use Import Mode when:**
+- ✅ Data refresh frequency is hourly or slower
+- ✅ Data volumes are manageable (< 10GB compressed)
+- ✅ Query performance is critical
+- ✅ Source system cannot handle concurrent query load
+- ✅ Complex DAX calculations required
+
+**Use DirectQuery when:**
+- ✅ Real-time data required (< 5 minute latency)
+- ✅ Data volumes exceed Power BI Import limits (> 10GB)
+- ✅ Source system is optimized for analytical queries (e.g., Azure Synapse, SQL Server columnstore)
+- ✅ Single Source of Truth enforcement required
+- ⚠️ Accept slower query performance
+- ⚠️ Limited DAX function support
+
+**Use Composite/Hybrid when:**
+- ✅ Dimensions are small (Import) but facts are large (DirectQuery)
+- ✅ Recent data needs real-time refresh, historical data is static
+- ✅ Balancing performance and freshness
+- ⚠️ More complex to configure and troubleshoot
+
+### Incremental Refresh Configuration
+
+**When to use Incremental Refresh:**
+- Fact tables with > 1M rows
+- Import mode with daily/hourly refresh
+- Source system supports Last Modified Date tracking
+- Historical data rarely changes (append-only or updates within recent window)
+
+**Requirements:**
+1. **Audit Field**: A DateTime or Date column that tracks when each row was last modified
+   - Common names: `LastModifiedDate`, `TransactionDate`, `CreatedDate`, `UpdatedTimestamp`
+2. **Power Query Parameters**: `RangeStart` and `RangeEnd` (generated automatically)
+3. **Partition Strategy**: Define refresh window (e.g., "Last 7 days") and archive window (e.g., "Keep last 3 years")
+
+**Benefits:**
+- Only recent data is refreshed (faster refresh times)
+- Historical data compressed and cached (better performance)
+- Reduces source system load
+
 ## File Generation Rules
 
 Generate the following TMDL files inside `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`:
@@ -252,6 +345,131 @@ table _Measures
 				Source
 ```
 
+#### Advanced Partition Templates (Based on Refresh Strategy)
+
+##### A. Import Mode with Incremental Refresh
+
+**When to use:** Large fact tables (> 1M rows) with audit field for incremental updates.
+
+**Requirements:**
+1. Power Query parameters `RangeStart` and `RangeEnd` must be defined in `expressions.tmdl`
+2. Fact table MUST have a DateTime/Date column for filtering (e.g., `LastModifiedDate`, `TransactionDate`)
+
+**Template:**
+
+```tmdl
+table Fact_Sales
+	lineageTag: <generate-guid>
+
+	column TransactionDate
+		dataType: dateTime
+		formatString: yyyy-MM-dd HH:mm:ss
+		sourceColumn: TransactionDate
+		summarizeBy: none
+		lineageTag: <generate-guid>
+
+	column LastModifiedDate
+		dataType: dateTime
+		isHidden
+		sourceColumn: LastModifiedDate
+		summarizeBy: none
+		lineageTag: <generate-guid>
+
+	partition Fact_Sales = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("<absolute-path-to-data>/fact_sales.csv"), [Delimiter = ",", Columns = 10, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {
+					{"SalesKey", Int64.Type},
+					{"TransactionDate", type datetime},
+					{"LastModifiedDate", type datetime},
+					{"SalesAmountLC", type number}
+				}),
+				FilteredRows = Table.SelectRows(ChangedTypes, each [LastModifiedDate] >= RangeStart and [LastModifiedDate] < RangeEnd)
+			in
+				FilteredRows
+```
+
+**Note**: The `FilteredRows` step filters data using `RangeStart` and `RangeEnd` parameters. These are automatically managed by Power BI's incremental refresh policy (configured in Power BI Desktop UI after model deployment).
+
+##### B. DirectQuery Mode Partition
+
+**When to use:** Real-time requirements or data volumes exceeding Import limits.
+
+**Template:**
+
+```tmdl
+table Fact_Sales
+	lineageTag: <generate-guid>
+
+	column SalesKey
+		dataType: int64
+		isHidden
+		sourceColumn: SalesKey
+		summarizeBy: none
+		lineageTag: <generate-guid>
+
+	partition Fact_Sales = m
+		mode: directQuery
+		source =
+			let
+				Source = Sql.Database("<server-name>", "<database-name>"),
+				Schema = Source{[Schema="dbo"]}[Data],
+				Table = Schema{[Name="Fact_Sales"]}[Data]
+			in
+				Table
+```
+
+**Note**: DirectQuery partitions query the source database in real-time. Source must support efficient analytical queries (indexed, columnstore, etc.).
+
+##### C. Composite Mode Partition (Dimension: Import, Fact: DirectQuery)
+
+**When to use:** Balance performance (cached dimensions) with freshness (real-time facts).
+
+**Dimension (Import):**
+```tmdl
+table Dim_Customer
+	lineageTag: <generate-guid>
+
+	partition Dim_Customer = m
+		mode: import
+		source =
+			let
+				Source = Csv.Document(File.Contents("<absolute-path-to-data>/dim_customer.csv"), [Delimiter = ",", Columns = 5, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true])
+			in
+				PromotedHeaders
+```
+
+**Fact (DirectQuery):**
+```tmdl
+table Fact_Sales
+	lineageTag: <generate-guid>
+
+	partition Fact_Sales = m
+		mode: directQuery
+		source =
+			let
+				Source = Sql.Database("<server-name>", "<database-name>"),
+				Table = Source{[Schema="dbo",Item="Fact_Sales"]}[Data]
+			in
+				Table
+```
+
+**Note**: In Composite mode, relationships must be configured carefully. DirectQuery tables can only have limited relationships with Import tables.
+
+##### Decision Matrix for Partition Mode
+
+| Scenario | Partition Mode | Configuration Notes |
+|----------|----------------|---------------------|
+| **Mock/Prototype** (CSV) | `mode: import` | Default for Step 05 (Mock Data Generation) |
+| **Small dataset** (< 1M rows, daily refresh) | `mode: import` | Full refresh from source |
+| **Medium dataset** (1M-10M rows, daily refresh) | `mode: import` + Incremental Refresh | Requires `RangeStart`/`RangeEnd` parameters |
+| **Large dataset** (> 10M rows, real-time) | `mode: directQuery` | Source must support analytical queries |
+| **Hybrid** (small dims, large facts) | Composite (Import + DirectQuery) | Dims: Import, Facts: DirectQuery |
+
 ### 4. `relationships.tmdl`
 
 **CRITICAL RULE**: Power BI enforces **only ONE relationship per table with `securityFilteringBehavior: bothDirections`**. For standard Star Schema models without advanced RLS requirements, ALWAYS use `securityFilteringBehavior: oneDirection` on ALL relationships.
@@ -290,10 +508,48 @@ Table 'Dim_Customer' already has a relationship where Security Filtering Behavio
 **Cause**: More than one relationship touching the same table has `securityFilteringBehavior: bothDirections`.  
 **Fix**: Change all relationships to `securityFilteringBehavior: oneDirection` unless you have a specific RLS requirement.
 
-### 5. `expressions.tmdl` (if needed for shared M expressions/parameters)
+### 5. `expressions.tmdl` (Shared M Expressions & Parameters)
+
+#### Basic Expression (Data Path Parameter)
 ```tmdl
 expression DataPath = "<absolute-path-to-data>" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
 ```
+
+**Use Case:** Centralized path for CSV file sources, making it easier to update source location.
+
+#### Incremental Refresh Parameters (Required for Large Fact Tables)
+
+**When to include:** If Section 9.1 of the specification indicates incremental refresh is required.
+
+```tmdl
+expression RangeStart = #datetime(2020, 1, 1, 0, 0, 0) meta [IsParameterQuery = true, Type = "DateTime", IsParameterQueryRequired = true]
+
+expression RangeEnd = #datetime(2026, 12, 31, 23, 59, 59) meta [IsParameterQuery = true, Type = "DateTime", IsParameterQueryRequired = true]
+```
+
+**Important Notes:**
+- `RangeStart` and `RangeEnd` are **special parameters** recognized by Power BI's incremental refresh engine
+- Initial values are placeholders — Power BI overwrites them automatically based on the refresh policy configured in Power BI Desktop UI
+- These parameters MUST be referenced in the partition's M query using a filter step (see "Import Mode with Incremental Refresh" template above)
+- **Do NOT** use these parameters if incremental refresh is not configured — they will cause errors
+
+**Workflow:**
+1. Agent generates `expressions.tmdl` with `RangeStart`/`RangeEnd` parameters (if spec indicates incremental refresh)
+2. Agent generates partition M query with filter step: `Table.SelectRows(..., each [AuditField] >= RangeStart and [AuditField] < RangeEnd)`
+3. User opens model in Power BI Desktop → Navigate to table → Configure Incremental Refresh policy in UI
+4. Power BI automatically manages parameter values during refresh
+
+#### DirectQuery Connection Parameters (Optional)
+
+**When to include:** If Section 9.1 indicates DirectQuery mode is required.
+
+```tmdl
+expression ServerName = "your-server.database.windows.net" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+
+expression DatabaseName = "YourDatabase" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+```
+
+**Use Case:** Parameterize DirectQuery source for easier migration between environments (Dev → Test → Prod).
 
 ## Relationship Rules (CRITICAL)
 
@@ -554,21 +810,46 @@ column <MeasureColumn>
 ---
 
 ## Validation Before Output
+
+### TMDL Syntax & Structure
 - [ ] All TMDL files use TAB indentation (not spaces)
 - [ ] All object names follow naming conventions
+- [ ] No TMDL-level comments (`///`, `//`) exist (causes parsing errors)
+
+### Data Types & Column Properties (BPA Compliance)
 - [ ] All surrogate keys are `int64` with `summarizeBy: none`
 - [ ] All fact columns that are FKs are `isHidden` and `isAvailableInMDX: false` (BPA)
 - [ ] All numeric columns use `dataType: decimal` not `double` (BPA)
 - [ ] All columns have `summarizeBy: none` (BPA)
 - [ ] All numeric columns have `formatString` property (BPA)
-- [ ] All relationships are single-directional unless RLS required (BPA)
 - [ ] No calculated columns in large fact tables (BPA)
 - [ ] No reserved keywords in object names (BPA)
-- [ ] All partition sources point to correct CSV file paths
+
+### Relationships & Model Structure
+- [ ] All relationships are single-directional unless RLS required (BPA)
 - [ ] Relationship `fromColumn`/`toColumn` reference existing columns
+- [ ] No ambiguous relationship paths (fact → dimension via multiple routes)
 - [ ] `Dim_Date` has `isKey` on `DateKey` AND column named `Date` for time intelligence (BPA)
-- [ ] CRITICAL: All `lineageTag` and relationship GUIDs are unique UUIDv4 strings.
-- [ ] CRITICAL: No cyclic or repeating hex patterns (like `d1e2f3a...`) exist in any generated GUID.
+
+### Refresh Strategy Configuration (NEW)
+- [ ] **Refresh frequency confirmed** with user (Section 9.1 of spec)
+- [ ] **Storage mode** matches requirements:
+  - [ ] Import mode: CSV paths correct for mock data (Step 05)
+  - [ ] DirectQuery mode: Source connection parameters defined in `expressions.tmdl`
+  - [ ] Composite mode: Correct `mode:` property set per table
+- [ ] **Incremental refresh** (if required):
+  - [ ] `RangeStart` and `RangeEnd` parameters defined in `expressions.tmdl`
+  - [ ] Audit field (LastModifiedDate) exists in fact table
+  - [ ] Partition M query includes filter step: `Table.SelectRows(..., each [AuditField] >= RangeStart and [AuditField] < RangeEnd)`
+- [ ] **Data volumes** considered in partition design (< 1M: full refresh, > 1M: incremental)
+
+### GUIDs & Lineage Tags
+- [ ] CRITICAL: All `lineageTag` and relationship GUIDs are unique UUIDv4 strings
+- [ ] CRITICAL: No cyclic or repeating hex patterns (like `d1e2f3a...`) exist in any generated GUID
+
+### File Paths & References
+- [ ] All partition sources point to correct file paths (CSV for mock, DB for production)
+- [ ] If using `DataPath` parameter, all partitions reference it consistently
 
 ## ⚠️ Post-Generation: Universal Script Execution (MANDATORY)
 

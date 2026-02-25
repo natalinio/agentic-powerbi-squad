@@ -203,8 +203,57 @@ Examples:
 
 ## 9. Functional Requirements
 
-**Data Refresh Frequency:**
-<How often should data be updated? (e.g., Real-time, Hourly, Daily, Weekly, Monthly)>
+### 9.1 Data Refresh Strategy
+
+> **Why This Matters:** Refresh requirements directly impact the physical model design (Import vs DirectQuery vs Composite, incremental refresh configuration).
+
+**Refresh Frequency:**
+<Select one or describe custom schedule>
+- [ ] Real-time (data updated continuously, < 1 minute latency)
+- [ ] Near Real-time (5-15 minute intervals)
+- [ ] Hourly
+- [ ] Multiple times per day (specify: ___ times)
+- [ ] Daily (specify time: ___)
+- [ ] Weekly
+- [ ] Monthly
+- [ ] On-demand only
+
+**Storage Mode Preference:**
+<Based on refresh frequency and data volume>
+- [ ] **Import Mode** (default for prototyping, best performance, scheduled refresh. RECOMMENDED for most scenarios and prototyping)
+- [ ] **DirectQuery** (real-time queries to source, slower performance, no data caching. In case user wants to prototype using skill 05-mock-data-generation.md, direct query must be discarded given that it is not applicable with CSV)
+- [ ] **Composite/Hybrid** (Import for dimensions, DirectQuery for large facts)
+- [ ] **Undecided** (let agent recommend based on requirements)
+
+**Expected Data Volumes (Production Environment):**
+<Critical for determining refresh strategy>
+
+| Table Type | Table Name | Current Row Count | Expected Growth (12 months) | Estimated Final Size |
+|------------|------------|-------------------|----------------------------|---------------------|
+| Fact | <FactTableName> | <e.g., 10M rows> | <e.g., +5M/year> | <e.g., 50M rows> |
+| Dimension | <DimTableName> | <e.g., 10K rows> | <e.g., +2K/year> | <e.g., 50K rows> |
+
+**Incremental Refresh Requirements:**
+<Required for large fact tables in Import mode>
+- [ ] **Not needed** (small datasets, full refresh acceptable)
+- [ ] **Required** (large fact tables, only refresh recent data)
+  - **Audit Field for Incremental Refresh:** `<ColumnName>` (e.g., `LastModifiedDate`, `TransactionDate`, `CreatedDate`)
+  - **Data Type:** <Date, DateTime, Integer (epoch)>
+  - **Incremental Refresh Window:** <e.g., "Refresh last 7 days", "Refresh current month + last 2 months">
+  - **Historical Archive Window:** <e.g., "Keep last 3 years", "Keep all data">
+
+**Source System Update Pattern:**
+<How does the source system update data?>
+- [ ] **Append-only** (new rows added, existing rows never modified)
+- [ ] **Updates in place** (existing rows modified, requires Last Modified Date tracking)
+- [ ] **Soft deletes** (deleted rows marked with flag, not physically removed)
+- [ ] **Hard deletes** (rows physically removed from source)
+
+**Data Latency Tolerance:**
+<What is the acceptable delay between source update and report availability?>
+<e.g., "Users can work with data up to 24 hours old", "Must reflect source within 5 minutes">
+
+### 9.2 Other Functional Requirements
 
 **Historical Data Retention:**
 <How much historical data is needed? (e.g., "Last 3 years", "All historical data", "Rolling 12 months")>
@@ -252,13 +301,26 @@ Examples:
 
 Before submitting this specification to the `@semantic-modeler` agent, ensure:
 
+### Core Requirements
 - [ ] All sections are filled with project-specific information
 - [ ] KPIs are described functionally (business logic, not DAX code)
 - [ ] Sample data values are provided for all tables
 - [ ] Relationships are clearly defined with cardinality
-- [ ] RLS requirements are specified (or explicitly marked as "Not Required")
 - [ ] Placeholder text in `<angle brackets>` has been replaced
 - [ ] Document is in English (for code generation consistency)
+
+### Refresh Strategy (Section 9.1) — CRITICAL
+- [ ] **Refresh frequency** specified (Real-time, Hourly, Daily, etc.)
+- [ ] **Storage mode preference** selected (Import, DirectQuery, Composite, or Undecided)
+- [ ] **Expected data volumes** provided (current and projected row counts for fact tables)
+- [ ] **Incremental refresh requirements** clarified:
+  - [ ] If applicable: Audit field name specified (e.g., `LastModifiedDate`)
+  - [ ] If not needed: Explicitly marked as "Not needed"
+- [ ] **Source system update pattern** described (Append-only, Updates in place, etc.)
+- [ ] **Data latency tolerance** specified
+
+### Security Requirements (Section 8)
+- [ ] RLS requirements are specified (or explicitly marked as "Not Required")
 
 ---
 
