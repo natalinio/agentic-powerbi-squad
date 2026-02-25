@@ -408,22 +408,7 @@ python .github/scripts/run_tests.py SalesOverview --port 54321 --verbose
 
 ## 🧪 Example Output
 
-### Input: Functional Specification
-```markdown
-# Sales Overview FYTD Report
-
-## KPIs:
-- Sales vs Budget (FYTD)
-- Adjusted Profit %
-- Average Monthly Sales
-
-## Dimensions:
-- Time (Fiscal Year, Fiscal Month)
-- Area, Country, Customer
-- Industry, Salesperson
-```
-
-### Output: Generated Artifacts
+### Generated Artifacts
 
 | Step | Output |
 |------|--------|
