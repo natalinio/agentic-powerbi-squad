@@ -1,0 +1,275 @@
+# Semantic Model Specification Template
+
+> **Instructions:** This template provides a structured format for defining functional requirements for Power BI semantic models. Fill in each section with your project-specific information. Replace placeholder text in `<angle brackets>` with actual content. Delete this instruction block before submitting to the agent.
+
+---
+
+## 1. Report Objective & Target Audience
+
+**Report Objective:**
+<Describe the primary business goal this report will support. What decisions will it enable?>
+
+**Target Audience:**
+<Who will use this report? (e.g., Executive Management, Sales Managers, Financial Analysts, Operations Team)>
+
+**Key Business Questions:**
+- <Question 1 the report should answer>
+- <Question 2 the report should answer>
+- <Question 3 the report should answer>
+
+---
+
+## 2. Key Performance Indicators (KPIs)
+
+> **Note:** Describe KPIs from a **functional perspective**, not technical DAX formulas. Focus on *what* needs to be measured, not *how*.
+
+### KPI 1: <KPI Name>
+- **Description:** <What does this KPI measure?>
+- **Business Logic:** <How is it calculated in business terms? (e.g., "Total revenue minus total costs")>
+- **Format:** <Currency, Percentage, Decimal, Integer>
+- **Time Intelligence:** <Current Period, YTD, Prior Year, % Growth, etc.>
+
+### KPI 2: <KPI Name>
+- **Description:** 
+- **Business Logic:** 
+- **Format:** 
+- **Time Intelligence:** 
+
+### KPI 3: <KPI Name>
+- **Description:** 
+- **Business Logic:** 
+- **Format:** 
+- **Time Intelligence:** 
+
+*(Add more KPIs as needed)*
+
+---
+
+## 3. Data Groupings & Segmentations
+
+**Primary Groupings:**
+<Describe how data should be grouped or segmented for analysis>
+
+Examples:
+- By **Geography**: Region → Country → City
+- By **Customer**: Industry → Customer Segment → Individual Customer
+- By **Product**: Category → Subcategory → Product
+- By **Time**: Year → Quarter → Month → Day
+
+**Expected Granularity:**
+<What is the lowest level of detail needed? (e.g., "Individual transaction level", "Daily aggregates", "Monthly summaries")>
+
+---
+
+## 4. Filter Dimensions
+
+**Global Filters:**
+<List dimensions that should filter the entire report>
+
+Examples:
+- Fiscal Year
+- Month (single or cumulative YTD)
+- Region / Area
+- Customer Industry
+- Product Category
+- Salesperson
+
+**Report-Specific Filters:**
+<Any filters specific to certain pages or visuals>
+
+---
+
+## 5. Visualization Structure
+
+> **Note:** The agent will NOT generate Power BI visuals, but needs to understand how the model will be used to optimize data structures and relationships.
+
+### Chart 1: <Chart Name>
+- **Type:** <Bar Chart, Line Chart, Combo Chart, Table, Matrix, Bubble Chart, etc.>
+- **Purpose:** <What business insight does this chart provide?>
+- **Dimensions:** <What fields go on rows/columns/axis?>
+- **Measures:** <What KPIs/metrics are displayed?>
+- **Drill Path:** <What drill-down paths are needed? (e.g., Area → Country → Customer)>
+
+### Chart 2: <Chart Name>
+- **Type:** 
+- **Purpose:** 
+- **Dimensions:** 
+- **Measures:** 
+- **Drill Path:** 
+
+### Chart 3: <Chart Name>
+- **Type:** 
+- **Purpose:** 
+- **Dimensions:** 
+- **Measures:** 
+- **Drill Path:** 
+
+*(Add more charts as needed)*
+
+---
+
+## 6. Data Schema & Sample Values
+
+### Table 1: <Fact Table Name>
+
+**Description:** <What business events does this table capture?>
+
+| Column Name | Data Type | Description | Sample Values |
+|-------------|-----------|-------------|---------------|
+| <ColumnName1> | String | <Description> | "ABC123", "XYZ456" |
+| <ColumnName2> | Date | <Description> | 2025-01-15, 2025-02-20 |
+| <ColumnName3> | Decimal | <Description> | 1500.50, 2300.75 |
+| <ColumnName4> | Integer | <Description> | 10, 25, 100 |
+
+### Table 2: <Dimension Table Name>
+
+**Description:** <What master data does this table contain?>
+
+| Column Name | Data Type | Description | Sample Values |
+|-------------|-----------|-------------|---------------|
+| <ColumnName1> | String | <Description> | "Customer A", "Customer B" |
+| <ColumnName2> | String | <Description> | "North", "South", "East", "West" |
+| <ColumnName3> | String | <Description> | "Manufacturing", "Retail" |
+
+### Table 3: <Dimension Table Name>
+
+**Description:**
+
+| Column Name | Data Type | Description | Sample Values |
+|-------------|-----------|-------------|---------------|
+| <ColumnName1> | | | |
+| <ColumnName2> | | | |
+
+*(Add more tables as needed)*
+
+---
+
+## 7. Logical Relationships Between Data
+
+**Relationship 1:**
+- **From:** `<FactTable>[<ForeignKey>]`
+- **To:** `<DimensionTable>[<PrimaryKey>]`
+- **Cardinality:** Many-to-One (N:1)
+- **Business Logic:** <Explain the relationship in business terms>
+
+**Relationship 2:**
+- **From:** `<FactTable>[<ForeignKey>]`
+- **To:** `<DimensionTable>[<PrimaryKey>]`
+- **Cardinality:** Many-to-One (N:1)
+- **Business Logic:** 
+
+**Relationship 3:**
+- **From:** 
+- **To:** 
+- **Cardinality:** 
+- **Business Logic:** 
+
+*(Add more relationships as needed)*
+
+**Special Relationships:**
+<Describe any complex patterns>
+- **Role-Playing Dimensions:** <e.g., "Date table used for OrderDate, ShipDate, DueDate">
+- **Many-to-Many:** <If applicable, describe the bridge table logic>
+- **Self-Referencing Hierarchies:** <e.g., "Employee table with ManagerID referencing same table">
+
+---
+
+## 8. Row-Level Security (RLS) Requirements
+
+**Security Requirement:**
+<Describe who should see what data>
+
+**Security Filters:**
+
+### Filter 1: <Security Role Name>
+- **Affected Table:** `<TableName>`
+- **Logic:** <Describe the filter logic in business terms>
+- **Example:** "Sales Managers see only their assigned region's data"
+- **DAX Concept:** <Optional: provide filter expression if known, e.g., `[Region] = "North"`>
+
+### Filter 2: <Security Role Name>
+- **Affected Table:** 
+- **Logic:** 
+- **Example:** 
+- **DAX Concept:** 
+
+**Dynamic RLS:**
+<If RLS depends on user identity (USERNAME() or USERPRINCIPALNAME()), describe the mapping table structure>
+
+**No RLS Required:**
+<Check this box if all users should see all data: ☐>
+
+---
+
+## 9. Functional Requirements
+
+**Data Refresh Frequency:**
+<How often should data be updated? (e.g., Real-time, Hourly, Daily, Weekly, Monthly)>
+
+**Historical Data Retention:**
+<How much historical data is needed? (e.g., "Last 3 years", "All historical data", "Rolling 12 months")>
+
+**Performance Expectations:**
+<Any specific performance requirements? (e.g., "Report must load in under 5 seconds", "Support 10,000+ customers")>
+
+**Data Quality Rules:**
+<Any data validation or quality checks needed? (e.g., "Sales Amount cannot be negative", "All orders must have a CustomerID")>
+
+**Calculation Dependencies:**
+<Are there calculations that depend on others? (e.g., "Profit % depends on Sales and Cost measures")>
+
+**Time Intelligence Requirements:**
+<Fiscal vs. Calendar Year, Week Start Day (Monday/Sunday), Fiscal Year End Month>
+
+**Multi-Currency Support:**
+<Required? If yes, describe exchange rate logic and reporting currency>
+
+---
+
+## 10. Additional Notes & Constraints
+
+**Technical Constraints:**
+<Any known limitations? (e.g., "Source system has daily aggregates only", "Customer table has 1M+ rows")>
+
+**Business Rules:**
+<Any special business logic or exceptions? (e.g., "Exclude returns from sales metrics", "Bundle products counted as single unit")>
+
+**Future Extensibility:**
+<Anticipated future requirements? (e.g., "May add product dimension later", "Plan to integrate with CRM data")>
+
+**Data Sources:**
+<Where does the data come from? (e.g., "SQL Server database", "CSV exports", "Azure Data Lake", "API")>
+
+**Known Issues or Limitations:**
+<Any data quality issues or missing data to be aware of?>
+
+**References:**
+<Links to existing reports, documentation, or related systems>
+
+---
+
+## Submission Checklist
+
+Before submitting this specification to the `@semantic-modeler` agent, ensure:
+
+- [ ] All sections are filled with project-specific information
+- [ ] KPIs are described functionally (business logic, not DAX code)
+- [ ] Sample data values are provided for all tables
+- [ ] Relationships are clearly defined with cardinality
+- [ ] RLS requirements are specified (or explicitly marked as "Not Required")
+- [ ] Placeholder text in `<angle brackets>` has been replaced
+- [ ] Document is in English (for code generation consistency)
+
+---
+
+**Ready to generate your semantic model?**
+
+Save this file as:
+```
+<YourProjectName>/input/spec_<your_project_name>.md
+```
+
+Then invoke the agent:
+```
+@semantic-modeler <YourProjectName>/input/spec_<your_project_name>.md
+```

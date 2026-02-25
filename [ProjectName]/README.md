@@ -26,6 +26,8 @@ Each project should follow this structure:
 
 ```
 YourProjectName/                    ← Replace with your actual project name
+├── input/                          ← Your specification files
+│   └── spec_your_requirements.md   ← Filled specification (copied from template)
 ├── PBIP/                           ← Power BI Project files
 │   ├── YourProjectName.pbip
 │   ├── YourProjectName.SemanticModel/
@@ -34,13 +36,11 @@ YourProjectName/                    ← Replace with your actual project name
 ├── data/                           ← Generated CSV mock data (Step 05)
 ├── scripts/                        ← Project-specific Python scripts
 │   └── generate_mock_data.py
-├── tests/                          ← Functional test artifacts (Step 07)
-│   ├── tests_definition.json
-│   ├── tests_definition.md
-│   ├── tests_execution.md
-│   └── tests_execution_raw.json
-└── input/                          ← Your specification files
-    └── spec_your_requirements.md
+└── tests/                          ← Functional test artifacts (Step 07)
+    ├── tests_definition.json
+    ├── tests_definition.md
+    ├── tests_execution.md
+    └── tests_execution_raw.json
 ```
 
 ## ⚙️ Setup Instructions
@@ -61,12 +61,27 @@ Before running the agent, create the PBIP canvas:
 
 ### Step 2: Prepare Specifications
 
-Create your specification file:
-```
-YourProjectName/input/spec_your_project.md
-```
+The `input/` folder contains two specification files:
 
-See `[ProjectName]/input/sample_spec.md` for an example structure.
+#### 📋 `specification_template.md` (EMPTY TEMPLATE)
+- **Use this as your starting point** for new projects
+- Structured template in **English** with all required sections
+- Contains instructions and placeholder text (`<angle brackets>`)
+- Fill in your project-specific requirements
+- Copy to your project folder: `YourProjectName/input/spec_your_project.md`
+
+#### 📖 `sample_spec.md` (COMPLETE EXAMPLE)
+- Real-world example: Sales Overview FYTD report
+- Shows how a completed specification should look
+- Written in Italian (demonstrates multilingual support)
+- Reference this for inspiration and structure validation
+
+**Recommended Workflow:**
+1. Copy `specification_template.md` to your project folder
+2. Rename it to `spec_<your_project_name>.md`
+3. Fill in all sections following the template structure
+4. Refer to `sample_spec.md` for examples when needed
+5. Ensure the document is in **English** for optimal code generation
 
 ### Step 3: Invoke Agent
 

@@ -68,25 +68,51 @@ pip install -r requirements.txt
 1. Open Power BI Desktop
 2. Create a blank report
 3. File → Save As → **Power BI Project**
-4. Save in: `<ProjectName>/PBIP/<ProjectName>.pbip`
+4. Save in: `<YourProjectName>/PBIP/<YourProjectName>.pbip` (e.g., `SalesOverview/PBIP/SalesOverview.pbip`)
 5. Close Power BI Desktop
 
 ### Step 4: Prepare Specifications
 
-Create a Markdown file with your requirements:
+> ⚠️ **CRITICAL PREREQUISITE**: The quality of the generated semantic model depends entirely on the completeness and clarity of your functional specification.
 
+#### 📋 Use the Structured Template
+
+1. **Copy the template** from `[ProjectName]/input/specification_template.md` to your project folder
+2. **Rename it** to `<YourProjectName>/input/spec_<your_project_name>.md`
+3. **Fill in ALL sections** following the template structure:
+   - Report objective & target audience
+   - Key Performance Indicators (functional descriptions)
+   - Data groupings & segmentations
+   - Filter dimensions
+   - Visualization structure (charts/tables)
+   - Data schema with **sample values**
+   - Logical relationships between tables
+   - Row-Level Security (RLS) requirements
+   - Functional requirements
+   - Additional notes & constraints
+
+**Example:**
 ```
-<ProjectName>/input/spec_your_project.md
+SalesOverview/input/spec_sales_overview.md
 ```
 
-**Example Template**: See [[ProjectName]/input/sample_spec.md]([ProjectName]/input/sample_spec.md) — Sales Overview FYTD specification (demonstrates required structure and detail level)
+**📖 Reference Materials:**
+- **Empty Template**: [[ProjectName]/input/specification_template.md]([ProjectName]/input/specification_template.md) — Start here
+- **Complete Example**: [[ProjectName]/input/sample_spec.md]([ProjectName]/input/sample_spec.md) — Sales Overview FYTD (Italian, demonstrates required detail level)
+
+**Language Note:** While you can write specifications in your native language (like the Italian example), **writing in English** is recommended for optimal DAX/TMDL code generation consistency.
 
 ### Step 5: Invoke the Agent
 
 Open GitHub Copilot Chat in VS Code and type:
 
 ```
-@semantic-modeler <ProjectName>/input/spec_your_project.md
+@semantic-modeler <YourProjectName>/input/spec_your_project.md
+```
+
+**Example:**
+```
+@semantic-modeler SalesOverview/input/spec_sales_overview.md
 ```
 
 The agent will execute a 7-step workflow:
@@ -103,9 +129,9 @@ Each step requires your approval before proceeding.
 ### Step 6: Open in Power BI Desktop
 
 ```powershell
-# Navigate to project folder
-cd <ProjectName>/PBIP
-# Double-click <ProjectName>.pbip to open in Power BI Desktop
+# Navigate to project folder (example: SalesOverview)
+cd SalesOverview/PBIP
+# Double-click SalesOverview.pbip to open in Power BI Desktop
 ```
 
 Refresh the data → Validate model visually → Build reports!
@@ -119,7 +145,7 @@ aisemanticlayer/
 ├── .github/                           # Agentic system core (universal, project-agnostic)
 │   ├── copilot-instructions.md        # Global instructions for GitHub Copilot
 │   ├── agents/
-│   │   └── semantic-modeler.agent.md  # Main invocable agent (@semantic-modeler)
+│   │   └── semantic-modeler.agent.md  # Main invocable agent
 │   ├── skills/                        # Step-by-step execution skills (7 files)
 │   │   ├── 01-requirements-analysis.md
 │   │   ├── 02-logical-model.md
@@ -136,39 +162,73 @@ aisemanticlayer/
 │   │   ├── relationship-patterns.md
 │   │   ├── dax-optimization-framework.md
 │   │   └── bpa-rules-reference.md
-│   └── scripts/                       # Universal tools (project-agnostic)
-│       ├── fix_lineage_tags.py        # GUID lineageTag regeneration
-│       ├── remove_tmdl_comments.py    # TMDL comment removal
-│       └── run_tests.py               # Automated test execution engine
-├── .venv/                             # Python virtual environment (root-level)
-├── requirements.txt                   # Python dependencies for all steps
-└── <ProjectName>/                     # Project folder (1 per project)
-    ├── PBIP/                          # Power BI files ONLY (canvas)
-    │   ├── <ProjectName>.pbip
-    │   ├── <ProjectName>.SemanticModel/
-    │   │   └── definition/            # TMDL files go here
+│   ├── scripts/                       # Universal tools (project-agnostic)
+│   │   ├── fix_lineage_tags.py        # GUID lineageTag regeneration
+│   │   ├── remove_tmdl_comments.py    # TMDL comment removal
+│   │   └── run_tests.py               # Automated test execution engine
+│   └── prompts/                       # Reusable prompt files
+│
+├── .gitignore                         # Git ignore rules
+├── .venv/                             # Python virtual environment (shared by all projects)
+├── requirements.txt                   # Python dependencies for all workflow steps
+├── CHANGELOG.md                       # Version history and release notes
+├── CODE_OF_CONDUCT.md                 # Project code of conduct
+├── CONTRIBUTING.md                    # Contribution guidelines
+├── LICENSE                            # MIT License
+├── PUBLISHING.md                      # Publishing and release guidelines
+├── README.md                          # This file
+├── SECURITY.md                        # Security policy
+├── STRUCTURE_VERIFICATION.md          # Repository structure validation
+│
+├── [ProjectName]/                     # 📌 TEMPLATE FOLDER (example structure)
+│   ├── README.md                      # Template usage instructions
+│   ├── input/
+│   │   ├── specification_template.md  # 📋 EMPTY TEMPLATE (start here)
+│   │   └── sample_spec.md             # 📖 COMPLETE EXAMPLE (Sales Overview FYTD)
+│   ├── PBIP/                          # (empty - created by user in Power BI Desktop)
+│   ├── data/                          # (empty - populated by Step 05)
+│   ├── scripts/                       # (empty - populated by Step 05)
+│   └── tests/                         # (empty - populated by Step 07)
+│
+└── <YourProjectName>/                 # 🚀 YOUR PROJECT FOLDERS (create one per semantic model)
+    ├── input/
+    │   └── spec_your_requirements.md  # Your functional specifications
+    ├── PBIP/
+    │   ├── <YourProjectName>.pbip
+    │   ├── <YourProjectName>.SemanticModel/
+    │   │   └── definition/            # TMDL files generated by agent
     │   │       ├── model.tmdl
     │   │       ├── database.tmdl
     │   │       ├── tables/
+    │   │       │   ├── Dim_*.tmdl
+    │   │       │   ├── Fact_*.tmdl
+    │   │       │   └── _Measures.tmdl
     │   │       ├── relationships.tmdl
-├── [ProjectName]/                     # Template folder (example structure, see [ProjectName]/README.md)
-└── <ProjectName>/                     # Your project folders (create one per semantic model
-    │   └── <ProjectName>.Report/
+    │   │       └── expressions.tmdl
+    │   └── <YourProjectName>.Report/
     ├── data/                          # Generated CSV mock data (Step 05)
+    │   ├── Dim_*.csv
+    │   └── Fact_*.csv
     ├── scripts/                       # Project-specific scripts
     │   └── generate_mock_data.py      # Faker-based data generation
-    ├── tests/                         # Functional test artifacts (Step 07)
-    │   ├── tests_definition.json      # Test case definitions
-    │   ├── tests_definition.md        # Manual test guide
-    │   ├── tests_execution.md         # Test results report
-    │   └── tests_execution_raw.json   # Raw test results
-    └── input/                         # User specifications & inputs
-        └── <spec_file>.md
+    └── tests/                         # Functional test artifacts (Step 07)
+        ├── tests_definition.json      # Test case definitions
+        ├── tests_definition.md        # Manual test guide
+        ├── tests_execution.md         # Test results report
+        └── tests_execution_raw.json   # Raw test results
 ```
 
-### 📌 About `<ProjectName>` Placeholder
+### 📌 About Project Names
 
-Throughout this documentation, **`<ProjectName>`** is a **placeholder** representing your actual project name.
+**`[ProjectName]`** (with square brackets) = **Template folder** in this repository
+- Located at repository root: `[ProjectName]/`
+- Contains example files: `input/sample_spec.md`, empty folders (`PBIP/`, `data/`, `scripts/`, `tests/`)
+- Purpose: Reference structure for creating new projects
+- **Do NOT use this folder for real projects**
+
+**`<YourProjectName>`** (with angle brackets) = **Your actual project folders**
+- Create at repository root with your project name (e.g., `SalesOverview/`, `FinanceReportFYTD/`)
+- Each project is independent and isolated
 
 **Examples of real project names:**
 - `SalesOverview`
@@ -176,17 +236,16 @@ Throughout this documentation, **`<ProjectName>`** is a **placeholder** represen
 - `CustomerAnalytics`
 - `InventoryDashboard`
 
-**Template Folder:**
-The repository includes a **`[ProjectName]`** folder as a **template/example** demonstrating the expected structure. This is NOT a working project — it's a blueprint for creating your own projects.
-
 **To create a new project:**
 1. Create a folder with your project name at repository root (e.g., `SalesOverview/`)
-2. Create subfolders: `PBIP/`, `data/`, `scripts/`, `tests/`, `input/`
-3. Create PBIP canvas in Power BI Desktop → Save as `SalesOverview/PBIP/SalesOverview.pbip`
-4. Add your specifications in `SalesOverview/input/spec_your_requirements.md`
-5. Invoke agent: `@semantic-modeler SalesOverview/input/spec_your_requirements.md`
+2. Create subfolders: `input/`, `PBIP/`, `data/`, `scripts/`, `tests/`
+3. **Copy specification template** from `[ProjectName]/input/specification_template.md` to `SalesOverview/input/`
+4. **Fill in the specification** with your requirements (rename to `spec_sales_overview.md`)
+5. Create PBIP canvas in Power BI Desktop → File → Save As → Power BI Project
+6. Save as: `SalesOverview/PBIP/SalesOverview.pbip`
+7. Invoke agent: `@semantic-modeler SalesOverview/input/spec_sales_overview.md`
 
-**See `[ProjectName]/README.md` for detailed template instructions.**
+**See [`[ProjectName]/README.md`]([ProjectName]/README.md) for detailed template instructions.**
 
 ---
 
@@ -231,6 +290,38 @@ User Specification (Markdown)
 Power BI Semantic Model (PBIP/TMDL)
 ```
 
+### 🎯 The Specification: Your Sacred Grail
+
+The **functional specification** is the **single most critical input** to the agentic workflow. The quality, completeness, and clarity of your specification **directly determines** the quality of the generated semantic model.
+
+**Why the specification is critical:**
+- 🎯 **Source of Truth**: All KPIs, relationships, and business logic derive from it
+- 🔍 **Anti-Hallucination**: Prevents the agent from making assumptions about undefined requirements
+- 📐 **Design Decisions**: Guides data modeling choices (star schema, granularity, hierarchies)
+- 🧪 **Test Foundation**: Automated tests validate against specification requirements
+- 📝 **Documentation**: Becomes living documentation for the semantic model
+
+**Required Structure** (use `specification_template.md`):
+1. **Report Objective & Audience** → Defines scope and use cases
+2. **KPI Definitions** (functional, not technical) → Drives DAX measure generation
+3. **Data Groupings & Segmentations** → Defines dimension hierarchies
+4. **Filter Dimensions** → Determines dimension table design
+5. **Visualization Structure** → Informs relationship optimization
+6. **Data Schema with Sample Values** → Defines physical table structure
+7. **Logical Relationships** → Ensures correct cardinality and cross-filtering
+8. **RLS Requirements** → Security architecture
+9. **Functional Requirements** → Time intelligence, refresh frequency, performance
+10. **Additional Constraints** → Technical limitations, business rules
+
+**Without a complete specification, the agent CANNOT:**
+- Generate accurate DAX measures
+- Design optimal relationships
+- Create appropriate dimension hierarchies
+- Validate functional correctness
+- Ensure security requirements
+
+**📖 See the template**: [`[ProjectName]/input/specification_template.md`]([ProjectName]/input/specification_template.md)
+
 ### Anti-Hallucination Strategy
 
 The agent uses **MCP tools** to verify syntax before code generation:
@@ -258,24 +349,44 @@ This ensures **100% accuracy** in TMDL syntax (whitespace-sensitive, tab-indente
 ### Custom Project Initialization
 
 ```
-@semantic-modeler <ProjectName>/input/spec_custom_project.md
+@semantic-modeler <YourProjectName>/input/spec_custom_project.md
+```
+
+**Example:**
+```
+@semantic-modeler FinanceReportFYTD/input/spec_finance_report.md
 ```
 
 ### Manual Script Execution
 
 #### Fix LineageTags (After TMDL Generation)
 ```powershell
-python .github/scripts/fix_lineage_tags.py <ProjectName>
+python .github/scripts/fix_lineage_tags.py <YourProjectName>
+```
+
+**Example:**
+```powershell
+python .github/scripts/fix_lineage_tags.py SalesOverview
 ```
 
 #### Remove TMDL Comments (If Parsing Errors)
 ```powershell
-python .github/scripts/remove_tmdl_comments.py <ProjectName>
+python .github/scripts/remove_tmdl_comments.py <YourProjectName>
+```
+
+**Example:**
+```powershell
+python .github/scripts/remove_tmdl_comments.py SalesOverview
 ```
 
 #### Run Functional Tests
 ```powershell
-python .github/scripts/run_tests.py <ProjectName> --port 12345 --verbose
+python .github/scripts/run_tests.py <YourProjectName> --port 12345 --verbose
+```
+
+**Example:**
+```powershell
+python .github/scripts/run_tests.py SalesOverview --port 54321 --verbose
 ```
 
 ### Extending the System
