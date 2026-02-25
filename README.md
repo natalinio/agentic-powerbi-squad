@@ -310,8 +310,14 @@ The **functional specification** is the **single most critical input** to the ag
 6. **Data Schema with Sample Values** → Defines physical table structure
 7. **Logical Relationships** → Ensures correct cardinality and cross-filtering
 8. **RLS Requirements** → Security architecture
-9. **Functional Requirements** → Time intelligence, refresh frequency, performance
+9. **Functional Requirements** → **CRITICAL**: Refresh strategy (frequency, storage mode, incremental refresh, data volumes), time intelligence, performance
 10. **Additional Constraints** → Technical limitations, business rules
+
+**⚠️ Section 9 (Refresh Strategy) is MANDATORY:**
+- Without refresh frequency → Agent cannot determine Import vs DirectQuery
+- Without data volumes → Agent cannot configure incremental refresh
+- Without audit fields → Agent cannot set up incremental refresh partitions
+- Incomplete refresh strategy = Suboptimal or incorrect physical model design
 
 **Without a complete specification, the agent CANNOT:**
 - Generate accurate DAX measures
