@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "a9aab6ba0920cab741a1",
+  "position": {
+    "x": 985,
+    "y": 48,
+    "z": 9000,
+    "width": 280,
+    "height": 85,
+    "tabOrder": 9
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Adjusted Profit %"
+                }
+              },
+              "queryRef": "_Measures.Adjusted Profit %",
+              "nativeQueryRef": "Adjusted Profit %"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {},
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card - Adjusted Profit %'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

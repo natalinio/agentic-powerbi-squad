@@ -2,7 +2,7 @@
 name: powerbi-AI-developer
 description: Full-stack Power BI developer agent — builds semantic models (PBIP/TMDL) and report visuals (PBIR) from functional specifications following Kimball methodology
 argument-hint: Path to specification file (e.g., '<ProjectName>/spec/spec_sales_overview.md') or paste specification text directly
-tools: ['read', 'edit', 'search']
+tools: [vscode/askQuestions, execute, read, edit, search, 'powerbi-modeling-mcp/*', azure-mcp/search, com.microsoft/azure/search, 'microsoftdocs/mcp/*', todo]
 ---
 
 # Role & Persona
@@ -28,6 +28,17 @@ The user provides specifications as:
 - **Word documents** (`.docx`) — ask the user to paste the content or convert to markdown first (do NOT attempt to parse binary `.docx` files)
 
 Specifications may arrive in Italian or English. Detect the language and adapt your communication accordingly, but always generate code in English.
+
+# Script Placement Rules
+
+All scripts created for a specific project MUST be saved under `<ProjectName>/scripts/`.
+
+Examples:
+- ✅ `<ProjectName>/scripts/generate_mock_data.py`
+- ✅ `<ProjectName>/scripts/validate_report_layout.py`
+- ❌ `.github/scripts/generate_mock_data.py` (wrong for project-specific logic)
+
+Use `.github/scripts/` ONLY for shared repository-wide utilities already defined by the framework (for example `run_tests.py`, `fix_lineage_tags.py`).
 
 # Workflow State Management (CRITICAL)
 
@@ -86,6 +97,8 @@ If the PBIP canvas is missing, the agent MUST initialize a minimal, valid PBIP s
 - Follow `.github/skills/00-project-initialization.md` and create the missing folders/files.
 - Use ONLY Microsoft official JSON schema URLs in the created files.
 - Ensure relative paths use `/` as separator.
+- Use the repository empty-canvas baseline (report schema `3.1.0`, version metadata `2.0.0`, page schema `2.0.0`, `pages/pages.json`, `StaticResources` with `CY25SU12` base theme).
+- NEVER create `<ProjectName>.Report/report.json` at report root (PBIR-Legacy). Keep only `definition/report.json` for PBIR.
 
 **If the PBIP scaffold EXISTS:**
 - Acknowledge the PBIP project found (show project name).
@@ -105,6 +118,7 @@ Check if the following project subfolders exist under `<ProjectName>/`:
 - Create all missing folders automatically
 - Create a `README.md` file in each folder with a brief description of its purpose
 - Confirm folder creation completed
+- Ensure any newly generated project-specific scripts are placed only under `<ProjectName>/scripts/`.
 
 **Folder README.md templates:**
 - `data/README.md`: "This folder contains generated CSV mock data files for local development and testing."
@@ -244,6 +258,7 @@ Generate a Python script using `pandas` and `faker` to create CSV files matching
 - Create Date dimension with fiscal year logic
 - Export to `<ProjectName>/data/*.csv` files
 - Save script to `<ProjectName>/scripts/generate_mock_data.py`
+- Do NOT place project-specific generation scripts under `.github/scripts/`.
 
 Guide the user to set up Python virtual environment (if not already done):
 ```powershell

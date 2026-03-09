@@ -1,0 +1,5 @@
+expression DataPath = "C:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer\SalesOverview\data" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 9b0d6e76-509a-4bd1-a689-428588711d68
+
+	annotation PBI_ResultType = Text
+

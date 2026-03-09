@@ -8,6 +8,12 @@ Before starting report implementation:
 1. ✅ Step 8 completed and approved — `<ProjectName>/spec/report_blueprint.json` exists on disk.
 2. ✅ Semantic Model exists — `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/` contains valid TMDL files.
 3. ✅ PBIP Report scaffold exists — `<ProjectName>/PBIP/<ProjectName>.Report/definition/` folder exists (created in Step 00).
+4. ✅ Empty-canvas report baseline is intact before adding visuals:
+   - `definition/report.json` uses the current baseline schema and theme resources.
+   - `definition/version.json` and `definition/pages/pages.json` exist.
+   - At least one page folder exists and is referenced by `pages.json`.
+   - `StaticResources/SharedResources/BaseThemes/CY25SU12.json` exists.
+   - `<ProjectName>.Report/report.json` at report root does NOT exist.
 
 ## Context Flushing Rule
 
@@ -21,11 +27,16 @@ When starting this step, the agent MUST:
 Before generating ANY PBIR JSON:
 1. **READ** `.github/references/pbir-visual-templates.md` for validated visual JSON templates.
 2. **READ** `.github/references/pbip-folder-structure.md` for correct folder hierarchy.
-3. If uncertain about any PBIR schema, use `microsoft_docs_search` MCP tool with queries like:
+3. **VERIFY** all PBIR visual structures against the **official Microsoft documentation**:
+   - **Primary reference**: https://learn.microsoft.com/en-us/power-bi/developer/projects/projects-report
+   - **PBIR schema source**: `https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json`
+4. If uncertain about any PBIR schema, use `microsoft_docs_search` MCP tool with queries like:
    - `"Power BI PBIR page definition schema"`
    - `"Power BI PBIR visual container schema"`
    - `"Power BI report definition JSON format"`
-4. Use `microsoft_docs_fetch` for full documentation pages when search results are insufficient.
+5. Use `microsoft_docs_fetch` for full documentation pages when search results are insufficient.
+
+> **CRITICAL**: NEVER invent or guess PBIR JSON structures. Always validate against Microsoft official documentation or the template reference file. In the current baseline, `drillFilterOtherVisuals` belongs to `visual` and cards use `visualType: cardVisual` with `queryState.Data`.
 
 ## Anti-Hallucination Protocol
 
@@ -73,14 +84,16 @@ Use the page template from `.github/references/pbir-visual-templates.md`:
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.0.0/schema.json",
+   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
   "name": "<pageId>",
   "displayName": "<displayName from blueprint>",
-  "displayOption": "<displayOption from blueprint>",
-  "width": <width from blueprint>,
-  "height": <height from blueprint>
+   "displayOption": "FitToPage",
+  "height": <height from blueprint>,
+  "width": <width from blueprint>
 }
 ```
+
+> **CRITICAL**: The PBIR page schema `2.0.0` does NOT allow additional properties. Only use the 6 properties shown above. Do NOT add `ordinal` or any other custom property — Power BI Desktop enforces strict schema validation and rejects unknown properties with `AdditionalProperties` error.
 
 **File location**: `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/page.json`
 
@@ -109,14 +122,27 @@ Where `<visualId>` matches the `visualId` from the blueprint (e.g., `visual_01`,
    - `position`: Map `x`, `y`, `width`, `height` from the blueprint's `position` object. Set `z` based on visual order (increment by 1000 for each visual). Set `tabOrder` to the visual's index.
    - `visual.visualType`: The PBIR visual type (from mapping table).
    - `visual.query.queryState`: Map measures and fields from the blueprint to the correct PBIR query structure:
-     - **Measures** → `Values` projections with `Measure` field type, `Entity` = `_Measures`.
+       - **Card measures** → `Data` projections with `Measure` field type, `Entity` = `_Measures`.
+       - **Table/Slicer values** → `Values` projections.
      - **Axis/Category fields** → `Category` projections with `Column` field type.
      - **Legend fields** → `Series` projections with `Column` field type.
+       - **Combo chart** → `Y` (column values) + `Y2` (line values).
+       - **Scatter chart** → `X`, `Y`, `Size`, optional `Series`.
      - **Row fields (matrix)** → `Rows` projections.
      - **Column group fields (matrix)** → `Columns` projections.
-   - `visualContainerObjects.title`: Set the visual title from the blueprint.
+    - `visual.drillFilterOtherVisuals`: set `true` as baseline behavior.
+    - `filterConfig`: optional for handcrafted files; Desktop may generate it automatically on save.
 
 4. **Validate**: Ensure every `Entity` value matches a TMDL table name and every `Property` value matches a column or measure name.
+
+5. **Selection/Layer Metadata Naming (MANDATORY)**:
+    - For every visual, set `visual.visualContainerObjects.title[0].properties.text.expr.Literal.Value` using this pattern:
+       - `'<ComponentName> - <DataOrMetadataReference>'`
+    - Examples:
+       - `'Slicer - FiscalYear'`
+       - `'Card - Sales Amount FYTD'`
+       - `'Chart - Sales Amount vs Budget Amount by FiscalMonth'`
+    - The label MUST be unique within the page and must help identify objects in the Selection pane for layer order/tab order management.
 
 **File location**: `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/visuals/<visualId>/visual.json`
 
@@ -142,6 +168,8 @@ If the blueprint specifies navigation bookmarks, themes, or other report-level s
 
 For basic reports, the existing `report.json` from Step 00 is sufficient.
 
+> **CRITICAL**: During Step 9, do NOT downgrade or rewrite the Step 00 report baseline (`report.json`, `version.json`, `pages/pages.json`, page schema family, `StaticResources`) unless explicitly requested by the user and validated against a Desktop-generated reference.
+
 ---
 
 ## Error Handling
@@ -163,6 +191,10 @@ For basic reports, the existing `report.json` from Step 00 is sufficient.
 4. **Position Overlap**:
    - **Cause**: Multiple visuals have overlapping positions.
    - **Action**: Adjust positions to avoid overlap. Use the blueprint's position values as guidelines, but ensure no two visuals share the same pixel space.
+
+5. **Runtime Load Error (`visualContainers`)**:
+   - **Cause**: Structurally valid files but unstable visual payload generated in bulk.
+   - **Action**: Reset to empty visual canvas and reintroduce visuals incrementally (first slicer + card, then reopen Desktop, then next batch).
 
 ---
 

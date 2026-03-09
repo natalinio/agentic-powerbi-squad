@@ -1,0 +1,97 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "c8cc828f4a2508deb705",
+  "position": {
+    "x": 10,
+    "y": 142,
+    "z": 10000,
+    "width": 620,
+    "height": 270,
+    "tabOrder": 10
+  },
+  "visual": {
+    "visualType": "lineClusteredColumnComboChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Date"
+                    }
+                  },
+                  "Property": "FiscalMonth"
+                }
+              },
+              "queryRef": "Dim_Date.FiscalMonth",
+              "nativeQueryRef": "FiscalMonth"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Sales Amount"
+                }
+              },
+              "queryRef": "_Measures.Sales Amount",
+              "nativeQueryRef": "Sales Amount"
+            }
+          ]
+        },
+        "Y2": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Budget Amount"
+                }
+              },
+              "queryRef": "_Measures.Budget Amount",
+              "nativeQueryRef": "Budget Amount"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {},
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Chart - Sales Amount and Budget Amount by FiscalMonth'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

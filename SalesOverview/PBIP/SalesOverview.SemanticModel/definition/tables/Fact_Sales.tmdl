@@ -1,0 +1,77 @@
+table Fact_Sales
+	lineageTag: 4622e987-a4e2-4f09-9285-0e0c87f9856c
+
+	column SalesId
+		dataType: string
+		lineageTag: 9cbf052d-2ed5-4a5d-9595-0b3a62347f93
+		summarizeBy: none
+		sourceColumn: SalesId
+
+	column DateKey
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 29770fc6-a9b8-42c5-9519-5e34547a8149
+		summarizeBy: none
+		sourceColumn: DateKey
+
+	column AreaKey
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 33807421-4510-48c0-9925-9b436873c982
+		summarizeBy: none
+		sourceColumn: AreaKey
+
+	column CustomerKey
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: cee11de0-b5c4-4a9d-b53e-0a439cea26ea
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+	column IndustryKey
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: ebb087ba-4158-4992-92af-be9c4477c511
+		summarizeBy: none
+		sourceColumn: IndustryKey
+
+	column SalespersonKey
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 465aee2f-610d-48ff-8f09-ffc5c3d66b6a
+		summarizeBy: none
+		sourceColumn: SalespersonKey
+
+	column SalesAmountLC
+		dataType: double
+		formatString: #,##0.00
+		lineageTag: 5eff656b-b789-4e55-857b-ce65124c8b23
+		summarizeBy: sum
+		sourceColumn: SalesAmountLC
+
+		annotation SummarizationSetBy = Automatic
+
+	column AdjustedProfitLC
+		dataType: double
+		formatString: #,##0.00
+		lineageTag: 19817c56-e63a-4e4f-9e1b-aa224ee23af7
+		summarizeBy: sum
+		sourceColumn: AdjustedProfitLC
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fact_Sales = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(File.Contents(DataPath & "\fact_sales.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+					PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {{"SalesId", type text}, {"DateKey", Int64.Type}, {"AreaKey", Int64.Type}, {"CustomerKey", Int64.Type}, {"IndustryKey", Int64.Type}, {"SalespersonKey", Int64.Type}, {"SalesAmountLC", type number}, {"AdjustedProfitLC", type number}})
+				in
+					ChangedTypes
+

@@ -1,0 +1,141 @@
+table _Measures
+	lineageTag: b5d04e3a-8e7f-4b12-9dc8-a3f5b7c19d60
+
+	measure 'Sales Amount' = SUM(Fact_Sales[SalesAmountLC])
+		formatString: #,##0.00
+		displayFolder: Sales
+		lineageTag: 7e4a1c93-b6d2-4f87-9a3e-d8c50b2f16a4
+
+	measure 'Budget Amount' = SUM(Fact_Budget[BudgetAmountLC])
+		formatString: #,##0.00
+		displayFolder: Budget
+		lineageTag: 3f8b2d04-c7e3-4098-ab4f-e9d61c3a27b5
+
+	measure 'Adjusted Profit' = SUM(Fact_Sales[AdjustedProfitLC])
+		formatString: #,##0.00
+		displayFolder: Profitability
+		lineageTag: 9a5c3e15-d8f4-41a9-bc50-fa072d4b38c6
+
+	measure 'Sales Amount FYTD' =
+			VAR FYTDSales =
+				CALCULATE(
+					[Sales Amount],
+					DATESYTD(Dim_Date[Date], "6/30")
+				)
+			RETURN
+				FYTDSales
+		formatString: #,##0.00
+		displayFolder: Time Intelligence
+		lineageTag: 2b6d4f26-e905-42ba-8d61-0b183e5c49d7
+
+	measure 'Budget Amount FYTD' =
+			VAR FYTDBudget =
+				CALCULATE(
+					[Budget Amount],
+					DATESYTD(Dim_Date[Date], "6/30")
+				)
+			RETURN
+				FYTDBudget
+		formatString: #,##0.00
+		displayFolder: Time Intelligence
+		lineageTag: 8c7e5037-fa16-43cb-9e72-1c294f6d5ae8
+
+	measure 'Adjusted Profit FYTD' =
+			VAR FYTDProfit =
+				CALCULATE(
+					[Adjusted Profit],
+					DATESYTD(Dim_Date[Date], "6/30")
+				)
+			RETURN
+				FYTDProfit
+		formatString: #,##0.00
+		displayFolder: Time Intelligence
+		lineageTag: 4d8f6148-0b27-44dc-af83-2d3a5078b6f9
+
+	measure 'Sales vs Budget' =
+			VAR ActualSales = [Sales Amount FYTD]
+			VAR BudgetTarget = [Budget Amount FYTD]
+			VAR SalesBudgetVariance = ActualSales - BudgetTarget
+			RETURN
+				SalesBudgetVariance
+		formatString: #,##0.00
+		displayFolder: Budget
+		lineageTag: 5e907259-1c38-45ed-9094-3e4b618c7c0a
+
+	measure 'Sales vs Budget %' =
+			VAR ActualSales = [Sales Amount FYTD]
+			VAR BudgetTarget = [Budget Amount FYTD]
+			VAR VariancePct = DIVIDE(ActualSales - BudgetTarget, BudgetTarget, 0)
+			RETURN
+				VariancePct
+		formatString: 0.00%
+		displayFolder: Budget
+		lineageTag: 6fa1836a-2d49-46fe-a1a5-4f5c729d8d1b
+
+	measure 'Adjusted Profit %' =
+			VAR ProfitFYTD = [Adjusted Profit FYTD]
+			VAR SalesFYTD = [Sales Amount FYTD]
+			VAR ProfitPct = DIVIDE(ProfitFYTD, SalesFYTD, 0)
+			RETURN
+				ProfitPct
+		formatString: 0.00%
+		displayFolder: Profitability
+		lineageTag: 70b2947b-3e5a-4700-b2b6-507d83ae9e2c
+
+	measure 'Avg Monthly Sales' =
+			VAR TotalSalesFYTD = [Sales Amount FYTD]
+			VAR MonthCount =
+				CALCULATE(
+					DISTINCTCOUNT(Dim_Date[FiscalYearMonth]),
+					DATESYTD(Dim_Date[Date], "6/30")
+				)
+			VAR AvgSales = DIVIDE(TotalSalesFYTD, MonthCount, 0)
+			RETURN
+				AvgSales
+		formatString: #,##0.00
+		displayFolder: Sales
+		lineageTag: 81c3a58c-4f6b-4811-8dc7-618e94bf0f3d
+
+	measure 'Budget Status' =
+			VAR ActualSales = [Sales Amount FYTD]
+			VAR BudgetTarget = [Budget Amount FYTD]
+			VAR Ratio = DIVIDE(ActualSales, BudgetTarget, 0)
+			RETURN
+				SWITCH(
+					TRUE(),
+					Ratio >= 1, "Above Target",
+					Ratio >= 0.95, "Close to Target",
+					"Below Target"
+				)
+		displayFolder: KPIs
+		lineageTag: 92d4b69d-5a7c-4922-9ed8-729fa5c01a4e
+
+	measure 'Budget Status Color' =
+			VAR BudgetStatusValue = [Budget Status]
+			RETURN
+				SWITCH(
+					BudgetStatusValue,
+					"Above Target", "#2ECC71",
+					"Close to Target", "#F39C12",
+					"Below Target", "#E74C3C",
+					"#95A5A6"
+				)
+		displayFolder: KPIs
+		lineageTag: a3e5c7ae-6b8d-4a33-afe9-83a0b6d12b5f
+
+	column MeasuresColumn
+		dataType: string
+		lineageTag: 4872606d-4659-44a4-b72f-0f7a02b6c0db
+		summarizeBy: none
+		sourceColumn: MeasuresColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+					Source = #table({"MeasuresColumn"}, {{""}})
+				in
+					Source
+

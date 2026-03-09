@@ -1,0 +1,25 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_ProTooling = ["TMDL-Extension","DevMode"]
+
+annotation PBI_QueryOrder = ["Dim_Date","Dim_Area","Dim_Customer","Dim_Industry","Dim_Salesperson","Fact_Sales","Fact_Budget","_Measures","DataPath"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+ref table Dim_Date
+ref table Dim_Area
+ref table Dim_Customer
+ref table Dim_Industry
+ref table Dim_Salesperson
+ref table Fact_Sales
+ref table Fact_Budget
+ref table _Measures
+ref table DateTableTemplate_e7133aef-9b77-4b39-ba94-f9e5fe68b79f
+ref table LocalDateTable_da935fe2-0924-4f46-8e26-5b36b783f218
+

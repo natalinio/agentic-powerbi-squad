@@ -48,6 +48,7 @@ Scan the PBIR report definition folder and extract:
   - `Entity` references (table names)
   - `Property` references (column/measure names)
   - `visualType` values
+   - `filterConfig.filters[].field` references (when present)
   - Title text
 
 ---
@@ -74,6 +75,10 @@ For EACH `visual.json` file:
 
 4. **Relationship Reachability**: For visuals that combine fields from multiple tables, verify that the tables are connected through active relationships in `relationships.tmdl`.
    - **WARNING**: Visual uses fields from `Dim_Area` and `Fact_Sales`, but no direct or indirect relationship exists.
+
+5. **FilterConfig Validation**: When `filterConfig` is present, validate `filterConfig.filters[].field` using the same Entity/Property rules above.
+   - **PASS**: `filterConfig` references only valid columns/measures.
+   - **FAIL**: `filterConfig` contains unknown field references.
 
 #### Output Format for Field Validation
 
@@ -107,7 +112,8 @@ For EACH `visual.json` file:
    - **FAIL**: Blueprint defines 5 visuals for Page2, PBIR has 3 visual folders — 2 missing.
 
 4. **Visual Types**: Each visual's `visualType` in `visual.json` matches the expected type from the blueprint (after mapping).
-   - **PASS**: Blueprint says `"clusteredBar"`, PBIR says `"clusteredBarChart"`.
+   - **PASS**: Blueprint says `"card"`, PBIR says `"cardVisual"`.
+   - **PASS**: Blueprint says `"clusteredBarChart"`, PBIR says `"clusteredBarChart"`.
    - **FAIL**: Blueprint says `"line"`, PBIR says `"clusteredColumnChart"`.
 
 5. **Measure Coverage**: Every measure referenced in the blueprint's `visuals[].measures[]` appears in at least one `visual.json`.
@@ -141,8 +147,8 @@ For EACH `visual.json` file:
    - **FAIL**: Page has > 12 visuals — will likely cause performance issues.
 
 2. **Title Presence**:
-   - **PASS**: Every visual has a non-empty `title` in `visualContainerObjects`.
-   - **WARNING**: Visual `visual_03` on `Page1` has no title.
+   - **PASS**: Visual title is present either via `visual.visualContainerObjects.title` or handled by default visual caption.
+   - **WARNING**: Visual `visual_03` on `Page1` has no explicit custom title configuration.
 
 3. **Slicer Cardinality**:
    - **PASS**: Slicers reference low-cardinality dimension columns (< 100 unique values).

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "f4b315721c50e963129b",
+  "position": {
+    "x": 10,
+    "y": 420,
+    "z": 12000,
+    "width": 1255,
+    "height": 290,
+    "tabOrder": 12
+  },
+  "visual": {
+    "visualType": "scatterChart",
+    "query": {
+      "queryState": {
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Area"
+                    }
+                  },
+                  "Property": "AreaName"
+                }
+              },
+              "queryRef": "Dim_Area.AreaName",
+              "nativeQueryRef": "AreaName"
+            }
+          ]
+        },
+        "X": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Adjusted Profit %"
+                }
+              },
+              "queryRef": "_Measures.Adjusted Profit %",
+              "nativeQueryRef": "Adjusted Profit %"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Sales Amount FYTD"
+                }
+              },
+              "queryRef": "_Measures.Sales Amount FYTD",
+              "nativeQueryRef": "Sales Amount FYTD"
+            }
+          ]
+        },
+        "Size": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Sales Amount FYTD"
+                }
+              },
+              "queryRef": "_Measures.Sales Amount FYTD",
+              "nativeQueryRef": "Sales Amount FYTD"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {},
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Chart - Sales Amount FYTD vs Adjusted Profit % by AreaName'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

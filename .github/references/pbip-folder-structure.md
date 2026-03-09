@@ -101,6 +101,88 @@ database SalesOverview
 
 **Note**: CompatibilityLevel must match Power BI Desktop version (1600 for December 2025, 1567 for September 2024).
 
+### `version.json` (Report)
+Located at `<ProjectName>.Report/definition/version.json`. Contains the PBIR format version:
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json",
+  "version": "2.0.0"
+}
+```
+
+> **CRITICAL**: The `version` field MUST follow semver format matching regex `^[1-9][0-9]*\.(0|[1-9][0-9]*)\.0$` (e.g., `"1.0.0"`, `"2.0.0"`). Do NOT confuse this with `definition.pbir` / `definition.pbism` which use `"version": "4.0"`. Setting `"4.0"` here causes a fatal regex validation error.
+
+### `report.json`
+Located at `<ProjectName>.Report/definition/report.json`. Contains report-level settings:
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.1.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "CY25SU12",
+      "reportVersionAtImport": {
+        "visual": "2.5.0",
+        "report": "3.1.0",
+        "page": "2.3.0"
+      },
+      "type": "SharedResources"
+    }
+  },
+  "resourcePackages": [
+    {
+      "name": "SharedResources",
+      "type": "SharedResources",
+      "items": [
+        {
+          "name": "CY25SU12",
+          "path": "BaseThemes/CY25SU12.json",
+          "type": "BaseTheme"
+        }
+      ]
+    }
+  ]
+}
+```
+
+> **CRITICAL**: For this repository baseline, keep `report/3.1.0` and `StaticResources` aligned. Downgrading to old minimal report payload can cause runtime rendering failures.
+
+### `pages.json` (Pages Metadata)
+Located at `<ProjectName>.Report/definition/pages/pages.json`:
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  "pageOrder": [
+    "<PageObjectName>"
+  ],
+  "activePageName": "<PageObjectName>"
+}
+```
+
+`<PageObjectName>` is the PBIR page object identifier. It must be unique within the report (it is not a global GUID like TMDL `lineageTag`).
+
+### `page.json`
+Located at `<ProjectName>.Report/definition/pages/<PageId>/page.json`:
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "<PageId>",
+  "displayName": "<Display Name>",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}
+```
+
+> **CRITICAL**: Keep page folder name aligned with `name` and keep `pages.json` synchronized with page ids.
+
+> **Naming convention**: Microsoft PBIR uses object names that are often 20-character unique identifiers by default. Renaming is supported, but you must keep all references aligned.
+
+### `StaticResources` Base Theme
+Located at `<ProjectName>.Report/StaticResources/SharedResources/BaseThemes/CY25SU12.json`.
+
+This file is referenced by `definition/report.json` via `resourcePackages`.
+If missing, theme resolution can fail and destabilize report rendering in Desktop.
+
 ### `relationships.tmdl`
 Contains ALL relationships in a single file:
 ```tmdl
@@ -164,3 +246,4 @@ After saving, the folder structure above is automatically created by Power BI De
 - Power BI Desktop is NOT aware of external file changes. After editing TMDL files externally, **restart Power BI Desktop** to reload.
 - Install the **TMDL VS Code extension** (`analysis-services.TMDL`) for syntax highlighting and basic validation.
 - Invalid TMDL edits cause Power BI Desktop to show an error with the file location on next open.
+- Do NOT mix PBIR and PBIR-Legacy in the same report item: `<ProjectName>.Report/report.json` (root) must not exist when using `definition/` PBIR format.

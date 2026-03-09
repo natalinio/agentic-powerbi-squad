@@ -1,0 +1,28 @@
+table Dim_Salesperson
+	lineageTag: a1e85910-3a1a-4662-982c-74efa9817943
+
+	column SalespersonKey
+		dataType: int64
+		isHidden
+		isKey
+		isAvailableInMdx: false
+		lineageTag: c8759797-6cff-4a01-b43e-ab699b7abbe1
+		summarizeBy: none
+		sourceColumn: SalespersonKey
+
+	column SalespersonName
+		dataType: string
+		lineageTag: 6e435b73-7201-4aea-89f9-8ba6b9e77d19
+		summarizeBy: none
+		sourceColumn: SalespersonName
+
+	partition Dim_Salesperson = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(File.Contents(DataPath & "\dim_salesperson.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+					PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {{"SalespersonKey", Int64.Type}, {"SalespersonName", type text}})
+				in
+					ChangedTypes
+

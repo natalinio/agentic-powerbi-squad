@@ -18,6 +18,8 @@ Before starting report design:
 2. ✅ The specification describes report goals (audience, questions, KPIs, navigation expectations). If missing, ask targeted questions and STOP.
 3. ✅ Model introspection is possible by reading TMDL files.
 
+> **Official Reference**: When designing pages and visual layouts, refer to the Microsoft official PBIR documentation for valid properties and schema constraints: https://learn.microsoft.com/en-us/power-bi/developer/projects/projects-report
+
 ## Step 8 Procedure
 
 ### 8.1 Inputs to Read

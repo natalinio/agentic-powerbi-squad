@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "2c6f192117c9db85e703",
+  "position": {
+    "x": 505,
+    "y": 48,
+    "z": 7000,
+    "width": 230,
+    "height": 85,
+    "tabOrder": 7
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Adjusted Profit FYTD"
+                }
+              },
+              "queryRef": "_Measures.Adjusted Profit FYTD",
+              "nativeQueryRef": "Adjusted Profit FYTD"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {},
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card - Adjusted Profit FYTD'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

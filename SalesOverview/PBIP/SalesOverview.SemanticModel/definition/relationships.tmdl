@@ -1,0 +1,37 @@
+relationship b42e33c9-9d6d-486d-8f1b-7397aad3f8c4
+	fromColumn: Fact_Sales.DateKey
+	toColumn: Dim_Date.DateKey
+
+relationship c53f44da-ae7e-497e-902c-84a8bbd40cd5
+	fromColumn: Fact_Sales.AreaKey
+	toColumn: Dim_Area.AreaKey
+
+relationship d64055eb-bf8f-4a8f-a13d-95b9cce51de6
+	fromColumn: Fact_Sales.CustomerKey
+	toColumn: Dim_Customer.CustomerKey
+
+relationship e75166fc-c090-4b90-b24e-a6caddfe2ef7
+	fromColumn: Fact_Sales.IndustryKey
+	toColumn: Dim_Industry.IndustryKey
+
+relationship f862770d-d1a1-4ca1-835f-b7dbeef33f08
+	fromColumn: Fact_Sales.SalespersonKey
+	toColumn: Dim_Salesperson.SalespersonKey
+
+relationship 0973881e-e2b2-4db2-9460-c8ec0f0440f9
+	fromColumn: Fact_Budget.DateKey
+	toColumn: Dim_Date.DateKey
+
+relationship 1a84992f-f3c3-4ec3-a571-d9fd10155a0a
+	fromColumn: Fact_Budget.AreaKey
+	toColumn: Dim_Area.AreaKey
+
+relationship 2b95aa40-04d4-4fd4-b682-ea0e22a66b1b
+	fromColumn: Fact_Budget.IndustryKey
+	toColumn: Dim_Industry.IndustryKey
+
+relationship 142c333f-9ae1-408f-a3c9-a9785604bab9
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Dim_Date.Date
+	toColumn: LocalDateTable_da935fe2-0924-4f46-8e26-5b36b783f218.Date
+

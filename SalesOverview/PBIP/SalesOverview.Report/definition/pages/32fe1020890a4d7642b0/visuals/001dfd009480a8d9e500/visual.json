@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "001dfd009480a8d9e500",
+  "position": {
+    "x": 10,
+    "y": 48,
+    "z": 5000,
+    "width": 245,
+    "height": 85,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Sales vs Budget"
+                }
+              },
+              "queryRef": "_Measures.Sales vs Budget",
+              "nativeQueryRef": "Sales vs Budget"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {},
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card - Sales vs Budget'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

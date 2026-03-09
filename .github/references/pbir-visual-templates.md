@@ -1,22 +1,29 @@
 # PBIR Visual Templates Reference
 
 ## Purpose
-This document provides validated JSON templates for Power BI Report (PBIR) visual definitions. These templates are the **single source of truth** for generating `visual.json` files in Step 9 (Report Implementation).
+This document provides validated starter templates for Power BI Report (PBIR) `visual.json` files used in Step 9.
 
-**Schema Source**: `https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json`
+**Primary docs**:
+- https://learn.microsoft.com/power-bi/developer/projects/projects-report
+- https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json
 
-> **CRITICAL**: The agent MUST use these templates as the base for all generated visuals. Do NOT invent JSON structures. If a visual type is not covered here, use `microsoft_docs_search` or `microsoft_docs_fetch` MCP tools to find the correct schema.
+## Critical Rules
+
+1. Never invent properties not present in the schema.
+2. Keep all visual references aligned with TMDL object names (`Entity`, `Property`).
+3. Use minimal valid payload first (`visualType`, `query`, `objects`) and add optional formatting only after validation.
+4. In the current Desktop baseline, use `visualContainer/2.5.0` and set `drillFilterOtherVisuals` inside `visual`.
+5. For cards, use `visualType: "cardVisual"` and `queryState.Data` (not `card` + `Values`).
+6. `filterConfig` is optional and can be omitted for handcrafted minimal payloads; Desktop can add it on save.
 
 ---
 
-## Common Visual Structure
-
-Every `visual.json` file follows this base structure:
+## Common Visual Structure (Minimal, Safe Baseline)
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_visual_id>",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "<visual_id>",
   "position": {
     "x": 0,
     "y": 0,
@@ -29,13 +36,15 @@ Every `visual.json` file follows this base structure:
     "visualType": "<visual_type>",
     "query": {
       "queryState": {
-        "Values": {
+        "Data": {
           "projections": [
             {
               "field": {
                 "Measure": {
                   "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
                   },
                   "Property": "<MeasureName>"
                 }
@@ -48,16 +57,6 @@ Every `visual.json` file follows this base structure:
       }
     },
     "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Visual Title>'" } } }
-          }
-        }
-      ]
-    },
     "drillFilterOtherVisuals": true
   }
 }
@@ -65,10 +64,29 @@ Every `visual.json` file follows this base structure:
 
 ---
 
+## Optional Container Config (Inside `visual`)
+
+Use this block only after base visual validation succeeds:
+
+```json
+"visualContainerObjects": {
+  "title": [
+    {
+      "properties": {
+        "show": { "expr": { "Literal": { "Value": "true" } } },
+        "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
+      }
+    }
+  ]
+},
+"drillFilterOtherVisuals": true
+```
+
+---
+
 ## Field Reference Patterns
 
 ### Measure Reference
-Used to reference a measure from the `_Measures` table:
 
 ```json
 {
@@ -86,7 +104,6 @@ Used to reference a measure from the `_Measures` table:
 ```
 
 ### Column Reference
-Used to reference a column from a dimension table:
 
 ```json
 {
@@ -105,36 +122,25 @@ Used to reference a column from a dimension table:
 
 ---
 
-## Visual Type Templates
+## Visual Templates
 
-### 1. Card Visual
-
-Single KPI value display.
+### Card
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 200,
-    "height": 100,
-    "tabOrder": 0
-  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "<visual_id>",
+  "position": { "x": 0, "y": 0, "z": 0, "width": 200, "height": 100, "tabOrder": 0 },
   "visual": {
-    "visualType": "card",
+    "visualType": "cardVisual",
     "query": {
       "queryState": {
-        "Values": {
+        "Data": {
           "projections": [
             {
               "field": {
                 "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
+                  "Expression": { "SourceRef": { "Entity": "_Measures" } },
                   "Property": "<MeasureName>"
                 }
               },
@@ -145,400 +151,18 @@ Single KPI value display.
         }
       }
     },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
-        }
-      ]
-    },
     "drillFilterOtherVisuals": true
   }
 }
 ```
 
-### 2. Clustered Bar Chart
-
-Comparison across categories.
+### Slicer (Dropdown)
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 400,
-    "height": 300,
-    "tabOrder": 0
-  },
-  "visual": {
-    "visualType": "clusteredBarChart",
-    "query": {
-      "queryState": {
-        "Category": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<DimensionTable>" }
-                  },
-                  "Property": "<CategoryColumn>"
-                }
-              },
-              "queryRef": "<DimensionTable>.<CategoryColumn>",
-              "nativeQueryRef": "<CategoryColumn>"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
-                  "Property": "<MeasureName>"
-                }
-              },
-              "queryRef": "_Measures.<MeasureName>",
-              "nativeQueryRef": "<MeasureName>"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
-        }
-      ]
-    },
-    "drillFilterOtherVisuals": true
-  }
-}
-```
-
-### 3. Clustered Column Chart
-
-Comparison across categories (vertical orientation).
-
-```json
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 400,
-    "height": 300,
-    "tabOrder": 0
-  },
-  "visual": {
-    "visualType": "clusteredColumnChart",
-    "query": {
-      "queryState": {
-        "Category": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<DimensionTable>" }
-                  },
-                  "Property": "<CategoryColumn>"
-                }
-              },
-              "queryRef": "<DimensionTable>.<CategoryColumn>",
-              "nativeQueryRef": "<CategoryColumn>"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
-                  "Property": "<MeasureName>"
-                }
-              },
-              "queryRef": "_Measures.<MeasureName>",
-              "nativeQueryRef": "<MeasureName>"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
-        }
-      ]
-    },
-    "drillFilterOtherVisuals": true
-  }
-}
-```
-
-### 4. Line Chart
-
-Trends over time.
-
-```json
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 500,
-    "height": 300,
-    "tabOrder": 0
-  },
-  "visual": {
-    "visualType": "lineChart",
-    "query": {
-      "queryState": {
-        "Category": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "Dim_Date" }
-                  },
-                  "Property": "MonthName"
-                }
-              },
-              "queryRef": "Dim_Date.MonthName",
-              "nativeQueryRef": "MonthName"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
-                  "Property": "<MeasureName>"
-                }
-              },
-              "queryRef": "_Measures.<MeasureName>",
-              "nativeQueryRef": "<MeasureName>"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
-        }
-      ]
-    },
-    "drillFilterOtherVisuals": true
-  }
-}
-```
-
-### 5. Matrix (Table with Row/Column Groups)
-
-Cross-tabulation with measures.
-
-```json
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 600,
-    "height": 400,
-    "tabOrder": 0
-  },
-  "visual": {
-    "visualType": "pivotTable",
-    "query": {
-      "queryState": {
-        "Rows": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<DimensionTable>" }
-                  },
-                  "Property": "<RowColumn>"
-                }
-              },
-              "queryRef": "<DimensionTable>.<RowColumn>",
-              "nativeQueryRef": "<RowColumn>"
-            }
-          ]
-        },
-        "Columns": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<DimensionTable2>" }
-                  },
-                  "Property": "<ColumnGroupField>"
-                }
-              },
-              "queryRef": "<DimensionTable2>.<ColumnGroupField>",
-              "nativeQueryRef": "<ColumnGroupField>"
-            }
-          ]
-        },
-        "Values": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
-                  "Property": "<MeasureName>"
-                }
-              },
-              "queryRef": "_Measures.<MeasureName>",
-              "nativeQueryRef": "<MeasureName>"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
-        }
-      ]
-    },
-    "drillFilterOtherVisuals": true
-  }
-}
-```
-
-### 6. Table Visual
-
-Simple flat table.
-
-```json
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 600,
-    "height": 300,
-    "tabOrder": 0
-  },
-  "visual": {
-    "visualType": "tableEx",
-    "query": {
-      "queryState": {
-        "Values": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<Table>" }
-                  },
-                  "Property": "<Column1>"
-                }
-              },
-              "queryRef": "<Table>.<Column1>",
-              "nativeQueryRef": "<Column1>"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
-                  "Property": "<MeasureName>"
-                }
-              },
-              "queryRef": "_Measures.<MeasureName>",
-              "nativeQueryRef": "<MeasureName>"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
-        }
-      ]
-    },
-    "drillFilterOtherVisuals": true
-  }
-}
-```
-
-### 7. Slicer Visual
-
-Filter control for dimension fields.
-
-```json
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 200,
-    "height": 60,
-    "tabOrder": 0
-  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "<slicer_id>",
+  "position": { "x": 0, "y": 0, "z": 0, "width": 200, "height": 60, "tabOrder": 0 },
   "visual": {
     "visualType": "slicer",
     "query": {
@@ -548,9 +172,7 @@ Filter control for dimension fields.
             {
               "field": {
                 "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<DimensionTable>" }
-                  },
+                  "Expression": { "SourceRef": { "Entity": "<DimensionTable>" } },
                   "Property": "<SlicerColumn>"
                 }
               },
@@ -565,17 +187,13 @@ Filter control for dimension fields.
       "data": [
         {
           "properties": {
-            "mode": { "expr": { "Literal": { "Value": "'Dropdown'" } } }
-          }
-        }
-      ]
-    },
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<SlicerLabel>'" } } }
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dropdown'"
+                }
+              }
+            }
           }
         }
       ]
@@ -585,24 +203,15 @@ Filter control for dimension fields.
 }
 ```
 
-### 8. Donut Chart
-
-Parts-of-whole composition.
+### Clustered Bar Chart
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
-  "name": "<unique_id>",
-  "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "width": 300,
-    "height": 300,
-    "tabOrder": 0
-  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "<visual_id>",
+  "position": { "x": 0, "y": 0, "z": 0, "width": 500, "height": 300, "tabOrder": 0 },
   "visual": {
-    "visualType": "donutChart",
+    "visualType": "clusteredBarChart",
     "query": {
       "queryState": {
         "Category": {
@@ -610,9 +219,7 @@ Parts-of-whole composition.
             {
               "field": {
                 "Column": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "<DimensionTable>" }
-                  },
+                  "Expression": { "SourceRef": { "Entity": "<DimensionTable>" } },
                   "Property": "<CategoryColumn>"
                 }
               },
@@ -626,9 +233,7 @@ Parts-of-whole composition.
             {
               "field": {
                 "Measure": {
-                  "Expression": {
-                    "SourceRef": { "Entity": "_Measures" }
-                  },
+                  "Expression": { "SourceRef": { "Entity": "_Measures" } },
                   "Property": "<MeasureName>"
                 }
               },
@@ -639,16 +244,47 @@ Parts-of-whole composition.
         }
       }
     },
-    "objects": {},
-    "visualContainerObjects": {
-      "title": [
-        {
-          "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'<Title>'" } } }
-          }
+    "drillFilterOtherVisuals": true
+  }
+}
+```
+
+### Table (`tableEx`)
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "<visual_id>",
+  "position": { "x": 0, "y": 0, "z": 0, "width": 600, "height": 300, "tabOrder": 0 },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": { "SourceRef": { "Entity": "<DimensionTable>" } },
+                  "Property": "<ColumnName>"
+                }
+              },
+              "queryRef": "<DimensionTable>.<ColumnName>",
+              "nativeQueryRef": "<ColumnName>"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": { "SourceRef": { "Entity": "_Measures" } },
+                  "Property": "<MeasureName>"
+                }
+              },
+              "queryRef": "_Measures.<MeasureName>",
+              "nativeQueryRef": "<MeasureName>"
+            }
+          ]
         }
-      ]
+      }
     },
     "drillFilterOtherVisuals": true
   }
@@ -659,51 +295,49 @@ Parts-of-whole composition.
 
 ## Visual Type Mapping
 
-| Blueprint `visualType` | PBIR `visualType` Value |
-|------------------------|------------------------|
-| `card` | `card` |
-| `clusteredBar` | `clusteredBarChart` |
-| `clusteredColumn` | `clusteredColumnChart` |
-| `line` | `lineChart` |
-| `matrix` | `pivotTable` |
+| Blueprint `visualType` | PBIR `visualType` |
+|---|---|
+| `card` | `cardVisual` |
+| `clusteredBarChart` | `clusteredBarChart` |
+| `clusteredColumnChart` | `clusteredColumnChart` |
+| `lineClusteredColumnComboChart` | `lineClusteredColumnComboChart` |
+| `scatterChart` | `scatterChart` |
 | `table` | `tableEx` |
 | `slicer` | `slicer` |
-| `donut` | `donutChart` |
-| `pie` | `pieChart` |
-| `stackedBar` | `stackedBarChart` |
-| `stackedColumn` | `stackedColumnChart` |
-| `waterfall` | `waterfallChart` |
-| `gauge` | `gauge` |
-| `kpi` | `kpi` |
-| `treemap` | `treemap` |
-| `map` | `map` |
-| `filledMap` | `filledMap` |
 
 ---
 
 ## Page JSON Template
 
-Each page folder must contain a `page.json` file:
-
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.0.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
   "name": "<PageId>",
   "displayName": "<Display Name>",
-  "displayOption": "FitToWidth",
-  "width": 1280,
-  "height": 720
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
 }
 ```
 
+> Page schema `2.0.0` uses `additionalProperties: false`; do not add custom properties such as `ordinal`.
+
 ---
 
-## Important Notes
+## Derived Rules (From Manual Page1)
 
-1. **Visual IDs**: Each visual `name` must be a unique identifier within the page (e.g., UUID or sequential like `visual_01`).
-2. **Z-order**: Controls visual stacking. Higher `z` values render on top.
-3. **TabOrder**: Controls keyboard navigation order for accessibility.
-4. **Entity names**: Must match EXACTLY the TMDL table names (case-sensitive).
-5. **Property names**: Must match EXACTLY the TMDL column/measure names.
-6. **Slicer modes**: `"Dropdown"`, `"List"`, `"Between"` (for date ranges).
-7. **Cross-filtering**: Set `drillFilterOtherVisuals: true` for interactive filter behavior.
+1. Visual folder names are object ids (20-char alphanumeric in current Desktop output).
+2. Card visuals are saved as `cardVisual`, not `card`.
+3. Slicer visuals include `visual.objects.data.mode = 'Dropdown'` for dropdown behavior.
+4. Combo chart uses `queryState.Category`, `Y`, and `Y2` sections.
+5. Scatter chart uses `queryState.Series`, `Size`, `X`, and `Y` sections.
+6. `filterConfig` appears on many visuals (especially charts/cards) after manual authoring and can contain both measure and column filters.
+
+---
+
+## Implementation Notes
+
+1. Keep visual IDs stable and unique per page.
+2. Build visuals incrementally: first one slicer + one card, then reopen report.
+3. Add optional `visualContainerObjects` only after the baseline set loads correctly.
+4. Reopen Power BI Desktop after external JSON changes.
