@@ -189,12 +189,15 @@ relationship y
 ```tmdl
 model Model
 	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
 
 ref table Dim_Date
 ref table Dim_Customer
 ref table Fact_Sales
 ref table _Measures
 ```
+
+> **CRITICAL**: The `defaultPowerBIDataSourceVersion: powerBI_V3` property is **MANDATORY**. Without it, Power BI Desktop (December 2025+) throws: *"A data model with version 3 of metadata is required"* and all refresh operations fail with cascading null-query errors.
 
 ### `ref` keyword rules:
 - Defines collection ordering for source control stability.

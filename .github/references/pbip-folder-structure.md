@@ -81,6 +81,7 @@ Defines the model object and controls table ordering via `ref` statements:
 ```tmdl
 model Model
 	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
 
 ref table Dim_Date
 ref table Dim_Customer
@@ -88,6 +89,8 @@ ref table Dim_Area
 ref table Fact_Sales
 ref table _Measures
 ```
+
+> **CRITICAL**: The `defaultPowerBIDataSourceVersion: powerBI_V3` property is **MANDATORY**. Without it, Power BI Desktop throws *"A data model with version 3 of metadata is required"* at refresh time.
 
 ### `database.tmdl`
 Defines the database name and compatibility level:

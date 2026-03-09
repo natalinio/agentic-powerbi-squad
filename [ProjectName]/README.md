@@ -1,6 +1,6 @@
 # Project Template Folder
 
-This folder (`[ProjectName]`) is a **template/example** that demonstrates the expected structure for semantic model projects.
+This folder (`[ProjectName]`) is a **template/example** that demonstrates the expected structure for Power BI projects.
 
 ## 📂 Purpose
 
@@ -11,7 +11,7 @@ This folder serves as:
 
 ## 🚫 Do NOT Use This Folder Directly
 
-When creating a new semantic model project:
+When creating a new Power BI project:
 
 1. **Create a new folder** with your actual project name (e.g., `SalesOverview`, `FinanceReport`, `InventoryAnalysis`)
 2. **Copy this structure** to your new project folder
@@ -19,6 +19,7 @@ When creating a new semantic model project:
    ```
    @powerbi-AI-developer YourProjectName/spec/spec_your_project.md
    ```
+   Or use the prompt shortcut: type `/build` in Copilot Chat and provide the spec path.
 
 ## 📋 Expected Structure
 
@@ -93,11 +94,14 @@ Use the global templates under `spec/` (repository root), then copy your filled 
 
 ### Step 3: Invoke Agent
 
+**Option A** — Direct agent invocation:
 ```
 @powerbi-AI-developer YourProjectName/spec/spec_your_project.md
 ```
 
-The agent will execute a 10-step workflow to build your semantic model (including report design, PBIR visual generation, and final validation).
+**Option B** — Prompt-based invocation (type `/build` in Copilot Chat and provide spec path).
+
+The agent will execute a 10-step end-to-end workflow: semantic model (TMDL) + DAX measures + mock data + testing + report visuals (PBIR) + final validation.
 
 ---
 

@@ -75,6 +75,9 @@ measure 'Efficient Ratio' =
 - ❌ Don't create VARs for trivial single-use expressions
 
 **Variable Naming Convention**:
+
+> **⚠️ CRITICAL**: NEVER use DAX reserved keywords as VAR names (`Variance`, `Status`, `Value`, `Date`, `Time`, `Year`, `Month`, `Day`, `Table`, `Column`, `Currency`, `Number`, `Text`, `Boolean`, `Order`, `Rank`, `Index`, `Format`, `Type`, `Result`, `None`, `All`, `Filter`). The DAX engine rejects them with *"'<Name>' is a reserved word"* compile error. Always use descriptive business-context prefixes.
+
 ```dax
 measure 'Optimized Sales YoY %' =
 	-- Descriptive variable names explain business logic

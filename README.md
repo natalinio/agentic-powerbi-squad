@@ -1,6 +1,6 @@
 # Power BI AI Developer
 
-> **Build production-ready Power BI semantic models (PBIP/TMDL) from functional specifications using GitHub Copilot Custom Agent**
+> **Build complete Power BI projects — semantic models (PBIP/TMDL) and report visuals (PBIR) — from functional specifications using a GitHub Copilot Custom Agent**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Power BI](https://img.shields.io/badge/Power%20BI-December%202025+-yellow)](https://powerbi.microsoft.com)
@@ -110,7 +110,11 @@ SalesOverview/spec/spec_sales_overview.md
 
 ### Step 5: Invoke the Agent
 
-Open GitHub Copilot Chat in VS Code and type:
+There are **two ways** to start the workflow in VS Code:
+
+#### Option A: Direct Agent Invocation (recommended)
+
+Open GitHub Copilot Chat and invoke the agent with the spec file path:
 
 ```
 @powerbi-AI-developer <YourProjectName>/spec/spec_your_project.md
@@ -121,7 +125,26 @@ Open GitHub Copilot Chat in VS Code and type:
 @powerbi-AI-developer SalesOverview/spec/spec_sales_overview.md
 ```
 
-The agent will execute a 10-step workflow:
+The agent reads the spec, runs the preliminary checks (Step 00 → PBIP scaffold, Step B → folders, Step C → Python env), and starts the 10-step workflow.
+
+#### Option B: Prompt-Based Invocation
+
+Use the reusable prompt file to trigger the workflow with the pre-configured instructions:
+
+1. Open the Copilot Chat prompt picker (type `/` in chat)
+2. Select **`build`** (from `.github/prompts/build.prompt.md`)
+3. When prompted, provide your spec file path or paste the spec content
+
+This is equivalent to Option A but pre-loads the full workflow instructions into the context.
+
+#### Which one to use?
+
+| Method | When to use |
+|--------|-------------|
+| `@powerbi-AI-developer <spec_path>` | Standard invocation — you provide the spec path directly |
+| `/build` prompt | When you want the full instruction set pre-loaded, or when starting from scratch without a spec file yet |
+
+#### The 10-Step Workflow
 1. **Requirements Analysis**
 2. **Logical Data Model** (Mermaid ER diagram)
 3. **Physical Model & TMDL** (code generation)
@@ -183,6 +206,7 @@ aisemanticlayer/
 │   │   ├── remove_tmdl_comments.py    # TMDL comment removal
 │   │   └── run_tests.py               # Automated test execution engine
 │   └── prompts/                       # Reusable prompt files
+│       └── build.prompt.md            # End-to-end project builder prompt (/build)
 │
 ├── .gitignore                         # Git ignore rules
 ├── .venv/                             # Python virtual environment (shared by all projects)
@@ -376,9 +400,11 @@ This ensures **100% accuracy** in TMDL syntax (whitespace-sensitive, tab-indente
 
 ## 📖 Documentation
 
-- **[Copilot Instructions](.github/copilot-instructions.md)**: Global rules for the agent
-- **[Skills](.github/skills/)**: Step-by-step execution guides
-- **[References](.github/references/)**: TMDL/DAX/BPA knowledge base
+- **[Agent Definition](.github/agents/powerbi-AI-developer.agent.md)**: Core agent orchestrator (10-step workflow)
+- **[Build Prompt](.github/prompts/build.prompt.md)**: Reusable prompt for end-to-end project invocation (`/build`)
+- **[Copilot Instructions](.github/copilot-instructions.md)**: Global rules for GitHub Copilot
+- **[Skills](.github/skills/)**: Step-by-step execution guides (Steps 00-10)
+- **[References](.github/references/)**: TMDL/DAX/BPA/PBIR knowledge base
 - **[Specification Templates](spec/)**: Templates and examples for writing project specifications
 - **[Contributing](CONTRIBUTING.md)**: How to contribute to this project
 

@@ -20,16 +20,16 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Project folders (user-created semantic model projects)
+# Project folders (user-created Power BI projects)
 # Uncomment lines below to exclude your project folders from source control:
-# SalesOverview/
+SalesOverview/
 # FinanceReport/
 # CustomerAnalytics/
 # (Keep [ProjectName]/ tracked as it's the template)
 
 # Generated mock data (project-level data folders)
 # Uncomment below to exclude CSVs from source control:
-# **/data/*.csv
+**/data/*.csv
 
 # Test execution outputs (regenerated on each run)
 **/tests/tests_execution.md

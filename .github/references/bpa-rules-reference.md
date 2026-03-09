@@ -121,6 +121,44 @@ measure 'Sales Forecast' =
 
 ---
 
+### Rule: DAX_VAR_RESERVED_KEYWORDS
+**ID**: `DAX_VAR_RESERVED_KEYWORDS`  
+**Severity**: Error (3)  
+**Description**: VAR names in DAX expressions MUST NOT use DAX reserved keywords or function names
+
+**Why**: The DAX engine rejects variable names that collide with reserved keywords. Power BI Desktop reports a compile error: `'<Name>' is a reserved word`. This causes the measure to fail at runtime.
+
+**Known reserved keywords for VAR names** (non-exhaustive):
+`Variance`, `Status`, `Value`, `Date`, `Time`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `Table`, `Column`, `Currency`, `Number`, `Text`, `Boolean`, `True`, `False`, `Blank`, `Error`, `Order`, `Rank`, `Index`, `Format`, `Type`, `Result`, `None`, `All`, `Filter`
+
+**❌ DON'T** (Anti-pattern):
+```dax
+measure 'Sales vs Budget' = 
+	VAR Variance = [Sales FYTD] - [Budget FYTD]  // ❌ "Variance" is reserved
+	RETURN Variance
+
+measure 'Budget Status Color' = 
+	VAR Status = [Budget Status]  // ❌ "Status" is reserved
+	RETURN SWITCH(Status, ...)
+```
+
+**✅ DO** (Best practice):
+```dax
+measure 'Sales vs Budget' = 
+	VAR SalesBudgetVariance = [Sales FYTD] - [Budget FYTD]  // ✅ Descriptive, non-reserved
+	RETURN SalesBudgetVariance
+
+measure 'Budget Status Color' = 
+	VAR BudgetStatusValue = [Budget Status]  // ✅ Descriptive, non-reserved
+	RETURN SWITCH(BudgetStatusValue, ...)
+```
+
+**Detection**: Grep search all DAX VAR declarations for reserved keyword matches: `VAR\s+(Variance|Status|Value|Date|Time|Year|Month|Day|Table|Column|Currency|Number|Text|Boolean|True|False|Blank|Error|Order|Rank|Index|Format|Type|Result|None|All|Filter)\s*=`
+
+**Fix**: Prefix with a descriptive business context (e.g., `Variance` → `SalesBudgetVariance`, `Status` → `BudgetStatusValue`).
+
+---
+
 ## Category 2: Formatting
 
 ### Rule: OBJECTS_WITH_NO_FORMAT_STRING_COLUMNS

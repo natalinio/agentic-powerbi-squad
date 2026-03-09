@@ -153,7 +153,10 @@ database <ProjectName>
 ```tmdl
 model Model
 	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
 ```
+
+> **CRITICAL**: Always include `defaultPowerBIDataSourceVersion: powerBI_V3`. Omitting it causes *"metadata version 3 required"* errors in Power BI Desktop.
 
 Optionally create empty placeholders (recommended for a stable baseline):
 

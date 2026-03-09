@@ -21,6 +21,17 @@ Before writing ANY DAX code:
 - One expression per line.
 - Indent consistently with tabs.
 
+### VAR Naming — Reserved Keywords (ZERO TOLERANCE)
+**NEVER** use DAX reserved keywords or function names as VAR names. Power BI Desktop will report *"'<Name>' is a reserved word"* compile errors.
+
+**Forbidden VAR names** (non-exhaustive): `Variance`, `Status`, `Value`, `Date`, `Time`, `Year`, `Month`, `Day`, `Table`, `Column`, `Currency`, `Number`, `Text`, `Boolean`, `True`, `False`, `Blank`, `Error`, `Order`, `Rank`, `Index`, `Format`, `Type`, `Result`, `None`, `All`, `Filter`.
+
+**Rule**: Always use descriptive, business-context prefixed names:
+- `Variance` → `SalesBudgetVariance`
+- `Status` → `BudgetStatusValue`
+- `Value` → `MetricValue`
+- `Result` → `CalcResult`
+
 ### DAX Comments (Allowed)
 - **DAX expressions support comments**: `//` for single-line, `/* */` for multi-line.
 - Use comments to explain complex business logic, time intelligence parameters, or non-obvious calculations.

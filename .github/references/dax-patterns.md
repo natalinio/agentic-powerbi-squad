@@ -23,6 +23,17 @@ measure 'Sales Amount FYTD' =
 
 **Why**: Improves readability, debuggability, and performance (VARs are evaluated once).
 
+### VAR Naming — Reserved Keywords (MANDATORY)
+**NEVER** use DAX reserved keywords or function names as VAR names. The DAX engine will reject them with a compile error: `'<Name>' is a reserved word`.
+
+**Forbidden VAR names** (non-exhaustive): `Variance`, `Status`, `Value`, `Date`, `Time`, `Year`, `Month`, `Day`, `Table`, `Column`, `Currency`, `Number`, `Text`, `Boolean`, `True`, `False`, `Blank`, `Error`, `Order`, `Rank`, `Index`, `Format`, `Type`, `Result`, `None`, `All`, `Filter`.
+
+**Rule**: Always use descriptive, context-specific names:
+- `Variance` → `SalesBudgetVariance` or `YoYVariance`
+- `Status` → `BudgetStatusValue` or `CurrentStatus`
+- `Value` → `SalesValue` or `MetricValue`
+- `Result` → `CalcResult` or `FinalAmount`
+
 ### DIVIDE() Function (MANDATORY)
 ALWAYS use `DIVIDE()` instead of the `/` operator:
 ```dax

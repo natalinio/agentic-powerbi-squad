@@ -28,6 +28,7 @@ Before starting the review:
 
 ### 2. Structural Integrity
 - [ ] `model.tmdl` contains `ref table` entries for ALL tables defined in `tables/` folder.
+- [ ] **CRITICAL**: `model.tmdl` contains `defaultPowerBIDataSourceVersion: powerBI_V3` property. Without it, Power BI Desktop throws *"A data model with version 3 of metadata is required"* and all refresh operations fail.
 - [ ] `database.tmdl` exists with correct `compatibilityLevel` matching Power BI Desktop version (1600 for December 2025, 1567 for September 2024).
 - [ ] `relationships.tmdl` contains entries for ALL FK-PK relationships.
 - [ ] One `.tmdl` file per table exists in `tables/` folder.
@@ -60,6 +61,7 @@ For EACH column across all tables:
 ### 5. DAX Measures Validation
 For EACH measure in `_Measures.tmdl`:
 - [ ] Uses **VAR / RETURN** pattern for non-trivial measures.
+- [ ] **VAR names do NOT use DAX reserved keywords** (`Variance`, `Status`, `Value`, `Date`, `Time`, `Year`, `Month`, `Day`, `Table`, `Column`, `Measure`, `Name`, `Count`, `Sum`, `Average`, `Min`, `Max`, `Result`, `Error`, `Number`, `Text`, `True`, `False`, `Blank`, `If`, `And`, `Or`, `Not`, `In`, `Order`, `Filter`). Use descriptive prefixes instead (e.g., `SalesBudgetVariance`, `BudgetStatusValue`).
 - [ ] Uses **DIVIDE()** for ALL division operations (no `/` operator).
 - [ ] ALL referenced columns exist in the model with correct `Table[Column]` syntax.
 - [ ] ALL referenced measures exist and are not self-referential or circular.
@@ -130,6 +132,10 @@ For EACH table's partition:
 - [ ] **AVOID_RESERVED_KEYWORDS**: Object names do NOT use DAX/SQL reserved keywords (Date, Table, Value, Column, Year, etc.)
   - **Validation**: Check table/column names against reserved keyword list
   - **Fix**: Add prefix/suffix (e.g., `Date` → `Dim_Date`, `Value` → `DateValue`)
+
+- [ ] **DAX_VAR_RESERVED_KEYWORDS**: VAR names inside DAX expressions do NOT use reserved keywords (`Variance`, `Status`, `Value`, `Date`, `Time`, `Year`, `Month`, `Day`, `Table`, `Column`, etc.)
+  - **Validation**: For each `VAR <name>` in measure expressions, check `<name>` against forbidden keyword list
+  - **Fix**: Use descriptive prefixed names (e.g., `VAR Variance` → `VAR SalesBudgetVariance`, `VAR Status` → `VAR BudgetStatusValue`)
 
 #### 11.2 DAX Expression Rules (Warning Severity)
 

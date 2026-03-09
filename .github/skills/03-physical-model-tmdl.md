@@ -228,9 +228,13 @@ database <ProjectName>
 ```
 
 ### 2. `model.tmdl`
+
+> **CRITICAL**: The `defaultPowerBIDataSourceVersion: powerBI_V3` property is **MANDATORY**. Without it, Power BI Desktop (December 2025+) throws *"A data model with version 3 of metadata is required"* and cascading null-query errors on every refresh attempt.
+
 ```tmdl
 model Model
 	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
 
 ref table Dim_Date
 ref table Dim_Customer
