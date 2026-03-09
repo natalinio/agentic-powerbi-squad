@@ -208,4 +208,23 @@ partition Dim_Date = entity
 - [ ] CSV files are comma-delimited, UTF-8 encoded
 - [ ] Script runs without errors in the `.venv` environment
 
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **VERIFY** the Python script has been saved to `<ProjectName>/scripts/generate_mock_data.py`.
+2. **VERIFY** CSV files have been generated in `<ProjectName>/data/`.
+3. **VERIFY** TMDL partitions have been updated with correct CSV paths.
+4. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 05 completed.
+   - Add artifact paths for the script and CSV files.
+5. **CONFIRM** to the user that all data generation artifacts have been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-04 are completed.
+- **READ** TMDL table files from disk to know exact column names and data types (NOT from chat memory).
+- **DO NOT** rely on chat history for any data from previous steps.
+
 **STOP here. Await user validation before proceeding to Step 6.**

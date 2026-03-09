@@ -1,6 +1,6 @@
-# Contributing to AI Semantic Layer Builder
+# Contributing to Power BI AI Developer
 
-Thank you for your interest in contributing to **AI Semantic Layer Builder**! 🎉
+Thank you for your interest in contributing to **Power BI AI Developer**! 🎉
 
 This document provides guidelines and best practices for contributing to this project.
 
@@ -112,7 +112,7 @@ Understanding the structure is critical for effective contributions:
 ```
 .github/
 ├── agents/              # Custom agent definitions (modify with caution)
-├── skills/              # Step-by-step execution guides (9 files)
+├── skills/              # Step-by-step execution guides (11 files: 00-10)
 ├── references/          # Knowledge base (TMDL, DAX, BPA rules)
 └── scripts/             # Universal Python tools (lineage fix, testing)
 
@@ -139,7 +139,7 @@ Understanding the structure is critical for effective contributions:
 ### What NOT to Edit (Without Discussion)
 
 - `.github/copilot-instructions.md` (global agent behavior)
-- `.github/agents/semanti-modeler.agent.md` (core agent definition)
+- `.github/agents/powerbi-AI-developer.agent.md` (core agent definition)
 
 For these files, **open an issue first** to discuss proposed changes.
 
@@ -383,6 +383,6 @@ By contributing, you agree that your contributions will be licensed under the **
 
 ---
 
-Thank you for contributing to AI Semantic Layer Builder! 🚀
+Thank you for contributing to Power BI AI Developer! 🚀
 
 **Built with ❤️ by the community**

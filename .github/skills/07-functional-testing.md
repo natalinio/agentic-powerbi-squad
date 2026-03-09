@@ -1246,7 +1246,26 @@ Before marking **Step 7: Functional Testing** as complete:
 - [ ] Regression tests executed for all modified measures
 - [ ] Stakeholder sign-off obtained (if required)
 
-**Upon completion**: The semantic model is **validated for correctness** and ready for production deployment or report development. Proceed to Step 8: Documentation or hand off to report authors.
+**Upon completion**: The semantic model is **validated for correctness** and ready for production deployment or report development. Proceed to Step 8: Report Design.
+
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **VERIFY** `<ProjectName>/tests/tests_definition.json` has been saved.
+2. **VERIFY** `<ProjectName>/tests/tests_execution.md` has been saved.
+3. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 07 completed.
+   - Add artifact paths for test definition and execution files.
+4. **CONFIRM** to the user that all test artifacts have been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-06 are completed.
+- **READ** TMDL files from disk for model introspection (NOT from chat memory).
+- **READ** `<ProjectName>/spec/requirements_summary.md` for expected KPI definitions.
+- **DO NOT** rely on chat history for any data from previous steps.
 
 ---
 

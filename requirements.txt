@@ -1,4 +1,4 @@
-# Python dependencies for AI Semantic Layer Builder
+# Python dependencies for Power BI AI Developer
 # Install with: pip install -r requirements.txt
 #
 # These packages are required across multiple workflow steps:

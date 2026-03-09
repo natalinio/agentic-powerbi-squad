@@ -36,7 +36,7 @@ Instead, please follow one of these methods:
 
 Send an email to:
 - **Email**: andrea.natali@avanade.com
-- **Subject**: `[SECURITY] AI Semantic Layer Builder - <Brief Description>`
+- **Subject**: `[SECURITY] Power BI AI Developer - <Brief Description>`
 
 Include:
 - Detailed description of the vulnerability
@@ -193,4 +193,4 @@ For non-security issues, please use the [issue tracker](https://github.com/natal
 
 ---
 
-**Thank you for helping keep AI Semantic Layer Builder secure!** 🔒
+**Thank you for helping keep Power BI AI Developer secure!** 🔒

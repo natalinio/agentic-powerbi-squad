@@ -1,4 +1,4 @@
-# Skill: Report Design (Layout, UX, Navigation)
+﻿# Skill: Report Design (Layout, UX, Navigation)
 
 ## Purpose
 Design the Power BI report experience (pages, layout, visuals, interactions, navigation) based on:
@@ -49,40 +49,124 @@ Default to the simplest structure that satisfies the spec:
 - If the spec includes drill-down needs → summary page + detail page.
 
 ### 8.4 Produce the Report Design Blueprint (OUTPUT)
-Provide the design as a structured blueprint with:
 
-#### A) Page List
-For each page:
-- **PageName** (English)
-- **Goal / questions answered**
-- **Target audience/persona** (if stated)
-- **Slicers/filters** (fields from the registry)
-- **Visuals** (max 6–8 per page unless spec requires otherwise), each with:
-  - Visual type (card, line, clustered bar, matrix, etc.)
-  - Measures used
-  - Axis/breakdown fields
-  - Sorting + default granularity (e.g., Month)
-  - Tooltip / drillthrough usage (only if required)
-- **Interactions**: cross-filter vs highlight decisions
+The agent MUST generate and save the report design blueprint as a **physical JSON file** at `<ProjectName>/spec/report_blueprint.json`. This file will be the input for Step 9 (Report Implementation). Only AFTER saving the file, the agent must present a summary and stop for approval.
 
-#### B) Navigation & UX
-- Navigation model (tabs/buttons/bookmarks) **only if specified**
-- Drillthrough pages (only if required)
-- Accessibility notes (contrast, labels, avoiding color-only encoding)
+#### JSON Schema for `report_blueprint.json`
 
-#### C) Performance Guardrails
-- Avoid high-cardinality slicers unless required
-- Avoid too many visuals on a page
-- Prefer measures over implicit aggregations
+```json
+{
+  "$schema": "report_blueprint_schema",
+  "projectName": "<ProjectName>",
+  "generatedDate": "<ISO 8601 timestamp>",
+  "semanticModelPath": "<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/",
+  "pages": [
+    {
+      "pageId": "Page1",
+      "pageName": "Overview",
+      "displayName": "Sales Overview",
+      "goal": "Provide a summary of key sales KPIs and trends",
+      "targetAudience": "Sales Manager",
+      "width": 1280,
+      "height": 720,
+      "displayOption": "FitToWidth",
+      "slicers": [
+        {
+          "field": "Dim_Date[FiscalYear]",
+          "type": "dropdown",
+          "label": "Fiscal Year"
+        }
+      ],
+      "visuals": [
+        {
+          "visualId": "visual_01",
+          "visualType": "card",
+          "title": "Total Sales FYTD",
+          "measures": ["Sales Amount FYTD"],
+          "axisFields": [],
+          "legendField": null,
+          "sortBy": null,
+          "defaultGranularity": null,
+          "tooltip": null,
+          "drillthrough": null,
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 100
+          }
+        }
+      ],
+      "interactions": {
+        "crossFilterMode": "highlight",
+        "customInteractions": []
+      }
+    }
+  ],
+  "navigation": {
+    "model": "tabs",
+    "drillthroughPages": [],
+    "bookmarks": []
+  },
+  "accessibility": {
+    "altTextRequired": true,
+    "colorBlindSafe": true,
+    "notes": []
+  },
+  "performanceGuardrails": {
+    "maxVisualsPerPage": 8,
+    "avoidHighCardinalitySlicers": true,
+    "preferMeasuresOverImplicitAggregations": true,
+    "notes": []
+  }
+}
+```
+
+#### Blueprint Generation Rules
+
+The agent MUST follow these rules when generating the JSON:
+
+1. **Page definitions**: One object per page. `pageId` must be a valid folder name (e.g., `Page1`, `Page2`).
+2. **Visual definitions**: Each visual must reference measures and fields that exist in the Visual Design Field Registry (8.2).
+3. **Field references**: Use exact `Table[Column]` or `[Measure Name]` syntax as found in TMDL.
+4. **Positions**: Provide approximate `x`, `y`, `width`, `height` values for visual layout (based on 1280x720 canvas).
+5. **No invented content**: Every page, visual, and field must trace back to the functional specification.
+6. **Slicer definitions**: Include all required filters/slicers with their source fields.
+
+#### Saving the Blueprint
+
+The agent MUST:
+1. **WRITE** the complete JSON to `<ProjectName>/spec/report_blueprint.json`.
+2. **PRESENT** a summary of the blueprint to the user (page count, visual count per page, measures mapped).
+3. **DO NOT** output the full JSON in chat — reference the saved file instead.
 
 ### 8.5 Validation Gate (STOP)
 Before declaring Step 8 complete:
+- [ ] `report_blueprint.json` has been saved to `<ProjectName>/spec/report_blueprint.json`
 - [ ] Every measure/field referenced exists in the Visual Design Field Registry
 - [ ] Report pages/visuals match the spec (no invented extra pages)
-- [ ] Interactions are defined (or explicitly “default interactions”)
+- [ ] Interactions are defined (or explicitly "default interactions")
 - [ ] Accessibility and performance considerations are stated
 
-Present the blueprint and **STOP here**. Await user approval before any implementation step.
+Present a summary of the saved blueprint and **STOP here**. Await user approval before proceeding to Step 9 (Report Implementation).
+
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **SAVE** the report design blueprint to `<ProjectName>/spec/report_blueprint.json`.
+2. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 08 completed.
+   - Add artifact path `<ProjectName>/spec/report_blueprint.json`.
+3. **CONFIRM** to the user that the blueprint file has been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-07 are completed.
+- **READ** the functional specification from disk.
+- **READ** TMDL files from disk for the Visual Design Field Registry.
+- **DO NOT** rely on chat history for any data from previous steps.
 
 ## Reference (load only if needed)
 - `.github/references/report-design-visualization-best-practices.md`

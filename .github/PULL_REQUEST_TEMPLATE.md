@@ -38,7 +38,7 @@ Please select the type of change:
 
 ### Manual Testing
 <!-- Describe how you tested these changes -->
-- [ ] Tested with agent invocation (`@semantic-modeler`)
+- [ ] Tested with agent invocation (`@powerbi-AI-developer`)
 - [ ] Validated TMDL files in Power BI Desktop
 - [ ] Ran Python scripts and verified output
 - [ ] Checked DAX measures in DAX Studio
@@ -99,4 +99,4 @@ Please confirm that you have completed the following:
 
 ---
 
-**Thank you for contributing to AI Semantic Layer Builder!** 🚀
+**Thank you for contributing to Power BI AI Developer!** 🚀

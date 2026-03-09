@@ -401,4 +401,22 @@ Before finalizing DAX code, verify syntax with MCP:
 - [ ] All referenced columns exist in the model
 - [ ] No references to calculated columns in large fact tables (BPA)
 
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **VERIFY** `_Measures.tmdl` has been written to `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/tables/_Measures.tmdl`.
+2. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 04 completed.
+   - Add artifact path for `_Measures.tmdl`.
+3. **CONFIRM** to the user that the DAX measures file has been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-03 are completed.
+- **READ** TMDL table files from disk to know existing columns and tables (NOT from chat memory).
+- **READ** `<ProjectName>/spec/requirements_summary.md` for KPI definitions.
+- **DO NOT** rely on chat history for any data from previous steps.
+
 **STOP here. Await user validation before proceeding to Step 5.**

@@ -1,4 +1,4 @@
-# 🚀 Publishing Guide — AI Semantic Layer Builder
+# 🚀 Publishing Guide — Power BI AI Developer
 
 This guide explains how to publish this repository to GitHub and manage branches effectively.
 
@@ -56,7 +56,7 @@ main (default branch)
 cd c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer
 git init
 git add .
-git commit -m "Initial commit: AI Semantic Layer Builder v1.0"
+git commit -m "Initial commit: Power BI AI Developer v1.0"
 ```
 
 ### Step 2: Create GitHub Repository

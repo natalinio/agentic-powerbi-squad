@@ -1,95 +1,92 @@
-# Global Copilot Instructions — AI Semantic Layer Builder
+# AI Coding Agent Instructions
 
-This repo hosts a GitHub Copilot Custom Agent (`@semantic-modeler`) that builds **Power BI semantic models** in **PBIP + TMDL** from functional specifications.
+## Purpose
+This document defines operational rules for AI coding assistants (Copilot, ChatGPT, Cursor, etc.) working in this repository.
 
-## MUST / MUST NOT (highest priority)
+Goals:
+- Reduce token consumption
+- Maintain architectural consistency
+- Keep security and compliance constraints explicit
+- Accelerate safe feature development and bug fixing
 
-### Safety / Governance
-- MUST refuse requests that: expose secrets/credentials; bypass security controls; disable auditing/logging; weaken authentication/authorization.
-- MUST use placeholders for sensitive values (examples: `<<TENANT_ID>>`, `<<WORKSPACE_NAME>>`, `<<SQL_SERVER>>`, `<<API_TOKEN>>`).
+---
 
-### Hallucination control
-- MUST NOT invent repository files, table/column/measure names, or Power BI/TMDL syntax.
-- MUST ground model syntax in one of:
-  - `.github/references/*` (local ground truth), or
-  - Microsoft official docs via MCP tools (`microsoft_docs_search` / `microsoft_docs_fetch`).
-- If required info is missing/ambiguous: ask targeted questions and STOP.
+# 1. Global Response Rules
 
-### Workflow control (approval gates)
-- MUST follow the 8-step workflow defined in `.github/skills/`.
-- MUST STOP after every step and wait for explicit user approval (e.g., “Proceed”, “Approved”, “OK”) before moving to the next step.
+## Language
+All generated code comments and docstrings must be in English.
 
-Note: The approval-gated workflow refers to **Steps 1–8**. Preliminary checks/bootstrap (e.g., Skill 00 project initialization) may run automatically before Step 1.
+## Chat Output Constraints
+To reduce noise and token usage, AI assistants must:
+- Avoid pasting full files
+- Avoid large code blocks
+- Prefer patch-style guidance
+- Use minimal snippets (<= 20 lines) only when strictly necessary
 
-### Project isolation
-- MUST keep artifacts isolated per `<ProjectName>/` and MUST NOT mix objects, data, or tests across projects.
+Preferred format:
+- File: `<path>`
+- Section: `<logical area>`
+- Change: `<what and why>`
 
-## Language policy
+## Secrets & Security
+The AI must never output credentials, API keys, tokens, secrets, or connection strings.
 
-- Conversation language: follow the user.
-- Generated artifacts MUST be in English (TMDL, DAX, M, scripts, file names, table/column/measure names).
-- Descriptions inside TMDL: may follow user language if explicitly requested in the spec.
+Use placeholders only:
+- `<TENANT_ID>`
+- `<CLIENT_ID>`
+- `<CLIENT_SECRET>`
+- `<KEY_VAULT_NAME>`
 
-## Non-negotiable modeling & TMDL rules
+## Human Review Rule
+AI-generated output is advisory and must:
+- Be reviewed by a human
+- Pass repository CI/CD checks
+- Never be deployed directly without validation
 
-- MUST model as **Kimball Star Schema** (facts at center, dimensions around).
-- MUST follow naming rules in `.github/references/naming-conventions.md`.
-- TMDL formatting:
-  - MUST use **TAB indentation** (not spaces).
-  - MUST NOT include comments of any kind in TMDL (no `//`, `/* */`, `///`, `<!-- -->`).
-  - If comments exist, use `.github/scripts/remove_tmdl_comments.py <ProjectName>`.
-- Lineage tags:
-  - After generating/updating TMDL, MUST run `.github/scripts/fix_lineage_tags.py <ProjectName>` to ensure globally-unique UUID v4 `lineageTag` values.
-- Relationships:
-  - Default `securityFilteringBehavior` to `oneDirection` unless an explicit RLS requirement exists.
-  - MUST prevent ambiguous paths: between any two tables there must be exactly one active relationship path.
-- Compatibility:
-  - MUST verify `compatibilityLevel` and other model-level settings against `.github/skills/03-physical-model-tmdl.md` and the user’s Power BI Desktop version.
-- Fact table columns:
-  - MUST set `summarizeBy: none` to force explicit DAX measures (BPA rule).
-- Time intelligence with dynamic parameters:
-  - MUST NOT use time-intel functions that require constant year-end parameters when inputs are dynamic (see `.github/skills/04-dax-development.md`).
-- Functional testing:
-  - MUST introspect the model from TMDL before writing tests/queries (never guess object names).
+---
 
-## Project prerequisites (minimal)
+# 2. AI Implementation Playbook
 
-- Python 3.10+ is required for mock data generation and tests.
-- Use the repo-level virtual environment:
-  - `python -m venv .venv`
-  - `.\.venv\Scripts\Activate.ps1`
-  - `pip install -r requirements.txt`
-- Each project MUST have a PBIP scaffold present:
-  - `<ProjectName>/PBIP/<ProjectName>.pbip`
-  - `<ProjectName>/PBIP/<ProjectName>.Report/definition.pbir`
-  - `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition.pbism`
-  - `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`
+Use this structure in implementation responses.
+- 1 Scope: State in-scope and out-of-scope items.
+- 2 Impacted Components: List affected files with full repository paths.
+- 3 Change Description: Explain logic, responsibilities, and interactions.
+- 4 Edge Cases: Always review data quality, null handling, performance, compatibility, and security.
+- 5 Verification Plan: Propose unit/integration checks, pipeline validation, and data validation.
 
-If the PBIP scaffold is missing, the agent can bootstrap it via `.github/skills/00-project-initialization.md`.
-Power BI Desktop is still used later to open the project, configure data sources, refresh, and visually validate.
+---
 
-## Where to look (do not duplicate content)
+# 3. Development Fast-Track (Copilot)
 
-- Agent definition: `.github/agents/semanti-modeler.agent.md`
-- Step-by-step execution: `.github/skills/01-requirements-analysis.md` … `.github/skills/08-report-design.md`
-- Reference ground truth:
-  - `.github/references/tmdl-syntax-reference.md`
-  - `.github/references/relationship-patterns.md`
-  - `.github/references/dax-patterns.md`
-  - `.github/references/dax-optimization-framework.md`
-  - `.github/references/bpa-rules-reference.md`
-  - `.github/references/report-design-visualization-best-practices.md`
+For faster and safer delivery, ask Copilot with this minimal context:
+- Goal: feature or bug objective
+- Scope: allowed folders/files
+- Constraints: security/performance/backward compatibility
+- Validation: tests or commands to run
 
-## Response format (when implementing changes)
+Recommended request template:
+1. "Update `<file>` to `<goal>`"
+2. "Keep changes minimal and aligned with existing patterns"
+3. "Include edge-case handling for null/empty/error paths"
+4. "Run targeted validation and summarize results"
 
-Every response that proposes or applies changes MUST include:
-1) Scope (what is / is not changing)
-2) Files touched (paths)
-3) Verification (commands or checks)
-4) Open questions / assumptions (if any)
+---
 
-## Output limits
+# 4. Common Pitfalls to Avoid
 
-- MUST NOT dump full files unless explicitly requested.
-- Prefer small, reviewable diffs and point to the exact file location for details.
+- Hardcoding credentials, secrets, or environment values
+- Bypassing metadata-driven configuration
+- Adding logic to deprecated Function App V1 endpoints
+- Using unversioned or duplicated Databricks logic
+- Producing large chat code dumps instead of patch-focused guidance
 
+---
+
+# 5. Expected AI Output Quality
+
+A good AI response should:
+- Reference repository paths clearly
+- Respect architecture and security constraints
+- Keep output concise and implementation-ready
+- Surface assumptions and validation steps explicitly
+- Preserve human decision authority

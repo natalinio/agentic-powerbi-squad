@@ -169,5 +169,23 @@ Before proceeding to Step 1, confirm:
 - [ ] `<ProjectName>/PBIP/<ProjectName>.Report/definition/` contains `version.json`, `report.json`, and `pages/Page1/page.json`
 - [ ] `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition.pbism` exists
 - [ ] `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/` contains at least `database.tmdl` and `model.tmdl`
+- [ ] `<ProjectName>/workflow_state.json` exists with initial state
 
 If any check fails, STOP and fix the initialization before running Step 1.
+
+## Workflow State Initialization
+
+At the end of Step 00 (after all scaffolding is created and validated), CREATE the initial `<ProjectName>/workflow_state.json`:
+
+```json
+{
+  "projectName": "<ProjectName>",
+  "currentStep": 0,
+  "completedSteps": [],
+  "pendingStep": null,
+  "createdAt": "<ISO 8601 timestamp>",
+  "lastUpdated": "<ISO 8601 timestamp>"
+}
+```
+
+This file will be updated by every subsequent step to track workflow progress and enable resumability.

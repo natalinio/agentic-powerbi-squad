@@ -345,4 +345,24 @@ If errors are found:
 2. Ask the user for permission to apply all fixes.
 3. Apply fixes directly to the TMDL files upon approval.
 
-**This is the final step. Present the complete report and await user validation.**
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **SAVE** the quality review report to disk as `<ProjectName>/tests/quality_review.md`.
+   - The file must contain the full review checklist with PASS/WARNING/FAIL status.
+   - Include BPA severity-graded report.
+   - Include all error details and proposed fixes.
+2. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 06 completed.
+   - Add artifact path `<ProjectName>/tests/quality_review.md`.
+3. **CONFIRM** to the user that the artifact file has been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Steps 03-05 are completed.
+- **READ** TMDL files and CSV files from disk (NOT from chat memory).
+- **DO NOT** rely on chat history for any data from previous steps.
+
+**Present the complete report and await user validation.**

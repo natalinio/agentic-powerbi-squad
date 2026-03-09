@@ -10,11 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 📄 **Step 8: Report Design** skill (`.github/skills/08-report-design.md`) for layout/UX/navigation blueprinting
+- 📄 **Step 8: Report Design** skill (`.github/skills/08-report-design.md`) — now outputs `report_blueprint.json` (structured JSON) instead of chat-only text
+- 📄 **Step 9: Report Implementation** skill (`.github/skills/09-report-implementation.md`) — generates physical PBIR page/visual files from the blueprint
+- 📄 **Step 10: Report Quality Validation** skill (`.github/skills/10-report-quality-validation.md`) — cross-references PBIR files against TMDL model and blueprint
 - 📚 **Report design best practices** reference (`.github/references/report-design-visualization-best-practices.md`)
+- 📚 **PBIR visual templates** reference (`.github/references/pbir-visual-templates.md`) — validated JSON templates for 8 visual types (card, bar, column, line, matrix, table, slicer, donut)
+- 📚 **Workflow state management** reference (`.github/references/workflow-state-management.md`) — disk-based state tracking protocol with `workflow_state.json`
+- 🔄 **Disk-based state management**: All steps now persist artifacts to disk and read from disk (not chat history), enabling workflow resumability
+- 🔄 **Artifact checkpointing**: Every skill file now includes mandatory checkpointing and context flushing sections
+
+### Changed
+- 🤖 **Agent renamed**: `@semantic-modeler` → `@powerbi-AI-developer` (file: `powerbi-AI-developer.agent.md`) — reflects full-stack Power BI role (semantic model + report visuals)
+- 🤖 **Project renamed**: "AI Semantic Layer Builder" → "Power BI AI Developer"
+- 🤖 **Workflow expanded from 8 to 10 steps** with full report generation and validation
+- 📋 **Agent definition** updated with Workflow State Management section, Steps 9-10, and context flushing protocol
+- 📋 **All skill files (01-08)** updated with Artifact Checkpointing and Context Flushing Rule sections
 
 ### Planned
-- Report generation (Power BI Report definition automation)
+- Advanced report features (bookmarks, drill-through, conditional formatting)
 - Advanced DAX patterns (statistical functions, predictive measures)
 - Azure integration (Azure SQL, Azure Data Lake)
 - CI/CD pipelines (Azure DevOps, GitHub Actions)
@@ -24,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-02-23
 
 ### Added
-- 🤖 **Custom GitHub Copilot Agent** (`@semantic-modeler`) for semantic model automation
+- 🤖 **Custom GitHub Copilot Agent** (`@powerbi-AI-developer`) for semantic model and report automation
 - 📋 **7-Step Agentic Workflow** with mandatory approval gates:
   1. Requirements Analysis
   2. Logical Data Model (Mermaid ER diagram)

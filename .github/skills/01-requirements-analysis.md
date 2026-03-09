@@ -83,4 +83,23 @@ Present the analysis as a structured table:
 |------|-------------------|-------------|
 ```
 
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **SAVE** the full requirements analysis to disk as `<ProjectName>/spec/requirements_summary.md`.
+   - The file must contain ALL tables from the Output Format above (KPIs, Dimensions, Fact Tables, RLS Rules).
+   - Include any flagged ambiguities or missing requirements at the end of the file.
+2. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 01 completed.
+   - Add artifact path `<ProjectName>/spec/requirements_summary.md`.
+3. **CONFIRM** to the user that the artifact file has been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Step 00 is completed.
+- **READ** any existing artifacts from previous steps from disk (NOT from chat memory).
+- **DO NOT** rely on chat history for any data from previous steps.
+
 **STOP here. Await user validation before proceeding to Step 2.**

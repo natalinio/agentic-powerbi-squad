@@ -122,4 +122,25 @@ erDiagram
 - [ ] **NO ambiguous paths**: Verify that between any two tables there is ONLY ONE active relationship path (no redundant FKs in fact tables)
 - [ ] If snowflaking is used, ensure fact tables connect only to the lowest-grain dimension in the hierarchy
 
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **SAVE** the ER diagram and model design to disk as `<ProjectName>/spec/er_diagram.md`.
+   - The file must contain the full Mermaid.js ER diagram code block.
+   - Include the grain definitions for each fact table.
+   - Include the checklist results.
+   - Include any design decisions and rationale.
+2. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 02 completed.
+   - Add artifact path `<ProjectName>/spec/er_diagram.md`.
+3. **CONFIRM** to the user that the artifact file has been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Step 01 is completed.
+- **READ** `<ProjectName>/spec/requirements_summary.md` from disk (Step 01 artifact).
+- **DO NOT** rely on chat history for requirements data.
+
 **STOP here. Present the ER diagram and await user validation before proceeding to Step 3.**

@@ -874,4 +874,21 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
+## Artifact Checkpointing (MANDATORY)
+
+**BEFORE presenting results to the user**, the agent MUST:
+
+1. **VERIFY** all TMDL files have been written to `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`.
+2. **UPDATE** `<ProjectName>/workflow_state.json`:
+   - Set `pendingStep` to Step 03 completed.
+   - Add all generated TMDL file paths to the artifacts list.
+3. **CONFIRM** to the user that all TMDL files have been saved.
+
+## Context Flushing Rule
+
+When starting this step, the agent MUST:
+- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-02 are completed.
+- **READ** `<ProjectName>/spec/requirements_summary.md` and `<ProjectName>/spec/er_diagram.md` from disk.
+- **DO NOT** rely on chat history for requirements or model design data.
+
 **STOP here. Await user validation before proceeding to Step 4.**
