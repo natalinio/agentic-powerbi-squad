@@ -37,6 +37,11 @@ When analyzing the functional specifications document, perform the following ext
   - Which user roles exist
   - Which dimension tables each role filters
   - The DAX filter expression logic
+- If (and ONLY if) RLS is in scope, reference `.github/references/security-rls-best-practices.md` to ensure:
+  - Least privilege and explicit allow/deny behavior is specified
+  - The identity mechanism is clear (e.g., `USERNAME()`, `USERPRINCIPALNAME()`, `CUSTOMDATA()`)
+  - RLS is designed to filter Dimensions (with propagation to Facts) rather than filtering Facts directly
+- Context optimization: if RLS is NOT mentioned/required, do NOT load security references.
 - If no RLS is mentioned, explicitly note: "No RLS requirements detected."
 
 ### 5. Identify Fact Table Separation

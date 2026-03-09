@@ -112,7 +112,7 @@ Understanding the structure is critical for effective contributions:
 ```
 .github/
 ├── agents/              # Custom agent definitions (modify with caution)
-├── skills/              # Step-by-step execution guides (7 files)
+├── skills/              # Step-by-step execution guides (9 files)
 ├── references/          # Knowledge base (TMDL, DAX, BPA rules)
 └── scripts/             # Universal Python tools (lineage fix, testing)
 
@@ -123,7 +123,7 @@ Understanding the structure is critical for effective contributions:
 ├── data/                # Generated CSV mock data
 ├── scripts/             # Project-specific Python scripts
 ├── tests/               # Functional test artifacts
-└── input/               # User specifications
+└── spec/                # User specifications
 ```
 
 ### What to Edit
@@ -133,13 +133,13 @@ Understanding the structure is critical for effective contributions:
 | `.github/skills/` | Improve workflow steps or fix bugs in agent execution logic |
 | `.github/references/` | Add new DAX patterns, BPA rules, relationship patterns, or TMDL syntax updates |
 | `.github/scripts/` | Fix bugs or add features to universal Python tools |
-| `specs/` | Document new features following the `.specify/template/` structure |
+| `spec/` | Maintain specification templates and examples |
 | `README.md` | Improve documentation, fix typos, add examples |
 
 ### What NOT to Edit (Without Discussion)
 
 - `.github/copilot-instructions.md` (global agent behavior)
-- `.github/agents/semantic-modeler.agent.md` (core agent definition)
+- `.github/agents/semanti-modeler.agent.md` (core agent definition)
 
 For these files, **open an issue first** to discuss proposed changes.
 

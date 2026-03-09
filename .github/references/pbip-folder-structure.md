@@ -57,8 +57,8 @@
 │   ├── tests_definition.md            ← Manual test guide
 │   ├── tests_execution.md             ← Test results report
 │   └── tests_execution_raw.json       ← Raw test results
-└── input/                             ← User specifications & inputs
-    └── <spec_file>.md
+└── spec/                              ← User specifications
+	└── <spec_file>.md
 ```
 
 ---

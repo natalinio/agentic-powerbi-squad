@@ -7,9 +7,10 @@ Perform a comprehensive cross-check of ALL generated artifacts before the user o
 Before starting the review:
 1. **Read** `.github/references/tmdl-syntax-reference.md` for syntax validation rules.
 2. **Read** `.github/references/naming-conventions.md` for naming compliance.
-3. **Load** all generated TMDL files from `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`.
-4. **Load** the CSV mock data files from `<ProjectName>/data/`.
-5. **Verify** any uncertain TMDL syntax using `microsoft_docs_search` or `microsoft_docs_fetch` MCP tool.
+3. If (and ONLY if) RLS is implemented, **read** `.github/references/security-rls-best-practices.md` and validate the model follows least-privilege, explicit allow/deny behavior, and auditable security logic.
+4. **Load** all generated TMDL files from `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`.
+5. **Load** the CSV mock data files from `<ProjectName>/data/`.
+6. **Verify** any uncertain TMDL syntax using `microsoft_docs_search` or `microsoft_docs_fetch` MCP tool.
 
 ## Review Checklist
 
@@ -105,6 +106,7 @@ For EACH table's partition:
 - [ ] RLS role files exist in `roles/` subfolder.
 - [ ] `tablePermission` filter expressions reference ONLY Dimension tables (never Fact tables directly).
 - [ ] Filter expressions use valid DAX syntax.
+- [ ] RLS logic does NOT have overly permissive fallbacks (e.g., `TRUE()` for unknown users). Prefer explicit deny-by-default behavior.
 - [ ] Bi-directional cross-filtering is enabled on relationships filtered by RLS roles.
 
 ### 11. BPA Rules Validation (Detective Quality Assurance)

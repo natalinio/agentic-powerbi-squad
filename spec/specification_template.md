@@ -328,10 +328,10 @@ Before submitting this specification to the `@semantic-modeler` agent, ensure:
 
 Save this file as:
 ```
-<YourProjectName>/input/spec_<your_project_name>.md
+<YourProjectName>/spec/spec_<your_project_name>.md
 ```
 
 Then invoke the agent:
 ```
-@semantic-modeler <YourProjectName>/input/spec_<your_project_name>.md
+@semantic-modeler <YourProjectName>/spec/spec_<your_project_name>.md
 ```

@@ -3,6 +3,7 @@
 ## Prerequisites
 - Reference `.github/references/relationship-patterns.md` for advanced relationship patterns.
 - Reference `.github/references/naming-conventions.md` for naming rules.
+- If (and ONLY if) RLS is required by the specs, reference `.github/references/security-rls-best-practices.md` for recommended patterns (dynamic RLS, least privilege, governance).
 
 ## Design Rules
 
@@ -42,6 +43,11 @@ When designing the logical data model, strictly adhere to Kimball dimensional mo
 
 ### Degenerate Dimensions
 - Transaction identifiers (e.g., `SalesID`, `InvoiceNumber`) that don't warrant a separate dimension table should be kept directly in the Fact table as **degenerate dimensions**.
+
+### Security & RLS Modeling (if applicable)
+- If requirements include **dynamic RLS**, plan the required security mapping entities in the logical model (e.g., `Dim_UserSecurity`, `Bridge_UserTerritory`, `Bridge_UserCustomer`).
+- Prefer modeling RLS filters on **Dimensions** (with relationship propagation to Facts) rather than filtering Facts directly.
+- Keep security entities consistent with the overall star design (avoid introducing ambiguous paths or many-to-many unless explicitly required).
 
 ### ⛔ CRITICAL: Ambiguous Path Detection
 

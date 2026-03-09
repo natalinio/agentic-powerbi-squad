@@ -5,7 +5,8 @@ Before writing ANY TMDL code:
 1. **Read** `.github/references/tmdl-syntax-reference.md` — contains validated syntax templates.
 2. **Read** `.github/references/naming-conventions.md` — contains naming rules for all objects.
 3. **Read** `.github/references/pbip-folder-structure.md` — defines output folder structure.
-4. **Verify** any uncertain syntax using `microsoft_docs_search` MCP tool with query: `"TMDL <object_type> definition syntax"`.
+4. If (and ONLY if) the specification includes Row-Level Security requirements, **read** `.github/references/security-rls-best-practices.md` before defining any RLS roles, table permissions, or bidirectional security propagation.
+5. **Verify** any uncertain syntax using `microsoft_docs_search` MCP tool with query: `"TMDL <object_type> definition syntax"`.
 
 ## TMDL Syntax Critical Rules
 

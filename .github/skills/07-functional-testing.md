@@ -11,6 +11,7 @@ This skill covers:
 4. **Edge Case Tests**: BLANK values, zero divisions, empty filters
 5. **Performance Tests**: Query response time validation
 6. **Business Rule Tests**: Consistency with functional specifications
+7. **Security Tests (if applicable)**: Validation of Row-Level Security behavior per role/user
 
 ## Prerequisites — MANDATORY
 Before starting the testing phase:
@@ -20,6 +21,22 @@ Before starting the testing phase:
 4. ✅ **Date table marked** — `Dim_Date` marked as Date Table with `Date` column as key
 5. ✅ **Relationships active** — All 9 relationships visible in Model View
 6. 📋 **Test plan documented** — Specification file available for expected results comparison
+
+If (and ONLY if) RLS is implemented, also reference `.github/references/security-rls-best-practices.md` to align validation scenarios (least privilege, explicit deny-by-default, auditable rules).
+
+Context optimization: if RLS is NOT implemented, skip this reference entirely.
+
+---
+
+## RLS Testing Addendum (if applicable)
+
+**Goal**: Validate that each RLS role restricts data as expected and does not accidentally grant broader access.
+
+**Minimum manual checks (Power BI Desktop)**:
+1. Use **View as** to test each role with representative identities.
+2. Validate that restricted users can still see expected totals where permitted (and see blanks/empty results where not permitted).
+3. Validate that unexpected/unknown users do NOT get full access (deny-by-default expectation).
+4. If bi-directional security propagation is used, validate it is limited to the specific relationships justified by RLS requirements.
 
 ---
 
@@ -113,7 +130,7 @@ RELATIONSHIPS:
 ### Step B.1: Requirements & Measures Analysis
 
 **Agent Actions**:
-1. **Read** functional specification file (e.g., `<ProjectName>/input/spec_sales_overview_fytd.md`)
+1. **Read** functional specification file (e.g., `<ProjectName>/spec/spec_sales_overview_fytd.md`)
 2. **Extract** KPIs, measures, and business rules:
    - Primary KPIs (e.g., "Sales vs Budget FYTD", "Adjusted Profit %")
    - Dimensions (Area, Customer, Industry, Date)
@@ -1235,7 +1252,7 @@ Before marking **Step 7: Functional Testing** as complete:
 
 ## References
 
-- **Specification**: `<ProjectName>/input/<spec_file>.md` — Business requirements and KPI definitions
+- **Specification**: `<ProjectName>/spec/<spec_file>.md` — Business requirements and KPI definitions
 - **DAX Patterns**: `.github/references/dax-patterns.md` — Measure formula templates
 - **DAX Optimization**: `.github/references/dax-optimization-framework.md` — Performance tuning guidance
 - **BPA Rules**: `.github/references/bpa-rules-reference.md` — Best practice compliance validation

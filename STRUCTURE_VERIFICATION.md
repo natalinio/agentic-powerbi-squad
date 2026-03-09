@@ -21,9 +21,9 @@ All documentation correctly uses `<ProjectName>` as a placeholder for user-creat
 | README.md | ✅ PASS | Consistent use of `<ProjectName>`, dedicated explanation section added |
 | CONTRIBUTING.md | ✅ PASS | Project structure correctly documented |
 | .github/copilot-instructions.md | ✅ PASS | Agent instructions use `<ProjectName>` throughout |
-| .github/agents/semantic-modeler.agent.md | ✅ PASS | Agent workflow references `<ProjectName>/` |
-| .github/skills/*.md (7 files) | ✅ PASS | All skills use `<ProjectName>` consistently |
-| .github/references/*.md (7 files) | ✅ PASS | Reference files use `<ProjectName>` for examples |
+| .github/agents/semanti-modeler.agent.md | ✅ PASS | Agent workflow references `<ProjectName>/` |
+| .github/skills/*.md (8 files) | ✅ PASS | All skills use `<ProjectName>` consistently |
+| .github/references/*.md (9 files) | ✅ PASS | Reference files use `<ProjectName>` for examples |
 
 **Key Points**:
 - ✅ `<ProjectName>` is used in ALL code examples
@@ -43,8 +43,8 @@ The physical folder `[ProjectName]` exists as a **template/example** and is prop
 |--------|--------|----------------|
 | Folder exists | ✅ YES | `[ProjectName]/` at repository root |
 | README created | ✅ YES | `[ProjectName]/README.md` explains it's a template |
-| Structure complete | ✅ YES | Contains `PBIP/`, `data/`, `scripts/`, `tests/`, `input/` |
-| Sample spec included | ✅ YES | `[ProjectName]/input/sample_spec.md` (Sales Overview FYTD) |
+| Structure complete | ✅ YES | Contains `PBIP/`, `data/`, `scripts/`, `tests/`, `spec/` |
+| Sample spec included | ✅ YES | `spec/sample_spec.md` (Sales Overview FYTD) |
 | Referenced in main README | ✅ YES | Section "About `<ProjectName>` Placeholder" added |
 | .gitignore configured | ✅ YES | Instructions for excluding user projects, keeps `[ProjectName]/` tracked |
 
@@ -64,16 +64,17 @@ The GitHub Copilot Custom Agent (@semantic-modeler) correctly handles multiple p
 | Feature | Status | Evidence |
 |---------|--------|----------|
 | Dynamic project name | ✅ YES | Agent accepts any `<ProjectName>` in invocation |
-| Project isolation | ✅ YES | Each project has own `PBIP/`, `data/`, `scripts/`, `tests/`, `input/` |
+| Project isolation | ✅ YES | Each project has own `PBIP/`, `data/`, `scripts/`, `tests/`, `spec/` |
 | Universal scripts | ✅ YES | `.github/scripts/` work with any `<ProjectName>` parameter |
-| PBIP canvas verification | ✅ YES | Agent checks `<ProjectName>/PBIP/*.pbip` before proceeding |
+| PBIP scaffold bootstrap | ✅ YES | Agent bootstraps PBIP scaffold if missing (Skill 00) and then proceeds |
 | Path construction | ✅ YES | All file operations use `<ProjectName>/` prefix dynamically |
 
 **Example Invocations**:
 ```
-@semantic-modeler SalesOverview/input/spec_sales_fytd.md
-@semantic-modeler FinanceReport/input/spec_finance_ytd.md
-@semantic-modeler CustomerAnalytics/input/spec_customer_360.md
+@semantic-modeler SalesOverview/spec/spec_sales_fytd.md
+@semantic-modeler FinanceReport/spec/spec_finance_ytd.md
+@semantic-modeler CustomerAnalytics/spec/spec_customer_360.md
+
 ```
 
 Each creates artifacts in its respective project folder without conflicts.
@@ -114,7 +115,7 @@ All file paths follow consistent patterns:
 | PBIP canvas | `<ProjectName>/PBIP/<ProjectName>.pbip` | `SalesOverview/PBIP/SalesOverview.pbip` | Power BI Project entry |
 | TMDL files | `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/` | `.../definition/model.tmdl` | Semantic model files |
 | Mock data | `<ProjectName>/data/*.csv` | `SalesOverview/data/fact_sales.csv` | Generated CSVs |
-| Specifications | `<ProjectName>/input/<spec>.md` | `SalesOverview/input/spec_sales.md` | User requirements |
+| Specifications | `<ProjectName>/spec/<spec>.md` | `SalesOverview/spec/spec_sales.md` | User requirements |
 | Tests | `<ProjectName>/tests/*` | `SalesOverview/tests/tests_definition.json` | Test artifacts |
 
 **No hardcoded paths found** — All paths are dynamically constructed based on user input.
@@ -126,7 +127,7 @@ All file paths follow consistent patterns:
 During verification, the following corrections were made:
 
 ### Fixed References
-1. ✅ **README.md**: Updated example spec reference from non-existent `specs/001-semantic-model-compiler/` to actual `[ProjectName]/input/sample_spec.md`
+1. ✅ **README.md**: Updated example spec reference from non-existent `specs/001-semantic-model-compiler/` to actual `spec/sample_spec.md`
 2. ✅ **README.md**: Removed `.specify/` and `specs/` folders from structure diagram (not part of core user-facing structure)
 3. ✅ **README.md**: Added dedicated section explaining `<ProjectName>` placeholder convention
 4. ✅ **CONTRIBUTING.md**: Updated project structure diagram to show both `[ProjectName]/` template and `<ProjectName>/` user projects

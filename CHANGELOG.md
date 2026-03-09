@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 📄 **Step 8: Report Design** skill (`.github/skills/08-report-design.md`) for layout/UX/navigation blueprinting
+- 📚 **Report design best practices** reference (`.github/references/report-design-visualization-best-practices.md`)
+
 ### Planned
 - Report generation (Power BI Report definition automation)
 - Advanced DAX patterns (statistical functions, predictive measures)
@@ -49,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `data/` — Generated CSV mock data
   - `scripts/` — Project-specific Python scripts
   - `tests/` — Functional test artifacts (JSON/MD)
-  - `input/` — User specification files
+  - `spec/` — User specification files
 - 🧪 **Automated Functional Testing**:
   - Model introspection (exact column/measure names)
   - Base aggregation tests (cross-validated with CSV)

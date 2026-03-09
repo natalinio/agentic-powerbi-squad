@@ -17,7 +17,7 @@ When creating a new semantic model project:
 2. **Copy this structure** to your new project folder
 3. **Invoke the agent** with your project name:
    ```
-   @semantic-modeler YourProjectName/input/spec_your_project.md
+   @semantic-modeler YourProjectName/spec/spec_your_project.md
    ```
 
 ## 📋 Expected Structure
@@ -26,8 +26,8 @@ Each project should follow this structure:
 
 ```
 YourProjectName/                    ← Replace with your actual project name
-├── input/                          ← Your specification files
-│   └── spec_your_requirements.md   ← Filled specification (copied from template)
+├── spec/                           ← Your specification files (main input to the agent)
+│   └── spec_your_requirements.md   ← Filled specification (copied from global template)
 ├── PBIP/                           ← Power BI Project files
 │   ├── YourProjectName.pbip
 │   ├── YourProjectName.SemanticModel/
@@ -47,7 +47,11 @@ YourProjectName/                    ← Replace with your actual project name
 
 ### Step 1: Create PBIP Canvas
 
-Before running the agent, create the PBIP canvas:
+If you don't have a PBIP project scaffold yet, you can either:
+- Let the agent bootstrap it automatically (via **Step 00**), or
+- Create it manually in Power BI Desktop (steps below).
+
+If you choose to create the PBIP scaffold manually in Power BI Desktop:
 
 1. Open **Power BI Desktop**
 2. Enable preview features:
@@ -61,35 +65,35 @@ Before running the agent, create the PBIP canvas:
 
 ### Step 2: Prepare Specifications
 
-The `input/` folder contains two specification files:
+Use the global templates under `spec/` (repository root), then copy your filled spec into your project `spec/` folder.
 
-#### 📋 `specification_template.md` (EMPTY TEMPLATE)
+#### 📋 `spec/specification_template.md` (EMPTY TEMPLATE)
 - **Use this as your starting point** for new projects
 - Structured template in **English** with all required sections
 - Contains instructions and placeholder text (`<angle brackets>`)
 - Fill in your project-specific requirements
-- Copy to your project folder: `YourProjectName/input/spec_your_project.md`
+- Copy to your project folder: `YourProjectName/spec/spec_your_project.md`
 
-#### 📖 `sample_spec.md` (COMPLETE EXAMPLE)
+#### 📖 `spec/sample_spec.md` (COMPLETE EXAMPLE)
 - Real-world example: Sales Overview FYTD report
 - Shows how a completed specification should look
 - Written in Italian (demonstrates multilingual support)
 - Reference this for inspiration and structure validation
 
 **Recommended Workflow:**
-1. Copy `specification_template.md` to your project folder
+1. Copy `spec/specification_template.md` to your project folder
 2. Rename it to `spec_<your_project_name>.md`
 3. Fill in all sections following the template structure
-4. Refer to `sample_spec.md` for examples when needed
+4. Refer to `spec/sample_spec.md` for examples when needed
 5. Ensure the document is in **English** for optimal code generation
 
 ### Step 3: Invoke Agent
 
 ```
-@semantic-modeler YourProjectName/input/spec_your_project.md
+@semantic-modeler YourProjectName/spec/spec_your_project.md
 ```
 
-The agent will execute a 7-step workflow to build your semantic model.
+The agent will execute an 8-step workflow to build your semantic model (including report design).
 
 ---
 

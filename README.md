@@ -23,7 +23,7 @@ Instead of manually building data models, writing DAX measures, and configuring 
 
 ### Key Features
 
-- 🤖 **Agentic Workflow**: 7-step methodology with mandatory approval gates
+- 🤖 **Agentic Workflow**: 8-step methodology with mandatory approval gates
 - 🛡️ **Anti-Hallucination**: MCP tools verify TMDL/DAX syntax against Microsoft official documentation
 - 📐 **Best Practices Enforced**: Kimball methodology, naming conventions, DAX optimization framework, BPA rules (27+)
 - 🔄 **Iterative & Auditable**: Each step requires user validation before proceeding
@@ -65,6 +65,10 @@ pip install -r requirements.txt
 
 ### Step 3: Create PBIP Canvas
 
+If you don't have a PBIP project scaffold yet, you can either:
+- Let the agent bootstrap it automatically (via **Step 00**), or
+- Create it manually in Power BI Desktop (steps below).
+
 1. Open Power BI Desktop
 2. Create a blank report
 3. File → Save As → **Power BI Project**
@@ -77,8 +81,8 @@ pip install -r requirements.txt
 
 #### 📋 Use the Structured Template
 
-1. **Copy the template** from `[ProjectName]/input/specification_template.md` to your project folder
-2. **Rename it** to `<YourProjectName>/input/spec_<your_project_name>.md`
+1. **Copy the template** from `spec/specification_template.md` to your project folder
+2. **Rename it** to `<YourProjectName>/spec/spec_<your_project_name>.md`
 3. **Fill in ALL sections** following the template structure:
    - Report objective & target audience
    - Key Performance Indicators (functional descriptions)
@@ -93,12 +97,12 @@ pip install -r requirements.txt
 
 **Example:**
 ```
-SalesOverview/input/spec_sales_overview.md
+SalesOverview/spec/spec_sales_overview.md
 ```
 
 **📖 Reference Materials:**
-- **Empty Template**: [[ProjectName]/input/specification_template.md]([ProjectName]/input/specification_template.md) — Start here
-- **Complete Example**: [[ProjectName]/input/sample_spec.md]([ProjectName]/input/sample_spec.md) — Sales Overview FYTD (Italian, demonstrates required detail level)
+- **Empty Template**: [spec/specification_template.md](spec/specification_template.md) — Start here
+- **Complete Example**: [spec/sample_spec.md](spec/sample_spec.md) — Sales Overview FYTD (Italian, demonstrates required detail level)
 
 **Language Note:** While you can write specifications in your native language (like the Italian example), **writing in English** is recommended for optimal DAX/TMDL code generation consistency.
 
@@ -107,15 +111,15 @@ SalesOverview/input/spec_sales_overview.md
 Open GitHub Copilot Chat in VS Code and type:
 
 ```
-@semantic-modeler <YourProjectName>/input/spec_your_project.md
+@semantic-modeler <YourProjectName>/spec/spec_your_project.md
 ```
 
 **Example:**
 ```
-@semantic-modeler SalesOverview/input/spec_sales_overview.md
+@semantic-modeler SalesOverview/spec/spec_sales_overview.md
 ```
 
-The agent will execute a 7-step workflow:
+The agent will execute an 8-step workflow:
 1. **Requirements Analysis**
 2. **Logical Data Model** (Mermaid ER diagram)
 3. **Physical Model & TMDL** (code generation)
@@ -123,6 +127,7 @@ The agent will execute a 7-step workflow:
 5. **Mock Data Generation** (Python/Faker)
 6. **Quality Review** (BPA compliance)
 7. **Functional Testing** (automated DAX validation)
+8. **Report Design** (layout, UX, navigation)
 
 Each step requires your approval before proceeding.
 
@@ -145,23 +150,26 @@ aisemanticlayer/
 ├── .github/                           # Agentic system core (universal, project-agnostic)
 │   ├── copilot-instructions.md        # Global instructions for GitHub Copilot
 │   ├── agents/
-│   │   └── semantic-modeler.agent.md  # Main invocable agent
-│   ├── skills/                        # Step-by-step execution skills (7 files)
+│   │   └── semanti-modeler.agent.md  # Main invocable agent
+│   ├── skills/                        # Step-by-step execution skills (8 files)
 │   │   ├── 01-requirements-analysis.md
 │   │   ├── 02-logical-model.md
 │   │   ├── 03-physical-model-tmdl.md
 │   │   ├── 04-dax-development.md
 │   │   ├── 05-mock-data-generation.md
 │   │   ├── 06-code-review.md
-│   │   └── 07-functional-testing.md
-│   ├── references/                    # TMDL, DAX, PBIP reference material (7 files)
+│   │   ├── 07-functional-testing.md
+│   │   └── 08-report-design.md
+│   ├── references/                    # TMDL, DAX, PBIP reference material (9 files)
 │   │   ├── tmdl-syntax-reference.md
 │   │   ├── naming-conventions.md
 │   │   ├── pbip-folder-structure.md
 │   │   ├── dax-patterns.md
 │   │   ├── relationship-patterns.md
 │   │   ├── dax-optimization-framework.md
-│   │   └── bpa-rules-reference.md
+│   │   ├── security-rls-best-practices.md
+│   │   ├── bpa-rules-reference.md
+│   │   └── report-design-visualization-best-practices.md
 │   ├── scripts/                       # Universal tools (project-agnostic)
 │   │   ├── fix_lineage_tags.py        # GUID lineageTag regeneration
 │   │   ├── remove_tmdl_comments.py    # TMDL comment removal
@@ -179,20 +187,21 @@ aisemanticlayer/
 ├── README.md                          # This file
 ├── SECURITY.md                        # Security policy
 ├── STRUCTURE_VERIFICATION.md          # Repository structure validation
+├── spec/                              # 📋 Global specification templates/examples
+│   ├── specification_template.md       # EMPTY TEMPLATE (start here)
+│   └── sample_spec.md                  # COMPLETE EXAMPLE (Sales Overview FYTD)
 │
 ├── [ProjectName]/                     # 📌 TEMPLATE FOLDER (example structure)
 │   ├── README.md                      # Template usage instructions
-│   ├── input/
-│   │   ├── specification_template.md  # 📋 EMPTY TEMPLATE (start here)
-│   │   └── sample_spec.md             # 📖 COMPLETE EXAMPLE (Sales Overview FYTD)
+│   ├── spec/                          # Project specification folder (example)
 │   ├── PBIP/                          # (empty - created by user in Power BI Desktop)
 │   ├── data/                          # (empty - populated by Step 05)
 │   ├── scripts/                       # (empty - populated by Step 05)
 │   └── tests/                         # (empty - populated by Step 07)
 │
 └── <YourProjectName>/                 # 🚀 YOUR PROJECT FOLDERS (create one per semantic model)
-    ├── input/
-    │   └── spec_your_requirements.md  # Your functional specifications
+        ├── spec/
+        │   └── spec_your_requirements.md  # Your functional specifications
     ├── PBIP/
     │   ├── <YourProjectName>.pbip
     │   ├── <YourProjectName>.SemanticModel/
@@ -222,7 +231,7 @@ aisemanticlayer/
 
 **`[ProjectName]`** (with square brackets) = **Template folder** in this repository
 - Located at repository root: `[ProjectName]/`
-- Contains example files: `input/sample_spec.md`, empty folders (`PBIP/`, `data/`, `scripts/`, `tests/`)
+- Contains the expected folder structure (including an example `spec/` folder) and empty implementation folders (`PBIP/`, `data/`, `scripts/`, `tests/`).
 - Purpose: Reference structure for creating new projects
 - **Do NOT use this folder for real projects**
 
@@ -238,12 +247,12 @@ aisemanticlayer/
 
 **To create a new project:**
 1. Create a folder with your project name at repository root (e.g., `SalesOverview/`)
-2. Create subfolders: `input/`, `PBIP/`, `data/`, `scripts/`, `tests/`
-3. **Copy specification template** from `[ProjectName]/input/specification_template.md` to `SalesOverview/input/`
+2. Create subfolders: `spec/` (the agent can create the others during initialization)
+3. **Copy specification template** from `spec/specification_template.md` to `SalesOverview/spec/`
 4. **Fill in the specification** with your requirements (rename to `spec_sales_overview.md`)
-5. Create PBIP canvas in Power BI Desktop → File → Save As → Power BI Project
-6. Save as: `SalesOverview/PBIP/SalesOverview.pbip`
-7. Invoke agent: `@semantic-modeler SalesOverview/input/spec_sales_overview.md`
+5. Invoke agent: `@semantic-modeler SalesOverview/spec/spec_sales_overview.md` (it will bootstrap the PBIP scaffold via Step 00 if missing)
+6. (Optional) Create PBIP manually in Power BI Desktop → File → Save As → Power BI Project
+7. Save as: `SalesOverview/PBIP/SalesOverview.pbip`
 
 **See [`[ProjectName]/README.md`]([ProjectName]/README.md) for detailed template instructions.**
 
@@ -270,7 +279,8 @@ User Specification (Markdown)
 │  ├─ 04-dax-development.md                         │
 │  ├─ 05-mock-data-generation.md                    │
 │  ├─ 06-code-review.md                             │
-│  └─ 07-functional-testing.md                      │
+│  ├─ 07-functional-testing.md                      │
+│  └─ 08-report-design.md                           │
 └───────────────────────────────────────────────────┘
         ↓
 ┌───────────────────────────────────────────────────┐
@@ -328,7 +338,7 @@ The **functional specification** is the **single most critical input** to the ag
 - Validate functional correctness
 - Ensure security requirements
 
-**📖 See the template**: [`[ProjectName]/input/specification_template.md`]([ProjectName]/input/specification_template.md)
+**📖 See the template**: [spec/specification_template.md](spec/specification_template.md)
 
 ### Anti-Hallucination Strategy
 
@@ -347,7 +357,7 @@ This ensures **100% accuracy** in TMDL syntax (whitespace-sensitive, tab-indente
 - **[Copilot Instructions](.github/copilot-instructions.md)**: Global rules for the agent
 - **[Skills](.github/skills/)**: Step-by-step execution guides
 - **[References](.github/references/)**: TMDL/DAX/BPA knowledge base
-- **[Feature Specs](specs/)**: Functional requirements for new features
+- **[Specification Templates](spec/)**: Templates and examples for writing project specifications
 - **[Contributing](CONTRIBUTING.md)**: How to contribute to this project
 
 ---
@@ -357,12 +367,12 @@ This ensures **100% accuracy** in TMDL syntax (whitespace-sensitive, tab-indente
 ### Custom Project Initialization
 
 ```
-@semantic-modeler <YourProjectName>/input/spec_custom_project.md
+@semantic-modeler <YourProjectName>/spec/spec_custom_project.md
 ```
 
 **Example:**
 ```
-@semantic-modeler FinanceReportFYTD/input/spec_finance_report.md
+@semantic-modeler FinanceReportFYTD/spec/spec_finance_report.md
 ```
 
 ### Manual Script Execution
@@ -402,7 +412,7 @@ python .github/scripts/run_tests.py SalesOverview --port 54321 --verbose
 1. **Add new DAX patterns**: Edit `.github/references/dax-patterns.md`
 2. **Add BPA rules**: Edit `.github/references/bpa-rules-reference.md`
 3. **Add relationship patterns**: Edit `.github/references/relationship-patterns.md`
-4. **Customize agent behavior**: Edit `.github/agents/semantic-modeler.agent.md`
+4. **Customize agent behavior**: Edit `.github/agents/semanti-modeler.agent.md`
 
 ---
 
@@ -419,6 +429,7 @@ python .github/scripts/run_tests.py SalesOverview --port 54321 --verbose
 | **Step 5** | CSV mock data (referential integrity preserved) |
 | **Step 6** | BPA compliance report (27+ rules validated) |
 | **Step 7** | Automated test results (✅ PASS / ❌ FAIL for each measure) |
+| **Step 8** | Report design blueprint (pages, visuals, navigation) |
 
 ---
 
