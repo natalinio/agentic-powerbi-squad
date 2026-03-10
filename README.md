@@ -25,7 +25,7 @@ Instead of manually building data models, writing DAX measures, and configuring 
 
 ### Key Features
 
-- 🤖 **Agentic Workflow**: 10-step methodology with mandatory approval gates and disk-based state management
+- 🤖 **Agentic Workflow**: 10-step methodology with mandatory approval gates, disk-based state management, and explicit decision-point tracking
 - 🛡️ **Anti-Hallucination**: MCP tools verify TMDL/DAX syntax against Microsoft official documentation
 - 📐 **Best Practices Enforced**: Kimball methodology, naming conventions, DAX optimization framework, BPA rules (27+)
 - 🔄 **Iterative & Auditable**: Each step requires user validation before proceeding
@@ -156,7 +156,7 @@ This is equivalent to Option A but pre-loads the full workflow instructions into
 9. **Report Implementation** (PBIR visual generation)
 10. **Report Quality Validation** (final reconciliation)
 
-Each step requires your approval before proceeding. The workflow state is persisted to disk (`workflow_state.json`), so it can be resumed mid-session.
+Each step requires your approval before proceeding. The workflow state is persisted to disk (`workflow_state.json`) with structured decision points, user inputs, and audit ledger fields, so it can be resumed mid-session.
 
 ### Step 6: Open in Power BI Desktop
 
@@ -265,8 +265,9 @@ aisemanticlayer/
     │   ├── tests_definition.md        # Manual test guide
     │   ├── tests_execution.md         # Test results report
     │   ├── tests_execution_raw.json   # Raw test results
-    │   └── report_validation_execution.md  # Report quality validation (Step 10)
-    └── workflow_state.json            # Workflow progress tracker (all steps)
+        │   ├── report_validation_execution.md  # Report quality validation (Step 10)
+        │   └── lessons-learned.md          # Incident log (created only for user-reported defects)
+        └── workflow_state.json            # Workflow progress tracker + decision/audit ledger
 ```
 
 ### 📌 About Project Names

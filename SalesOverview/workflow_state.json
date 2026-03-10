@@ -1,144 +1,225 @@
-﻿{
-    "projectName":  "SalesOverview",
-    "currentStep":  8,
-    "completedSteps":  [
-                           {
-                               "step":  0,
-                               "name":  "Project Initialization",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:00:00Z",
-                               "completedAt":  "2026-03-09T10:01:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/PBIP/SalesOverview.pbip",
-                                                 "SalesOverview/PBIP/SalesOverview.Report/definition.pbir",
-                                                 "SalesOverview/PBIP/SalesOverview.Report/definition/version.json",
-                                                 "SalesOverview/PBIP/SalesOverview.Report/definition/report.json",
-                                                 "SalesOverview/PBIP/SalesOverview.Report/definition/pages/Page1/page.json",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition.pbism",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/database.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/model.tmdl",
-                                                 "SalesOverview/spec/spec_sales_overview_fytd.md"
-                                             ]
-                           },
-                           {
-                               "step":  1,
-                               "name":  "Requirements Analysis",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:02:00Z",
-                               "completedAt":  "2026-03-09T10:04:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/spec/requirements_summary.md"
-                                             ]
-                           },
-                           {
-                               "step":  2,
-                               "name":  "Logical Data Model",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:05:00Z",
-                               "completedAt":  "2026-03-09T10:10:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/spec/er_diagram.md"
-                                             ]
-                           },
-                           {
-                               "step":  3,
-                               "name":  "Physical Model \u0026 TMDL",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:11:00Z",
-                               "completedAt":  "2026-03-09T10:15:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/model.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/database.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/relationships.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/expressions.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Date.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Area.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Customer.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Industry.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Salesperson.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Fact_Sales.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Fact_Budget.tmdl",
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/_Measures.tmdl"
-                                             ]
-                           },
-                           {
-                               "step":  4,
-                               "name":  "DAX Development",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:16:00Z",
-                               "completedAt":  "2026-03-09T10:19:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/_Measures.tmdl"
-                                             ]
-                           },
-                           {
-                               "step":  5,
-                               "name":  "Mock Data Generation",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:20:00Z",
-                               "completedAt":  "2026-03-09T10:25:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/scripts/generate_mock_data.py",
-                                                 "SalesOverview/data/dim_date.csv",
-                                                 "SalesOverview/data/dim_area.csv",
-                                                 "SalesOverview/data/dim_customer.csv",
-                                                 "SalesOverview/data/dim_industry.csv",
-                                                 "SalesOverview/data/dim_salesperson.csv",
-                                                 "SalesOverview/data/fact_sales.csv",
-                                                 "SalesOverview/data/fact_budget.csv"
-                                             ]
-                           },
-                           {
-                               "step":  6,
-                               "name":  "Quality Review",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T10:26:00Z",
-                               "completedAt":  "2026-03-09T10:55:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/tests/quality_review.md"
-                                             ],
-                               "notes":  "All checks PASS. Post-review fixes applied: added defaultPowerBIDataSourceVersion to model.tmdl, renamed DAX VAR reserved keywords (Variance, Status) in _Measures.tmdl."
-                           },
-                           {
-                               "step":  7,
-                               "name":  "Functional Testing",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T11:00:00Z",
-                               "completedAt":  "2026-03-09T11:25:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/tests/tests_definition.json",
-                                                 "SalesOverview/tests/tests_execution.md",
-                                                 "SalesOverview/tests/tests_execution_raw.json"
-                                             ],
-                               "notes":  "23 tests across 6 suites â€” all PASSED."
-                           },
-                           {
-                               "step":  8,
-                               "name":  "Report Design",
-                               "status":  "completed",
-                               "startedAt":  "2026-03-09T11:30:00Z",
-                               "completedAt":  "2026-03-09T11:35:00Z",
-                               "artifacts":  [
-                                                 "SalesOverview/spec/report_blueprint.json"
-                                             ]
-                           }
-                       ],
-    "pendingStep":  {
-                        "step":  9,
-                        "name":  "Report Implementation",
-                        "status":  "in_progress",
-                        "startedAt":  "2026-03-09T21:57:44Z",
-                        "artifacts":  [
-                                          "SalesOverview/PBIP/SalesOverview.Report/definition.pbir",
-                                          "SalesOverview/PBIP/SalesOverview.Report/definition/report.json",
-                                          "SalesOverview/PBIP/SalesOverview.Report/definition/version.json",
-                                          "SalesOverview/PBIP/SalesOverview.Report/definition/pages/pages.json",
-                                          "SalesOverview/PBIP/SalesOverview.Report/definition/pages/32fe1020890a4d7642b0/page.json",
-                                          "SalesOverview/PBIP/SalesOverview.Report/definition/pages/32fe1020890a4d7642b0/visuals/",
-                                          "SalesOverview/PBIP/SalesOverview.Report/StaticResources/SharedResources/BaseThemes/CY25SU12.json"
-                                      ],
-                        "notes":  "Page 1 visuals regenerated after rollback using PBIR 2.5.0 templates and blueprint-aligned mappings. Created 12 visuals (4 slicers, 5 cards, 3 charts), validated JSON syntax and UTF-8 without BOM."
-                    },
-    "createdAt":  "2026-03-09T10:00:00Z",
-    "lastUpdated":  "2026-03-09T23:01:44Z"
+{
+  "projectName": "SalesOverview",
+  "currentStep": 9,
+  "decisionLedger": [
+    {
+      "id": "DP-STEP9-APPROVAL-20260309",
+      "step": 9,
+      "timestamp": "2026-03-09T23:07:17Z",
+      "type": "approval",
+      "question": "Step 9 completed. Proceed to next phase?",
+      "userInput": "perfetto, ora è rigenerato tutto! Step 9 completato.",
+      "resolution": "Step 9 marked completed and Step 10 prepared"
+    },
+    {
+      "id": "DP-PAGE2-PAGE3-REQUEST-20260309",
+      "step": 10,
+      "timestamp": "2026-03-09T23:07:17Z",
+      "type": "clarification",
+      "question": "Need manual build pack for Page 2 and a new Page 3 with additional native visuals?",
+      "userInput": "ora ridammi i visuals per la pagina 2 ... Aggiungiamo inoltre una pagina 3",
+      "resolution": "Created manual build pack and extended blueprint with Page 3 visual lab"
+    }
+  ],
+  "completedSteps": [
+    {
+      "step": 0,
+      "name": "Project Initialization",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:00:00Z",
+      "completedAt": "2026-03-09T10:01:00Z",
+      "artifacts": [
+        "SalesOverview/PBIP/SalesOverview.pbip",
+        "SalesOverview/PBIP/SalesOverview.Report/definition.pbir",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/version.json",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/report.json",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/pages/Page1/page.json",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition.pbism",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/database.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/model.tmdl",
+        "SalesOverview/spec/spec_sales_overview_fytd.md"
+      ]
+    },
+    {
+      "step": 1,
+      "name": "Requirements Analysis",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:02:00Z",
+      "completedAt": "2026-03-09T10:04:00Z",
+      "artifacts": [
+        "SalesOverview/spec/requirements_summary.md"
+      ],
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 2,
+      "name": "Logical Data Model",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:05:00Z",
+      "completedAt": "2026-03-09T10:10:00Z",
+      "artifacts": [
+        "SalesOverview/spec/er_diagram.md"
+      ],
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 3,
+      "name": "Physical Model & TMDL",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:11:00Z",
+      "completedAt": "2026-03-09T10:15:00Z",
+      "artifacts": [
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/model.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/database.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/relationships.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/expressions.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Date.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Area.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Customer.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Industry.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Dim_Salesperson.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Fact_Sales.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/Fact_Budget.tmdl",
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/_Measures.tmdl"
+      ],
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 4,
+      "name": "DAX Development",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:16:00Z",
+      "completedAt": "2026-03-09T10:19:00Z",
+      "artifacts": [
+        "SalesOverview/PBIP/SalesOverview.SemanticModel/definition/tables/_Measures.tmdl"
+      ],
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 5,
+      "name": "Mock Data Generation",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:20:00Z",
+      "completedAt": "2026-03-09T10:25:00Z",
+      "artifacts": [
+        "SalesOverview/scripts/generate_mock_data.py",
+        "SalesOverview/data/dim_date.csv",
+        "SalesOverview/data/dim_area.csv",
+        "SalesOverview/data/dim_customer.csv",
+        "SalesOverview/data/dim_industry.csv",
+        "SalesOverview/data/dim_salesperson.csv",
+        "SalesOverview/data/fact_sales.csv",
+        "SalesOverview/data/fact_budget.csv"
+      ],
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 6,
+      "name": "Quality Review",
+      "status": "completed",
+      "startedAt": "2026-03-09T10:26:00Z",
+      "completedAt": "2026-03-09T10:55:00Z",
+      "artifacts": [
+        "SalesOverview/tests/quality_review.md"
+      ],
+      "notes": "All checks PASS. Post-review fixes applied: added defaultPowerBIDataSourceVersion to model.tmdl, renamed DAX VAR reserved keywords (Variance, Status) in _Measures.tmdl.",
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 7,
+      "name": "Functional Testing",
+      "status": "completed",
+      "startedAt": "2026-03-09T11:00:00Z",
+      "completedAt": "2026-03-09T11:25:00Z",
+      "artifacts": [
+        "SalesOverview/tests/tests_definition.json",
+        "SalesOverview/tests/tests_execution.md",
+        "SalesOverview/tests/tests_execution_raw.json"
+      ],
+      "notes": "23 tests across 6 suites â€” all PASSED.",
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 8,
+      "name": "Report Design",
+      "status": "completed",
+      "startedAt": "2026-03-09T11:30:00Z",
+      "completedAt": "2026-03-09T11:35:00Z",
+      "artifacts": [
+        "SalesOverview/spec/report_blueprint.json"
+      ],
+      "decisionPoints": [],
+      "userInputs": []
+    },
+    {
+      "step": 9,
+      "name": "Report Implementation",
+      "status": "completed",
+      "startedAt": "2026-03-09T21:57:44Z",
+      "completedAt": "2026-03-09T23:07:17Z",
+      "artifacts": [
+        "SalesOverview/PBIP/SalesOverview.Report/definition.pbir",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/report.json",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/version.json",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/pages/pages.json",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/pages/32fe1020890a4d7642b0/page.json",
+        "SalesOverview/PBIP/SalesOverview.Report/definition/pages/32fe1020890a4d7642b0/visuals/",
+        "SalesOverview/PBIP/SalesOverview.Report/StaticResources/SharedResources/BaseThemes/CY25SU12.json",
+        "SalesOverview/spec/page2_page3_manual_visuals.md",
+        "SalesOverview/spec/report_blueprint.json"
+      ],
+      "notes": "Step 9 marked completed by user confirmation. Page 1 visuals regenerated and manual build pack for Page2/Page3 prepared.",
+      "decisionPoints": [
+        {
+          "id": "DP-STEP9-APPROVAL-20260309",
+          "type": "approval",
+          "question": "Step 9 completed. Proceed to next phase?",
+          "answer": "perfetto, ora è rigenerato tutto! Step 9 completato.",
+          "timestamp": "2026-03-09T23:07:17Z"
+        }
+      ],
+      "userInputs": [
+        {
+          "type": "confirmation",
+          "content": "perfetto, ora è rigenerato tutto! Step 9 completato.",
+          "timestamp": "2026-03-09T23:07:17Z"
+        }
+      ]
+    }
+  ],
+  "pendingStep": {
+    "step": 10,
+    "name": "Report Quality Validation",
+    "status": "not_started",
+    "startedAt": null,
+    "artifacts": [],
+    "notes": "Awaiting manual creation of Page2 and Page3 visuals before final reconciliation.",
+    "awaitingUserInput": true,
+    "decisionPoints": [
+      {
+        "id": "DP-PAGE2-PAGE3-REQUEST-20260309",
+        "type": "clarification",
+        "question": "Need manual build pack for Page 2 and a new Page 3 with additional native visuals?",
+        "status": "resolved",
+        "createdAt": "2026-03-09T23:07:17Z",
+        "resolvedAt": "2026-03-09T23:07:17Z"
+      }
+    ],
+    "userInputs": [
+      {
+        "type": "instruction",
+        "content": "ora ridammi i visuals per la pagina 2 ... Aggiungiamo inoltre una pagina 3",
+        "timestamp": "2026-03-09T23:07:17Z"
+      }
+    ]
+  },
+  "createdAt": "2026-03-09T10:00:00Z",
+  "lastUpdated": "2026-03-09T23:07:17Z"
 }

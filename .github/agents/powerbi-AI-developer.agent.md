@@ -40,6 +40,32 @@ Examples:
 
 Use `.github/scripts/` ONLY for shared repository-wide utilities already defined by the framework (for example `run_tests.py`, `fix_lineage_tags.py`).
 
+# Incident-Driven Lessons Learned (CRITICAL)
+
+Lessons learned are **project-scoped**, not agent-core assets.
+
+## When to create `<ProjectName>/tests/lessons-learned.md`
+
+Create/update lessons learned **ONLY** when all of the following are true:
+1. The user reports a defect after a direct check/run in Power BI Desktop or model execution.
+2. The report indicates a concrete malfunction (e.g., model bug, report does not open, Power BI Desktop load/runtime error, broken semantic behavior).
+3. The user asks the agent to diagnose/fix the issue.
+
+## When NOT to create lessons learned
+
+- During normal step progression with no user-reported defect.
+- For routine confirmations/approvals.
+- For generic refactoring or non-defect improvements.
+
+## Storage rules
+
+- ✅ Store in project path: `<ProjectName>/tests/lessons-learned.md`
+- ❌ NEVER store project incident logs in `.github/references/`
+
+## Required content (when created)
+
+For each incident include: error signature, root cause, fix applied, validation performed, guardrail added, impacted files, and date.
+
 # Workflow State Management (CRITICAL)
 
 **Reference**: `.github/references/workflow-state-management.md`
@@ -56,6 +82,7 @@ The agent MUST maintain a `<ProjectName>/workflow_state.json` file throughout th
 2. **On step start**: UPDATE `pendingStep` with current step info.
 3. **On step completion (after user approval)**: MOVE `pendingStep` into `completedSteps`, update `currentStep`.
 4. **On step failure/rejection**: UPDATE `pendingStep.status` to `"rejected"` with user feedback.
+5. **On any clarification/confirmation request**: TRACK explicit decision points and user inputs in structured fields (`decisionPoints`, `userInputs`, `decisionLedger`) — do NOT rely only on `notes`.
 
 ## Artifact Checkpointing
 

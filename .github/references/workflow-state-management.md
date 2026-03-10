@@ -26,6 +26,17 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
   "startedAt": "2026-01-15T10:30:00Z",
   "lastUpdatedAt": "2026-01-15T14:22:00Z",
   "currentStep": 3,
+  "decisionLedger": [
+    {
+      "id": "DP-0001",
+      "step": 1,
+      "timestamp": "2026-01-15T10:46:00Z",
+      "type": "approval",
+      "question": "Proceed to Step 2?",
+      "userInput": "Approved",
+      "resolution": "Step 1 accepted, proceed to Step 2"
+    }
+  ],
   "completedSteps": {
     "step_00": {
       "status": "completed",
@@ -35,7 +46,9 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
         "<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/model.tmdl",
         "<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/database.tmdl"
       ],
-      "notes": "PBIP scaffold created successfully"
+      "notes": "PBIP scaffold created successfully",
+      "decisionPoints": [],
+      "userInputs": []
     },
     "step_01": {
       "status": "completed",
@@ -43,7 +56,23 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
       "artifacts": [
         "<ProjectName>/spec/requirements_summary.md"
       ],
-      "notes": "12 KPIs, 5 dimensions, 2 fact tables identified"
+      "notes": "12 KPIs, 5 dimensions, 2 fact tables identified",
+      "decisionPoints": [
+        {
+          "id": "DP-0001",
+          "type": "approval",
+          "question": "Proceed to Step 2?",
+          "answer": "Approved",
+          "timestamp": "2026-01-15T10:46:00Z"
+        }
+      ],
+      "userInputs": [
+        {
+          "type": "confirmation",
+          "content": "Approved",
+          "timestamp": "2026-01-15T10:46:00Z"
+        }
+      ]
     },
     "step_02": {
       "status": "completed",
@@ -58,7 +87,18 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
     "stepNumber": 3,
     "stepName": "Physical Model & TMDL",
     "status": "in-progress",
-    "startedAt": "2026-01-15T11:05:00Z"
+    "startedAt": "2026-01-15T11:05:00Z",
+    "awaitingUserInput": true,
+    "decisionPoints": [
+      {
+        "id": "DP-0002",
+        "type": "clarification",
+        "question": "Confirm fiscal year start month",
+        "status": "open",
+        "createdAt": "2026-01-15T11:20:00Z"
+      }
+    ],
+    "userInputs": []
   }
 }
 ```
@@ -69,6 +109,50 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
 2. **On step start:** UPDATE `pendingStep` with step number, name, status `"in-progress"`, and timestamp.
 3. **On step completion (after user approval):** MOVE `pendingStep` into `completedSteps`, update `currentStep`, clear `pendingStep`.
 4. **On step failure/rejection:** UPDATE `pendingStep.status` to `"rejected"` with user feedback in `notes`. Do NOT advance `currentStep`.
+5. **On every decision point:** APPEND an immutable record in `decisionLedger` and mirror it under the step (`decisionPoints`, `userInputs`).
+
+---
+
+## 1.1 Decision Point Tracking Protocol (MANDATORY)
+
+At the end of each step, the agent can stop and request:
+- Clarification (missing/ambiguous requirement)
+- Confirmation (approval to proceed)
+- Choice (alternative A/B implementation path)
+
+These interactions MUST be persisted explicitly (not only in `notes`).
+
+### Required fields
+
+- `decisionPoints[]` (per step): what was asked and state (`open`, `resolved`, `rejected`)
+- `userInputs[]` (per step): exact user response and timestamp
+- `decisionLedger[]` (top-level): chronological, immutable audit trail
+
+### Example decision records
+
+```json
+{
+  "id": "DP-0015",
+  "step": 6,
+  "type": "clarification",
+  "question": "Use FY start = July?",
+  "userInput": "Yes, July",
+  "resolution": "Applied fiscal year boundary 6/30",
+  "timestamp": "2026-01-15T13:40:00Z"
+}
+```
+
+```json
+{
+  "id": "DP-0016",
+  "step": 6,
+  "type": "approval",
+  "question": "Proceed to Step 7?",
+  "userInput": "Approved",
+  "resolution": "Step 6 accepted",
+  "timestamp": "2026-01-15T13:58:00Z"
+}
+```
 
 ---
 
@@ -91,6 +175,14 @@ Every step MUST persist its primary output to disk. No significant output should
 | **Step 08** | Report blueprint | `<ProjectName>/spec/report_blueprint.json` | JSON |
 | **Step 09** | PBIR report files | `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/` | JSON |
 | **Step 10** | Report validation report | `<ProjectName>/tests/report_validation_execution.md` | Markdown |
+
+### Incident-only artifact (outside normal step outputs)
+
+| Trigger | Artifact File | Location | Format |
+|---|---|---|---|
+| User-reported runtime/model/report defect + fix request | Incident lessons learned log | `<ProjectName>/tests/lessons-learned.md` | Markdown |
+
+> This artifact is created/updated only for user-reported defects. It is NOT part of `.github/references/` and must remain project-scoped.
 
 ---
 
@@ -155,6 +247,7 @@ Agent proceeds: Step 5 (Mock Data Generation)
 
 ```
 1. Confirm step completion in workflow_state.json (if not already done)
+2. Record decision point (`type: approval`) in `decisionLedger`, `pendingStep.decisionPoints`, and `pendingStep.userInputs`
 2. Proceed to next step
 ```
 
@@ -163,8 +256,28 @@ Agent proceeds: Step 5 (Mock Data Generation)
 ```
 1. UPDATE workflow_state.json pendingStep.status = "rejected"
 2. Add user feedback to pendingStep.notes
-3. Re-execute the step with corrections
-4. WRITE corrected artifacts to disk
-5. UPDATE workflow_state.json
-6. Present revised output and STOP
+3. Record decision point (`type: rejection`) and full user input payload in tracking fields
+4. Re-execute the step with corrections
+5. WRITE corrected artifacts to disk
+6. UPDATE workflow_state.json
+7. Present revised output and STOP
+
+---
+
+## 5. Incident Lessons Learned Protocol (Project-Scoped)
+
+Create or append `<ProjectName>/tests/lessons-learned.md` only when:
+- the user reports a direct-check defect (model bug, report load failure, Power BI Desktop error, runtime malfunction), and
+- asks the agent to fix it.
+
+Do not generate this file for routine approvals or normal workflow execution.
+
+Each entry should include:
+1. Incident ID and date
+2. Error message/signature
+3. Root cause
+4. Fix applied
+5. Validation evidence
+6. Guardrail/process update
+7. Files changed
 ```

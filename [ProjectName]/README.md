@@ -2,12 +2,15 @@
 
 This folder (`[ProjectName]`) is a **template/example** that demonstrates the expected structure for Power BI projects.
 
+> ℹ️ It is **not** a real project folder: it only shows what will be created/populated in a real `<YourProjectName>/` folder when you run `@powerbi-AI-developer` (Step 00 bootstrap + subsequent workflow steps).
+
 ## 📂 Purpose
 
 This folder serves as:
 - ✅ **Template** for new projects
 - ✅ **Reference** for folder structure
 - ✅ **Example** for GitHub documentation
+- ✅ **Preview** of the artifacts the agent generates during execution
 
 ## 🚫 Do NOT Use This Folder Directly
 
@@ -44,9 +47,12 @@ YourProjectName/                    ← Replace with your actual project name
 │   ├── tests_definition.md
 │   ├── tests_execution.md
 │   ├── tests_execution_raw.json
-│   └── report_validation_execution.md  ← Report quality validation (Step 10)
+│   ├── report_validation_execution.md  ← Report quality validation (Step 10)
+│   └── lessons-learned.md              ← Incident log (only after user-reported defects)
 └── workflow_state.json             ← Workflow progress tracker (all steps)
 ```
+
+> `tests/lessons-learned.md` is NOT created by default. It is created/updated only when the user reports a concrete runtime/model/report defect and asks for a fix.
 
 ## ⚙️ Setup Instructions
 
