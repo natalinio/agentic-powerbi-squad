@@ -19,6 +19,20 @@ Before writing ANY TMDL code:
 - Input gate: verify Step 02 artifact exists and semantic model target folders are writable.
 - Output gate: before completion, verify required TMDL artifacts exist and are non-empty, then register them in `workflow_state.json`.
 
+### Pre-Step4 Critical Clarification Hard Stop (MANDATORY)
+
+Before closing Step 03 (and before any transition to Step 04 DAX), verify that all Step 1 critical clarifications are resolved in state tracking:
+
+1. Time/period semantics that affect cumulative or comparative calculations.
+2. Numeric threshold/classification semantics used by status-style KPIs.
+3. Grain reconciliation semantics when combining measures at different detail levels.
+
+Blocking policy:
+
+- If any item is unresolved, DO NOT move to Step 4.
+- Ask targeted clarification questions and keep Step 03 pending.
+- If the user accepts temporary assumptions, persist explicit assumption approvals in `decisionLedger` and annotate impacted TMDL artifacts with the assumption note in step-level metadata/reporting.
+
 ## TMDL Syntax Critical Rules
 
 TMDL is **whitespace-sensitive**. Violations cause Power BI Desktop parsing failures.

@@ -111,6 +111,26 @@ Before MARKING any step completed, the agent MUST validate:
 2. `workflow_state.json` contains the completed step record with artifact paths.
 3. At least one decision record exists for transition (`approval` or explicit `rejection`).
 
+## Critical Clarification Blocking Gate (MANDATORY)
+
+To prevent silent assumption drift between Step 1 and Step 4, the following clarification domains are **critical**:
+
+1. Period and calendar semantics required by calculations (time boundaries, ordering, and label mapping).
+2. Business classification threshold semantics (numeric bounds, inclusivity/exclusivity, and precedence rules).
+3. Granularity reconciliation policy when calculations compare datasets at different grain levels (allocation, non-allocation, or exclusion).
+
+Blocking policy:
+
+- The agent MUST NOT treat Step 1 as approved if one or more critical clarifications are unresolved.
+- If the user says "proceed" without answering, the agent MUST pause and ask targeted clarification questions instead of advancing.
+- Step 2 and Step 3 may reference only explicit user-approved defaults; implicit defaults are forbidden.
+- **Hard stop:** transition from Step 3 to Step 4 is forbidden while any critical clarification remains unresolved.
+
+Traceability requirement:
+
+- Record each critical clarification as a decision point (`type: clarification`) in `workflow_state.json` with explicit resolution text in `decisionLedger`.
+- Resolved-by-assumption is allowed only when the user explicitly approves the assumption in chat and the approval is persisted in state.
+
 ## Artifact Checkpointing
 
 Every step MUST persist its primary output to disk BEFORE presenting results to the user. No significant output should remain only in the chat. See each skill file for the specific artifacts to checkpoint.

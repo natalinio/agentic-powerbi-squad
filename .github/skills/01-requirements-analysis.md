@@ -68,9 +68,25 @@ Before declaring Step 1 complete, check:
 - [ ] Grain is explicitly defined for each fact table
 - [ ] Data types are specified or inferrable for all fields
 - [ ] RLS requirements are documented (or explicitly none)
-- [ ] Time intelligence requirements are clear (fiscal year start month, etc.)
+- [ ] Time/period calculation requirements are clear (calendar/period boundary definitions, ordering, label semantics)
 
 If ANY of these are missing or ambiguous, **flag them explicitly and ask the user** before proceeding.
+
+## Critical Clarification Gate (MANDATORY)
+
+For this workflow, the following clarifications are **blocking** and cannot remain implicit:
+
+1. Period and calendar semantics used by cumulative or comparative calculations.
+2. Numeric threshold/classification semantics for status-driven KPIs (including inclusive/exclusive boundaries).
+3. Grain reconciliation semantics when metrics compare entities at different detail levels.
+
+Required behavior:
+
+- If one or more critical clarifications are unresolved, DO NOT accept Step 1 completion.
+- If the user replies with generic approval (for example: "Proceed") without answering, ask targeted follow-up questions and keep the step pending.
+- Only proceed when each critical clarification has either:
+  - a concrete user answer, or
+  - an explicit user-approved assumption recorded in `workflow_state.json` decision tracking.
 
 ## Output Format
 

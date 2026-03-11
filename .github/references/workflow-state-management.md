@@ -93,7 +93,7 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
       {
         "id": "DP-0002",
         "type": "clarification",
-        "question": "Confirm fiscal year start month",
+        "question": "Confirm unresolved critical requirement semantics",
         "status": "open",
         "createdAt": "2026-01-15T11:20:00Z"
       }
@@ -132,6 +132,20 @@ At the end of each step, the agent can stop and request:
 
 These interactions MUST be persisted explicitly (not only in `notes`).
 
+### Critical clarification classes (Step 1 → Step 4)
+
+The following clarification classes are considered **blocking** for this workflow:
+
+1. Time/period semantics required by calculations (calendar boundaries, ordering, labels, and period-definition rules).
+2. Classification and threshold semantics for status-style KPIs (explicit numeric boundaries and tie-break rules).
+3. Grain reconciliation semantics when compared datasets are at different granularity levels.
+
+Mandatory behavior:
+
+- Open critical clarifications MUST be represented as explicit `decisionPoints` and mirrored in `decisionLedger`.
+- A generic user message such as "proceed" does NOT resolve open critical clarifications.
+- Step 3 → Step 4 transition is blocked until all critical clarifications are resolved or explicitly accepted as assumptions by the user and logged.
+
 ### Required fields
 
 - `decisionPoints[]` (per step): what was asked and state (`open`, `resolved`, `rejected`)
@@ -145,9 +159,9 @@ These interactions MUST be persisted explicitly (not only in `notes`).
   "id": "DP-0015",
   "step": 6,
   "type": "clarification",
-  "question": "Use FY start = July?",
-  "userInput": "Yes, July",
-  "resolution": "Applied fiscal year boundary 6/30",
+  "question": "Confirm period boundary rule for cumulative metrics",
+  "userInput": "Use project calendar rule C-01",
+  "resolution": "Applied approved period boundary C-01",
   "timestamp": "2026-01-15T13:40:00Z"
 }
 ```
@@ -248,6 +262,12 @@ Before starting step `N` (`N > 0`), the agent MUST verify:
 3. `workflow_state.json` is writable.
 
 If any check fails, STOP and emit a blocking report with minimal recovery actions.
+
+Additional blocking check for Step 2/3/4:
+
+4. For Step 2, Step 3, and Step 4, verify there are no unresolved **critical** clarification decision points inherited from Step 1 unless they have an explicit user-approved assumption record.
+
+If unresolved critical clarifications exist, STOP and request targeted answers before proceeding.
 ```
 
 ### At the END of each step (BEFORE asking user for approval), the agent MUST:

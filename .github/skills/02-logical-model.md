@@ -16,6 +16,20 @@ description: Design a Kimball-compliant logical star schema and relationships.
 - Input gate: verify Step 01 artifact exists and is readable before modeling.
 - Output gate: before completion, verify `<ProjectName>/spec/er_diagram.md` exists, is non-empty, and is recorded in `workflow_state.json`.
 
+### Critical Clarification Carry-Forward Gate (MANDATORY)
+
+Before designing Step 2, verify Step 1 critical clarifications are resolved or explicitly approved as assumptions in `workflow_state.json`:
+
+- Time/period semantics used by calculations.
+- Classification threshold semantics for status-style KPIs.
+- Grain reconciliation policy across compared datasets.
+
+Rules:
+
+- Do NOT introduce implicit defaults in Step 2.
+- If a critical clarification is unresolved and not explicitly assumption-approved, STOP and request a targeted answer.
+- If Step 2 proceeds under approved assumptions, list those assumptions explicitly in `er_diagram.md` and state that they are temporary until final confirmation.
+
 ## Design Rules
 
 When designing the logical data model, strictly adhere to Kimball dimensional modeling principles:
@@ -97,6 +111,18 @@ This creates THREE ambiguous paths:
 
 Output the proposed logical model using **Mermaid.js Entity-Relationship diagram** syntax:
 
+### Mermaid Compatibility Rules (MANDATORY)
+
+To prevent parser failures across different Mermaid runtimes (VS Code, GitHub UI, docs renderers):
+
+- Use only standard key markers in attributes: `PK`, `FK`, `UK`.
+- Do NOT use custom markers like `DD` (degenerate dimensions must be described in prose, not as Mermaid key tags).
+- Do NOT model `_Measures` as an ER entity in Mermaid diagrams (it is a semantic-model utility table, not a relational entity).
+- Prefer unquoted relationship labels (for example `: DateKey`, not `: "DateKey"`).
+- Keep entity names alphanumeric with underscores, starting with a letter (`Dim_*`, `Fact_*`).
+
+If a parser error is reported, first sanitize the diagram with the rules above before changing the logical model design.
+
 ```mermaid
 erDiagram
     Dim_Date {
@@ -119,8 +145,8 @@ erDiagram
         decimal SalesAmountLC
         decimal AdjustedProfitLC
     }
-    Dim_Date ||--o{ Fact_Sales : "filters"
-    Dim_Customer ||--o{ Fact_Sales : "filters"
+    Dim_Date ||--o{ Fact_Sales : DateKey
+    Dim_Customer ||--o{ Fact_Sales : CustomerKey
 ```
 
 ### Checklist Before Presenting
@@ -130,6 +156,7 @@ erDiagram
 - [ ] All relationships are 1:N (Dim to Fact)
 - [ ] Conformed dimensions are identified
 - [ ] Naming follows conventions
+- [ ] Mermaid compatibility rules validated (no custom key tags, no `_Measures` entity, unquoted relationship labels)
 - [ ] **NO ambiguous paths**: Verify that between any two tables there is ONLY ONE active relationship path (no redundant FKs in fact tables)
 - [ ] If snowflaking is used, ensure fact tables connect only to the lowest-grain dimension in the hierarchy
 

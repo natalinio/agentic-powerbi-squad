@@ -695,3 +695,17 @@ microsoft_docs_search: "Power BI many to many relationships"
 
 ❌ **DON'T**: Use native many-to-many without understanding implications  
 ✅ **DO**: Prefer bridge table pattern for clarity and control
+
+---
+
+## Appendix — Mermaid ER Compatibility Guardrails
+
+When documenting logical models with Mermaid `erDiagram`, use parser-safe syntax:
+
+- Attribute key tags: only `PK`, `FK`, `UK`.
+- Avoid custom tags (for example `DD`) because they fail in stricter Mermaid parsers.
+- Do not include `_Measures` as an ER entity.
+- Use unquoted relationship labels (`: DateKey`) for maximum compatibility.
+- Keep entity names aligned with model naming conventions (`Dim_*`, `Fact_*`) and start with a letter.
+
+If parsing fails, sanitize syntax first (labels/tags/entities) before changing relationship design.
