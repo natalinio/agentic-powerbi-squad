@@ -53,7 +53,7 @@ main (default branch)
 ### Step 1: Initialize Local Repository (If Not Already Done)
 
 ```bash
-cd c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\aisemanticlayer
+cd c:\Users\andrea.natali\OneDrive - Avanade\Documents\Progetti\Avanade\Repos\PowerBI-AI-FullStack-Developer
 git init
 git add .
 git commit -m "Initial commit: Power BI AI Developer v1.0"
@@ -64,7 +64,7 @@ git commit -m "Initial commit: Power BI AI Developer v1.0"
 1. Go to **https://github.com/natalinio**
 2. Click **"New repository"**
 3. Fill in details:
-   - **Repository name**: `aisemanticlayer`
+   - **Repository name**: `PowerBI-AI-FullStack-Developer`
    - **Description**: "Build production-ready Power BI semantic models (PBIP/TMDL) from functional specifications using GitHub Copilot Custom Agent"
    - **Visibility**: ✅ **Public** (for open-source)
    - **Initialize**: ❌ Do NOT initialize with README, .gitignore, or license (we already have them)
@@ -74,7 +74,7 @@ git commit -m "Initial commit: Power BI AI Developer v1.0"
 
 ```bash
 # Add GitHub remote
-git remote add origin https://github.com/natalinio/aisemanticlayer.git
+git remote add origin https://github.com/natalinio/PowerBI-AI-FullStack-Developer.git
 
 # Verify remote
 git remote -v
@@ -133,7 +133,7 @@ git push -u origin feature/002-report-generation
 
 ### Opening a Pull Request
 
-1. Go to **https://github.com/natalinio/aisemanticlayer**
+1. Go to **https://github.com/natalinio/PowerBI-AI-FullStack-Developer**
 2. Click **"Compare & pull request"** (appears after push)
 3. Fill out the PR template:
    - Summary of changes
@@ -271,7 +271,7 @@ After publishing:
 
 Your repository is now live on GitHub! 🚀
 
-**Repository URL**: https://github.com/natalinio/aisemanticlayer
+**Repository URL**: https://github.com/natalinio/PowerBI-AI-FullStack-Developer
 
 **Next steps**:
 - Monitor issues and pull requests

@@ -23,7 +23,7 @@ Instead, please follow one of these methods:
 
 #### Method 1: Private Vulnerability Reporting (Recommended)
 
-1. Go to the [Security tab](https://github.com/natalinio/aisemanticlayer/security) on GitHub
+1. Go to the [Security tab](https://github.com/natalinio/PowerBI-AI-FullStack-Developer/security) on GitHub
 2. Click **"Report a vulnerability"**
 3. Fill out the form with details:
    - **Type of vulnerability** (e.g., code injection, information disclosure)
@@ -187,9 +187,9 @@ We appreciate responsible disclosure practices and will acknowledge security res
 
 For security-related inquiries:
 - **Email**: andrea.natali@avanade.com
-- **GitHub Security**: [Report a vulnerability](https://github.com/natalinio/aisemanticlayer/security)
+- **GitHub Security**: [Report a vulnerability](https://github.com/natalinio/PowerBI-AI-FullStack-Developer/security)
 
-For non-security issues, please use the [issue tracker](https://github.com/natalinio/aisemanticlayer/issues).
+For non-security issues, please use the [issue tracker](https://github.com/natalinio/PowerBI-AI-FullStack-Developer/issues).
 
 ---
 

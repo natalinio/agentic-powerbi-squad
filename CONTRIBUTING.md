@@ -82,13 +82,13 @@ We welcome code contributions for:
 
 2. **Clone your fork**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/aisemanticlayer.git
-   cd aisemanticlayer
+   git clone https://github.com/YOUR_USERNAME/PowerBI-AI-FullStack-Developer.git
+   cd PowerBI-AI-FullStack-Developer
    ```
 
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/natalinio/aisemanticlayer.git
+   git remote add upstream https://github.com/natalinio/PowerBI-AI-FullStack-Developer.git
    ```
 
 4. **Create Python virtual environment**:
@@ -305,7 +305,7 @@ pytest tests/ -v
 ```python
 import pytest
 from pathlib import Path
-from aisemanticlayer.scripts.fix_lineage_tags import fix_lineage_tags
+from fix_lineage_tags import fix_lineage_tags
 
 def test_fix_lineage_tags_regenerates_guids():
     """Test that fix_lineage_tags generates unique GUIDs"""
@@ -371,7 +371,7 @@ Contributors will be recognized in:
 
 If you have questions about contributing:
 
-1. Check existing [issues](https://github.com/natalinio/aisemanticlayer/issues)
+1. Check existing [issues](https://github.com/natalinio/PowerBI-AI-FullStack-Developer/issues)
 2. Open a **question issue** with details
 3. Email: andrea.natali@avanade.com
 

@@ -128,5 +128,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/natalinio/aisemanticlayer/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/natalinio/aisemanticlayer/releases/tag/v1.0.0
+[Unreleased]: https://github.com/natalinio/PowerBI-AI-FullStack-Developer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/natalinio/PowerBI-AI-FullStack-Developer/releases/tag/v1.0.0

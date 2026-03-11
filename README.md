@@ -39,28 +39,32 @@ Instead of manually building data models, writing DAX measures, and configuring 
 
 ## 🚀 Quick Start (5 Minutes)
 
-### Prerequisites
+This section is intentionally explicit and copy/paste friendly.
+
+### 0) Prerequisites (check once)
 
 1. **Power BI Desktop** (December 2025 or later)
-   - Enable preview features:
-     - ✅ Power BI Project (.pbip) save option
-     - ✅ Store semantic model using TMDL format
+        - Enable preview features:
+          - ✅ Power BI Project (.pbip) save option
+          - ✅ Store semantic model using TMDL format
+2. **Python 3.10+**
+3. **VS Code + GitHub Copilot Chat** (Custom Agent enabled)
 
-2. **Python 3.10+** with virtual environment:
-   ```powershell
-   python --version  # Must be 3.10+
-   ```
+Quick checks:
 
-3. **GitHub Copilot** with Custom Agent support enabled
-
-### Step 1: Clone the Repository
-
-```bash
-git clone https://github.com/natalinio/aisemanticlayer.git
-cd aisemanticlayer
+```powershell
+python --version
+code --version
 ```
 
-### Step 2: Set Up Python Environment
+### 1) Clone repository
+
+```bash
+git clone https://github.com/natalinio/PowerBI-AI-FullStack-Developer.git
+cd PowerBI-AI-FullStack-Developer
+```
+
+### 2) Create and activate Python environment
 
 ```powershell
 python -m venv .venv
@@ -68,117 +72,89 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### Step 3: Create PBIP Canvas
+Expected result: no installation errors.
 
-If you don't have a PBIP project scaffold yet, you can either:
-- Let the agent bootstrap it automatically (via **Step 00**), or
-- Create it manually in Power BI Desktop (steps below).
+### 3) Create your project folder
 
-1. Open Power BI Desktop
-2. Create a blank report
-3. File → Save As → **Power BI Project**
-4. Save in: `<YourProjectName>/PBIP/<YourProjectName>.pbip` (e.g., `SalesOverview/PBIP/SalesOverview.pbip`)
-5. Close Power BI Desktop
+Choose a project name (example: `SalesOverview`) and create at least `spec/`:
 
-### Step 4: Prepare Specifications
-
-> ⚠️ **CRITICAL PREREQUISITE**: The quality of the generated semantic model depends entirely on the completeness and clarity of your functional specification.
-
-#### 📋 Use the Structured Template
-
-1. **Copy the template** from `spec/specification_template.md` to your project folder
-2. **Rename it** to `<YourProjectName>/spec/spec_<your_project_name>.md`
-3. **Fill in ALL sections** following the template structure:
-   - Report objective & target audience
-   - Key Performance Indicators (functional descriptions)
-   - Data groupings & segmentations
-   - Filter dimensions
-   - Visualization structure (charts/tables)
-   - Data schema with **sample values**
-   - Logical relationships between tables
-   - Row-Level Security (RLS) requirements
-   - Functional requirements
-   - Additional notes & constraints
-
-**Example:**
-```
-SalesOverview/spec/spec_sales_overview.md
+```powershell
+mkdir SalesOverview
+mkdir SalesOverview\spec
 ```
 
-**📖 Reference Materials:**
-- **Empty Template**: [spec/specification_template.md](spec/specification_template.md) — Start here
-- **Complete Example**: [spec/sample_spec.md](spec/sample_spec.md) — Sales Overview FYTD (Italian, demonstrates required detail level)
+Note: `data/`, `scripts/`, `tests/`, and PBIP scaffold are created automatically by the agent if missing.
 
-**Language Note:** While you can write specifications in your native language (like the Italian example), **writing in English** is recommended for optimal DAX/TMDL code generation consistency.
+### 4) Create the functional specification
 
-### Step 5: Invoke the Agent
+Copy the template and rename it:
 
-There are **two ways** to start the workflow in VS Code:
-
-#### Option A: Direct Agent Invocation (recommended)
-
-Open GitHub Copilot Chat and invoke the agent with the spec file path:
-
-```
-@powerbi-AI-developer <YourProjectName>/spec/spec_your_project.md
+```powershell
+Copy-Item spec\specification_template.md SalesOverview\spec\spec_sales_overview.md
 ```
 
-**Example:**
+Then fill **all sections** in `SalesOverview/spec/spec_sales_overview.md`.
+
+Reference files:
+- Template: [spec/specification_template.md](spec/specification_template.md)
+- Full example: [spec/sample_spec.md](spec/sample_spec.md)
+
+### 5) Open in VS Code and run the agent
+
+1. Open the repository folder in VS Code.
+2. Open GitHub Copilot Chat.
+3. Run one of the following:
+
+Option A (recommended):
+
 ```
 @powerbi-AI-developer SalesOverview/spec/spec_sales_overview.md
 ```
 
-The agent reads the spec, runs the preliminary checks (Step 00 → PBIP scaffold, Step B → folders, Step C → Python env), and starts the 10-step workflow.
+Option B (`/build` prompt):
 
-#### Option B: Prompt-Based Invocation
+1. Type `/` in Copilot Chat
+2. Select `build`
+3. Provide spec path: `SalesOverview/spec/spec_sales_overview.md`
 
-Use the reusable prompt file to trigger the workflow with the pre-configured instructions:
+### 6) Approve the workflow step by step
 
-1. Open the Copilot Chat prompt picker (type `/` in chat)
-2. Select **`build`** (from `.github/prompts/build.prompt.md`)
-3. When prompted, provide your spec file path or paste the spec content
+The agent executes:
 
-This is equivalent to Option A but pre-loads the full workflow instructions into the context.
+1. Requirements Analysis
+2. Logical Data Model
+3. Physical Model & TMDL
+4. DAX Development
+5. Mock Data Generation
+6. Quality Review
+7. Functional Testing
+8. Report Design
+9. Report Implementation
+10. Report Quality Validation
 
-#### Which one to use?
+After each step, approve explicitly (for example: `Approved` / `Proceed`).
 
-| Method | When to use |
-|--------|-------------|
-| `@powerbi-AI-developer <spec_path>` | Standard invocation — you provide the spec path directly |
-| `/build` prompt | When you want the full instruction set pre-loaded, or when starting from scratch without a spec file yet |
-
-#### The 10-Step Workflow
-1. **Requirements Analysis**
-2. **Logical Data Model** (Mermaid ER diagram)
-3. **Physical Model & TMDL** (code generation)
-4. **DAX Development** (optimized measures)
-5. **Mock Data Generation** (Python/Faker)
-6. **Quality Review** (BPA compliance)
-7. **Functional Testing** (automated DAX validation)
-8. **Report Design** (blueprint JSON generation)
-9. **Report Implementation** (PBIR visual generation)
-10. **Report Quality Validation** (final reconciliation)
-
-Each step requires your approval before proceeding. The workflow state is persisted to disk (`workflow_state.json`) with structured decision points, user inputs, and audit ledger fields, so it can be resumed mid-session.
-
-`workflow_state.json` is maintained with a canonical structure (`completedSteps` keyed as `step_00...step_10`, normalized `pendingStep` fields, ISO-8601 UTC timestamps). The agent also enforces step-level input/output gates before transitions.
-
-### Step 6: Open in Power BI Desktop
+### 7) Open the generated PBIP in Power BI Desktop
 
 ```powershell
-# Navigate to project folder (example: SalesOverview)
-cd SalesOverview/PBIP
-# Double-click SalesOverview.pbip to open in Power BI Desktop
+cd SalesOverview\PBIP
 ```
 
-Refresh the data → The report is ready with all visuals generated by the agent!
+Open `SalesOverview.pbip` in Power BI Desktop and click **Refresh**.
+
+### 8) Quick troubleshooting (most common)
+
+- `gh` / tooling not found: restart terminal and verify installation paths.
+- Python import errors: re-activate `.venv` and run `pip install -r requirements.txt` again.
+- PBIP open error: ensure Desktop preview features are enabled and files are not blocked by OneDrive sync locks.
+- Invalid model objects in tests/visuals: rerun from the last approved step; workflow state is persisted in `workflow_state.json`.
 
 ---
 
 ## 📂 Repository Structure
 
 ```
-aisemanticlayer/
+PowerBI-AI-FullStack-Developer/
 ├── .github/                           # Agentic system core (universal, project-agnostic)
 │   ├── copilot-instructions.md        # Global instructions for GitHub Copilot
 │   ├── agents/
