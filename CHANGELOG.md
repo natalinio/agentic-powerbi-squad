@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📚 **Workflow state management** reference (`.github/references/workflow-state-management.md`) — disk-based state tracking protocol with `workflow_state.json`
 - 🔄 **Disk-based state management**: All steps now persist artifacts to disk and read from disk (not chat history), enabling workflow resumability
 - 🔄 **Artifact checkpointing**: Every skill file now includes mandatory checkpointing and context flushing sections
+- 🚦 **Step Input/Output Contract Gates**: mandatory artifact validation before starting and before completing each workflow step
+- 🪟 **Step-Scoped Context Loading Policy**: skills now explicitly enforce loading only current-step instructions and required references/artifacts
+- 🧩 **Optional Specialist Worker Pattern**: documented intra-step worker usage while preserving orchestrator ownership of workflow state
 
 ### Changed
 - 🤖 **Agent renamed**: `@semantic-modeler` → `@powerbi-AI-developer` (file: `powerbi-AI-developer.agent.md`) — reflects full-stack Power BI role (semantic model + report visuals)
@@ -25,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🤖 **Workflow expanded from 8 to 10 steps** with full report generation and validation
 - 📋 **Agent definition** updated with Workflow State Management section, Steps 9-10, and context flushing protocol
 - 📋 **All skill files (01-08)** updated with Artifact Checkpointing and Context Flushing Rule sections
+- 📋 **Agent execution topology clarified**: single orchestrator as the only state owner; workers cannot mutate `workflow_state.json`
+- 📋 **Workflow state schema hardened**: canonical `workflow_state.json` shape (`completedSteps` object, normalized `pendingStep`, ISO-8601 UTC timestamps)
+- 📘 **README updated**: architecture and workflow documentation aligned with state determinism, contract gates, step-scoped context policy, and Step 00 in skills index
 
 ### Planned
 - Advanced report features (bookmarks, drill-through, conditional formatting)
