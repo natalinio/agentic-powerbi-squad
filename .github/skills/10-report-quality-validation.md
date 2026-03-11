@@ -1,7 +1,16 @@
+---
+name: powerbi-report-quality-validation
+description: Verify PBIR syntax and semantic consistency between report visuals and the semantic model.
+---
+
 # Skill: Report Quality Validation (Final Reconciliation)
 
 ## Purpose
-Perform a comprehensive validation and reconciliation between the report design blueprint (`report_blueprint.json`) and the physical PBIR report files generated in Step 9. This is the final quality gate before the user opens the PBIP project in Power BI Desktop.
+Provide a structured verification methodology for the PBIR artifacts generated in Step 9, ensuring:
+- **syntactic correctness** of PBIR files (`page.json`, `visual.json`, schema, structure), and
+- **semantic coherence** between visual field bindings and the semantic model (TMDL tables, columns, measures, relationships).
+
+This step is the final quality gate before opening the PBIP project in Power BI Desktop.
 
 ## Prerequisites — MANDATORY
 Before starting report quality validation:
@@ -17,6 +26,41 @@ When starting this step, the agent MUST:
 - **READ** all `page.json` and `visual.json` files from the PBIR report definition.
 - **READ** TMDL files from disk for field cross-referencing.
 - **DO NOT** rely on chat history for any data from previous steps.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 10** and do not reload upstream implementation skills unless needed for targeted remediation.
+- **In scope**:
+  - PBIR syntax and structural validation
+  - cross-check between visual bindings and model objects
+  - coherence checks between blueprint intent and generated visuals
+  - production of a reproducible validation report with PASS/WARNING/FAIL outcomes
+- **Out of scope**:
+  - redesigning report UX or adding new visuals/pages
+  - changing business requirements/KPIs
+  - broad model redesign unrelated to PBIR binding inconsistencies
+- Input gate: verify Step 09 PBIR artifacts and Step 08 blueprint are present and readable.
+- Output gate: before completion, verify `<ProjectName>/tests/report_validation_execution.md` exists, is non-empty, and is recorded in `workflow_state.json`.
+
+## Validation Methodology (MANDATORY)
+
+Apply validation in this exact order to reduce false positives and speed root-cause identification:
+
+1. **Structural & Syntax Layer**
+   - Validate file presence, JSON parseability, required schema properties, and folder hierarchy.
+   - Stop early on blocking syntax errors before semantic checks.
+
+2. **Semantic Binding Layer**
+   - Validate every `Entity` and `Property` used in PBIR against TMDL object registry.
+   - Validate filter bindings and multi-table visuals against active relationship reachability.
+
+3. **Blueprint Consistency Layer**
+   - Validate that generated pages/visuals/types/counts align with Step 8 blueprint intent.
+   - Flag mismatches as implementation drift (WARNING/FAIL based on impact).
+
+4. **Readiness Layer**
+   - Consolidate issues with severity and actionable remediation order.
+   - Output deterministic report so results are reproducible across runs.
 
 ---
 

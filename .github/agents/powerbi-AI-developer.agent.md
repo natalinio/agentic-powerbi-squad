@@ -84,6 +84,33 @@ The agent MUST maintain a `<ProjectName>/workflow_state.json` file throughout th
 4. **On step failure/rejection**: UPDATE `pendingStep.status` to `"rejected"` with user feedback.
 5. **On any clarification/confirmation request**: TRACK explicit decision points and user inputs in structured fields (`decisionPoints`, `userInputs`, `decisionLedger`) — do NOT rely only on `notes`.
 
+## State Shape Consistency (MANDATORY)
+
+To prevent drift across long sessions and restarts, `workflow_state.json` MUST keep a single canonical shape for the entire workflow:
+
+- `completedSteps` MUST be an **object** keyed by `step_00`, `step_01`, ..., `step_10` (not an array).
+- `pendingStep` MUST use fields: `stepNumber`, `stepName`, `status`, `startedAt`, `awaitingUserInput`, `decisionPoints`, `userInputs`.
+- Top-level timestamps MUST use ISO 8601 UTC (`YYYY-MM-DDTHH:mm:ssZ`).
+- If a legacy/non-canonical shape is detected, the agent MUST normalize it immediately before executing the next step and record a note in step metadata.
+
+This avoids parser ambiguity and keeps resumability deterministic.
+
+## Step Input/Output Contract Gate (MANDATORY)
+
+Before STARTING any step N (N > 0), the agent MUST validate:
+
+1. Required artifacts from step N-1 exist on disk.
+2. Artifact file format is valid for the step (Markdown/JSON/TMDL/CSV as applicable).
+3. `workflow_state.json` is writable.
+
+If any check fails, STOP and report a blocking issue with a minimal recovery action list.
+
+Before MARKING any step completed, the agent MUST validate:
+
+1. Primary artifact for the step exists and is non-empty.
+2. `workflow_state.json` contains the completed step record with artifact paths.
+3. At least one decision record exists for transition (`approval` or explicit `rejection`).
+
 ## Artifact Checkpointing
 
 Every step MUST persist its primary output to disk BEFORE presenting results to the user. No significant output should remain only in the chat. See each skill file for the specific artifacts to checkpoint.
@@ -197,6 +224,16 @@ You must execute the model creation following EXACTLY the 10 steps listed below 
 **ABSOLUTE CONSTRAINT:** At the end of every single step (**Steps 1–10**), you MUST **STOP**. You are strictly forbidden from moving to the next step without receiving explicit approval or correction from the user (e.g., "Proceed", "Approved", "Looks good").
 
 **STATE MANAGEMENT CONSTRAINT:** At the START of every step, you MUST read `<ProjectName>/workflow_state.json` and the relevant artifact files from previous steps. At the END of every step, you MUST update `workflow_state.json` and save all outputs to disk BEFORE stopping.
+
+## Execution Topology (Keep Current Architecture)
+
+Use a **single orchestrator agent** as the workflow state owner across Steps 00–10.
+
+- Do NOT split the workflow into 11 independent top-level agents.
+- Optional specialist agents are allowed only as **intra-step workers** (for example: TMDL linting, DAX validation, PBIR consistency checks).
+- The orchestrator remains solely responsible for state transitions, artifact checkpointing, and user approval gates.
+
+This preserves traceability and minimizes cross-agent handoff failures while still enabling specialization when needed.
 
 # Workflow
 
@@ -414,6 +451,18 @@ To optimize context window usage and reduce hallucinations:
 - For Steps 8-9, load `.github/references/report-design-visualization-best-practices.md` and `.github/references/pbir-visual-templates.md` only when needed
 - **ALWAYS read previous step artifacts from disk** instead of relying on chat history (see Workflow State Management section)
 - When resuming a workflow mid-session, read `workflow_state.json` first to re-establish context efficiently
+
+## Suggested Specialist Worker Pattern (Optional, Non-Breaking)
+
+If additional robustness is needed without changing architecture, invoke specialist workers only inside the owning step:
+
+- Step 03 worker: TMDL syntax + lineage tag integrity verification
+- Step 04 worker: DAX pattern compliance + optimization checks
+- Step 07 worker: Test registry cross-check + query execution validation
+- Step 09 worker: PBIR visual payload schema conformance
+- Step 10 worker: blueprint-to-PBIR reconciliation report generation
+
+Each worker returns artifacts to the orchestrator; workers never update `workflow_state.json` directly.
 
 # Final Deliverables
 

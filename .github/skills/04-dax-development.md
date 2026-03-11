@@ -1,3 +1,8 @@
+---
+name: powerbi-dax-development
+description: Implement optimized DAX measures with time intelligence and formatting standards.
+---
+
 # Skill: DAX KPIs and Measures Development
 
 ## Prerequisites — MANDATORY
@@ -6,6 +11,12 @@ Before writing ANY DAX code:
 2. **Read** `.github/references/naming-conventions.md` for measure naming rules.
 3. **Search** Microsoft documentation with `microsoft_docs_search` for any DAX function you are uncertain about.
 4. **Search** for code examples with `microsoft_code_sample_search` when implementing time intelligence or complex calculations.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 04**. Do NOT preload unrelated future-step skills.
+- Input gate: verify Step 03 model artifacts exist and are readable before authoring measures.
+- Output gate: before completion, verify `_Measures.tmdl` is updated, non-empty, and recorded in `workflow_state.json`.
 
 ## Measures Table
 

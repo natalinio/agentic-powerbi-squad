@@ -1,3 +1,8 @@
+---
+name: powerbi-requirements-analysis
+description: Extract KPIs, dimensions, grain, and constraints from functional specifications.
+---
+
 # Skill: Requirements Analysis and Specification Extraction
 
 ## Input Handling
@@ -5,6 +10,12 @@
 - **Markdown files** (`.md`): Read the file content directly.
 - **Word documents** (`.docx`): Ask the user to paste or convert the content. Do NOT attempt binary parsing.
 - Detect the input language (Italian or English) and communicate in that language throughout the session.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 01**. Do NOT preload Step 08/09/10 (or any other future-step skill) unless explicitly needed for a blocking clarification.
+- Input gate: verify prerequisite artifacts from previous completed step(s) exist and are readable.
+- Output gate: before completion, verify `<ProjectName>/spec/requirements_summary.md` exists, is non-empty, and is registered in `workflow_state.json`.
 
 ## Extraction Procedure
 

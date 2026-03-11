@@ -1,3 +1,8 @@
+---
+name: powerbi-code-review
+description: Run quality checks across TMDL, DAX, schema consistency, and BPA compliance.
+---
+
 # Skill: Quality Review & TMDL Validation
 
 ## Purpose
@@ -11,6 +16,12 @@ Before starting the review:
 4. **Load** all generated TMDL files from `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`.
 5. **Load** the CSV mock data files from `<ProjectName>/data/`.
 6. **Verify** any uncertain TMDL syntax using `microsoft_docs_search` or `microsoft_docs_fetch` MCP tool.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 06** and avoid preloading unrelated future-step skills.
+- Input gate: verify Step 05 artifacts are complete and readable.
+- Output gate: before completion, verify `<ProjectName>/tests/quality_review.md` exists, is non-empty, and is persisted in `workflow_state.json`.
 
 ## Review Checklist
 

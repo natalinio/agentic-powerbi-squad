@@ -1,3 +1,8 @@
+---
+name: powerbi-project-initialization
+description: Bootstrap PBIP canvas and required project folders before step execution.
+---
+
 # Skill: Project Initialization (PBIP Canvas Bootstrap)
 
 ## Goal
@@ -5,6 +10,12 @@
 Bootstrap a new project folder so Power BI Desktop can open it as a PBIP project **without requiring the user to manually create the empty canvas first**.
 
 This skill creates the minimal **PBIP + Report (PBIR) + SemanticModel (TMDL)** scaffolding and the project subfolders used by later steps.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 00**. Do NOT preload or execute instructions from other step skills unless explicitly required by a blocking dependency.
+- Input gate: verify target project path exists and is writable before creating artifacts.
+- Output gate: before marking Step 00 complete, verify required PBIP scaffold files exist and are non-empty, then persist artifact paths in `workflow_state.json`.
 
 ## When to Run
 

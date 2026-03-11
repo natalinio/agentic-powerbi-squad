@@ -1,4 +1,9 @@
-﻿# Skill: Report Design (Layout, UX, Navigation)
+﻿---
+name: powerbi-report-design
+description: Design report layout, UX, and interactions and persist blueprint artifacts.
+---
+
+# Skill: Report Design (Layout, UX, Navigation)
 
 ## Purpose
 Design the Power BI report experience (pages, layout, visuals, interactions, navigation) based on:
@@ -11,6 +16,12 @@ This step produces a **design blueprint** only. It does NOT implement PBIP repor
 - Load only the minimum needed inputs for this step: the spec + the semantic model object names.
 - Use `.github/references/report-design-visualization-best-practices.md` **only when needed** (e.g., choosing a chart type, defining cross-filtering rules, accessibility checks). Do NOT preload it if the spec already dictates the visual choices.
 - NEVER invent measure/field names: always read them from TMDL.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 08**. Do NOT preload Step 09/10 skill instructions unless explicitly required to resolve a blocking ambiguity.
+- Input gate: verify Step 07 artifacts and semantic model metadata are available and readable.
+- Output gate: before completion, verify `<ProjectName>/spec/report_blueprint.json` exists, is valid JSON, non-empty, and recorded in `workflow_state.json`.
 
 ## Prerequisites — MANDATORY
 Before starting report design:

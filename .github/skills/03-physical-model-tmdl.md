@@ -1,3 +1,8 @@
+---
+name: powerbi-physical-model-tmdl
+description: Generate semantic model artifacts in TMDL with validated structure and naming.
+---
+
 # Skill: Physical Model & TMDL Development
 
 ## Prerequisites — MANDATORY
@@ -7,6 +12,12 @@ Before writing ANY TMDL code:
 3. **Read** `.github/references/pbip-folder-structure.md` — defines output folder structure.
 4. If (and ONLY if) the specification includes Row-Level Security requirements, **read** `.github/references/security-rls-best-practices.md` before defining any RLS roles, table permissions, or bidirectional security propagation.
 5. **Verify** any uncertain syntax using `microsoft_docs_search` MCP tool with query: `"TMDL <object_type> definition syntax"`.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 03** and avoid loading future-step skill instructions unless strictly required.
+- Input gate: verify Step 02 artifact exists and semantic model target folders are writable.
+- Output gate: before completion, verify required TMDL artifacts exist and are non-empty, then register them in `workflow_state.json`.
 
 ## TMDL Syntax Critical Rules
 

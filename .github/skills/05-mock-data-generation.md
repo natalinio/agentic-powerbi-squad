@@ -1,7 +1,18 @@
+---
+name: powerbi-mock-data-generation
+description: Produce realistic CSV mock datasets and align partitions for local validation.
+---
+
 # Skill: Mock Data Generation
 
 ## Purpose
 Generate realistic mock data as CSV files to validate the PBIP semantic model locally in Power BI Desktop.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 05**. Do NOT preload downstream step skills unless explicitly required.
+- Input gate: verify Step 04 model/measures artifacts exist and target data/script folders are writable.
+- Output gate: before completion, verify generated CSV files and `<ProjectName>/scripts/generate_mock_data.py` exist, are non-empty, and are registered in `workflow_state.json`.
 
 ## Python Environment Setup
 

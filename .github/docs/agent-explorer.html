@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic Workflow Explorer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #070a16;
+      --panel: #0c1430;
+      --panel-2: #121c3b;
+      --line: #243159;
+      --text: #eef3ff;
+      --muted: #a4b1d3;
+      --accent: #8e81ff;
+      --accent-2: #2ec9ff;
+      --agent: #21d4fd;
+      --skill: #9f8dff;
+      --reference: #39d7a1;
+      --script: #ffc06b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 680px at 12% -12%, rgba(46, 201, 255, 0.12), transparent 62%),
+        radial-gradient(980px 580px at 95% 0%, rgba(142, 129, 255, 0.22), transparent 58%),
+        linear-gradient(180deg, #070a14 0%, #090f20 100%);
+      color: var(--text);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 14px;
+      height: 100dvh;
+      padding: 14px;
+    }
+
+    .main {
+      background: linear-gradient(160deg, rgba(10,20,48,0.98), rgba(8,14,34,0.98));
+      border: 1px solid rgba(92, 123, 220, 0.25);
+      border-radius: 18px;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,255,255,0.03);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 17, 38, 0.8);
+      backdrop-filter: blur(8px);
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.1px;
+    }
+
+    .title .sub {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="search"] {
+      width: 220px;
+      border: 1px solid var(--line);
+      background: #0b1530;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 11px;
+      outline: none;
+      transition: border-color .2s ease;
+    }
+
+    input[type="search"]:focus { border-color: var(--accent); }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #1a2448, #121b37);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 11px;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      border-color: rgba(143,124,255,.66);
+      box-shadow: 0 0 0 2px rgba(143,124,255,.16);
+    }
+
+    #network {
+      flex: 1;
+      min-height: 0;
+    }
+
+    .side {
+      background: linear-gradient(160deg, rgba(11,19,44,0.98), rgba(8,14,32,0.98));
+      border: 1px solid rgba(143, 124, 255, 0.28);
+      border-radius: 18px;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.5);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side::before,
+    .main::before {
+      content: "";
+      display: block;
+      position: absolute;
+      height: 2px;
+      left: 18px;
+      right: 18px;
+      top: 0;
+      background: linear-gradient(90deg, rgba(158, 142, 255, 0.15), rgba(158, 142, 255, 0.95), rgba(46, 201, 255, 0.45));
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .side,
+    .main {
+      position: relative;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
+    }
+
+    .agent::before { background: var(--agent); }
+    .skill::before { background: var(--skill); }
+    .reference::before { background: var(--reference); }
+    .script::before { background: var(--script); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px;
+    }
+
+    .stat .k { color: var(--muted); font-size: 11px; }
+    .stat .v { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+    .details {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .markdown-preview {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #0c1220;
+      max-height: 45vh;
+      overflow: auto;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .markdown-preview h1,
+    .markdown-preview h2,
+    .markdown-preview h3 {
+      margin: 10px 0 8px;
+      color: #f2f7ff;
+      font-size: 14px;
+    }
+
+    .markdown-preview p,
+    .markdown-preview li {
+      font-size: 12px;
+      color: #dce6ff;
+    }
+
+    .markdown-preview code {
+      background: #131d33;
+      padding: 2px 5px;
+      border-radius: 5px;
+      color: #b7c9ff;
+      font-size: 11px;
+    }
+
+    .markdown-preview pre {
+      background: #0b1629;
+      border: 1px solid #223151;
+      border-radius: 8px;
+      padding: 9px;
+      overflow: auto;
+    }
+
+    .chip {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--text);
+      background: #141f41;
+    }
+
+    .details h3 {
+      margin: 2px 0 8px;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .details ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      color: var(--text);
+    }
+
+    .details li { margin: 4px 0; }
+
+    .hint {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1280px) {
+      .layout { grid-template-columns: 340px 1fr; }
+    }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { height: 42dvh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="side">
+      <div class="panel">
+        <h2>Legenda</h2>
+        <div class="legend">
+          <span class="agent">Agent</span>
+          <span class="skill">Skill</span>
+          <span class="reference">Reference</span>
+          <span class="script">Script</span>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="k">Agent</div><div class="v" id="agentCount">0</div></div>
+          <div class="stat"><div class="k">Skills</div><div class="v" id="skillsCount">0</div></div>
+          <div class="stat"><div class="k">References</div><div class="v" id="referencesCount">0</div></div>
+          <div class="stat"><div class="k">Scripts</div><div class="v" id="scriptsCount">0</div></div>
+        </div>
+      </div>
+      <div class="details" id="details">
+        <div class="hint">
+          Clicca un nodo per vedere i dettagli.
+          <br />
+          Clicca di nuovo sui nodi con figli per espandere/collassare il livello sottostante.
+          <br /><br />
+          Suggerimento: usa la ricerca per navigare rapidamente l’albero agentico.
+        </div>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="toolbar">
+        <div class="title">
+          <h1>Agentic Workflow Explorer</h1>
+          <div class="sub">Gerarchia a 3 livelli: Agent → Skills → References/Scripts</div>
+        </div>
+        <div class="controls">
+          <input id="search" type="search" placeholder="Cerca nodo..." />
+          <button class="btn" id="fitBtn">Fit</button>
+          <button class="btn" id="expandAllBtn">Expand All</button>
+          <button class="btn" id="collapseAllBtn">Collapse All</button>
+          <button class="btn" id="focusAgentBtn">Focus Agent</button>
+        </div>
+      </div>
+      <div id="network"></div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/vis-network@9.1.9/dist/vis-network.min.js"></script>
+  <script>
+    const agentFile = "powerbi-AI-developer.agent.md";
+    const skills = [
+      "00-project-initialization.md",
+      "01-requirements-analysis.md",
+      "02-logical-model.md",
+      "03-physical-model-tmdl.md",
+      "04-dax-development.md",
+      "05-mock-data-generation.md",
+      "06-code-review.md",
+      "07-functional-testing.md",
+      "08-report-design.md",
+      "09-report-implementation.md",
+      "10-report-quality-validation.md"
+    ];
+
+    const previewPathByGroup = {
+      agent: "../agents/",
+      skill: "../skills/",
+      reference: "../references/",
+      script: "../scripts/"
+    };
+
+    const nodeMap = new Map();
+    const edgeList = [];
+    const childrenByParent = new Map();
+    const parentByChild = new Map();
+    const details = document.getElementById("details");
+
+    function slugFromFile(prefix, file) {
+      return `${prefix}-${file.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function parseFrontmatter(markdownText) {
+      const match = markdownText.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+      if (!match) {
+        return { metadata: {}, body: markdownText };
+      }
+
+      const metadata = {};
+      match[1].split("\n").forEach(line => {
+        const separator = line.indexOf(":");
+        if (separator <= 0) return;
+        const key = line.slice(0, separator).trim();
+        const value = line.slice(separator + 1).trim().replace(/^['"]|['"]$/g, "");
+        metadata[key] = value;
+      });
+
+      return { metadata, body: markdownText.slice(match[0].length) };
+    }
+
+    function extractMatches(text, regex) {
+      const values = new Set();
+      for (const match of text.matchAll(regex)) {
+        values.add(match[1]);
+      }
+      return Array.from(values).sort((a, b) => a.localeCompare(b));
+    }
+
+    function addNode(node) {
+      nodeMap.set(node.id, {
+        ...node,
+        baseLabel: node.label,
+        shape: "dot",
+        font: {
+          size: node.group === "agent" ? 17 : 14,
+          color: "#ffffff",
+          face: "Inter",
+          strokeWidth: 4,
+          strokeColor: "#0a1020"
+        }
+      });
+    }
+
+    function setNodePosition(nodeId, x, y) {
+      const current = nodeMap.get(nodeId);
+      if (!current) return;
+      nodeMap.set(nodeId, { ...current, x, y, fixed: false });
+    }
+
+    function addEdge(from, to, extra = {}) {
+      const edgeId = `${from}__${to}`;
+      edgeList.push({ id: edgeId, from, to, ...extra });
+      if (!childrenByParent.has(from)) {
+        childrenByParent.set(from, []);
+      }
+      childrenByParent.get(from).push(to);
+      parentByChild.set(to, from);
+    }
+
+    async function fetchMarkdown(path) {
+      const response = await fetch(path);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} - ${path}`);
+      }
+      return response.text();
+    }
+
+    async function collectSkillDependencies() {
+      const dependencies = {};
+
+      for (let index = 0; index < skills.length; index++) {
+        const file = skills[index];
+        const skillId = `skill-${index + 1}`;
+        const raw = await fetchMarkdown(`../skills/${file}`);
+        const { metadata, body } = parseFrontmatter(raw);
+
+        const refs = extractMatches(body, /\.github\/references\/([a-zA-Z0-9._-]+\.md)/g);
+        const scripts = extractMatches(body, /\.github\/scripts\/([a-zA-Z0-9._-]+\.py)/g);
+
+        dependencies[skillId] = {
+          file,
+          title: metadata.description || file,
+          refs,
+          scripts
+        };
+      }
+
+      return dependencies;
+    }
+
+    function applyDefaultClockwiseLayout(skillIds) {
+      setNodePosition("agent", 0, 0);
+      const skillRadius = 320;
+      const firstAngle = -Math.PI / 2;
+
+      skillIds.forEach((skillId, index) => {
+        const angle = firstAngle + ((Math.PI * 2) * index / skillIds.length);
+        const x = Math.cos(angle) * skillRadius;
+        const y = Math.sin(angle) * skillRadius;
+        setNodePosition(skillId, x, y);
+      });
+
+      skillIds.forEach(skillId => {
+        const skillNode = nodeMap.get(skillId);
+        if (!skillNode) return;
+
+        const children = childrenByParent.get(skillId) || [];
+        if (!children.length) return;
+
+        const baseAngle = Math.atan2(skillNode.y, skillNode.x);
+        const childRadius = 230;
+        const spread = Math.PI / 3;
+
+        children.forEach((childId, childIndex) => {
+          const offset = children.length === 1
+            ? 0
+            : -spread / 2 + (spread * childIndex / (children.length - 1));
+          const angle = baseAngle + offset;
+          setNodePosition(childId, skillNode.x + Math.cos(angle) * childRadius, skillNode.y + Math.sin(angle) * childRadius);
+        });
+      });
+    }
+
+    function getNode(nodeId) {
+      return nodeMap.get(nodeId);
+    }
+
+    function getChildren(nodeId) {
+      return childrenByParent.get(nodeId) || [];
+    }
+
+    function hasChildren(nodeId) {
+      return getChildren(nodeId).length > 0;
+    }
+
+    async function loadMarkdownPreview(node) {
+      const preview = document.getElementById("markdownPreview");
+      if (!preview) return;
+
+      const file = node.meta?.file;
+      const basePath = previewPathByGroup[node.group];
+      if (!file || !basePath) {
+        preview.innerHTML = "Nessuna anteprima disponibile.";
+        return;
+      }
+
+      try {
+        const text = await fetchMarkdown(`${basePath}${file}`);
+        if (node.group === "script") {
+          preview.innerHTML = `<pre><code>${escapeHtml(text.slice(0, 3500))}</code></pre>`;
+          return;
+        }
+
+        const snippet = text.slice(0, 4500);
+        preview.innerHTML = window.marked ? marked.parse(snippet) : `<pre><code>${escapeHtml(snippet)}</code></pre>`;
+      } catch (error) {
+        preview.innerHTML = `Anteprima non caricabile.<br/><small>${escapeHtml(String(error))}</small>`;
+      }
+    }
+
+    function renderNodeDetails(nodeId, expandedState) {
+      const node = getNode(nodeId);
+      if (!node) return;
+
+      const children = getChildren(nodeId).map(id => getNode(id)).filter(Boolean);
+      const kind = node.group.charAt(0).toUpperCase() + node.group.slice(1);
+      const stateText = hasChildren(nodeId) ? (expandedState.get(nodeId) ? "Expanded" : "Collapsed") : "Leaf node";
+
+      details.innerHTML = `
+        <div class="chip">${kind}</div>
+        <h3>${node.baseLabel}</h3>
+        <div style="margin-bottom:8px;">${node.title || "Nessuna descrizione"}</div>
+        <div><strong>Stato:</strong> ${stateText}</div>
+        <div style="margin-top:6px;"><strong>File:</strong><br/>${node.meta?.file || "n/a"}</div>
+        <div style="margin-top:10px;"><strong>Figli diretti (${children.length})</strong></div>
+        <ul>
+          ${children.map(child => `<li>${child.baseLabel}</li>`).join("") || "<li>Nessuno</li>"}
+        </ul>
+        <div id="markdownPreview" class="markdown-preview">Caricamento anteprima markdown...</div>
+      `;
+
+      loadMarkdownPreview(node);
+    }
+
+    function bootstrapNetwork(visNodes, visEdges, nodes, network) {
+      const expandedState = new Map();
+      nodeMap.forEach((_, nodeId) => expandedState.set(nodeId, false));
+      expandedState.set("agent", true);
+
+      function updateLabelIndicators() {
+        const updates = [];
+        nodeMap.forEach((node, nodeId) => {
+          if (!hasChildren(nodeId)) {
+            updates.push({ id: nodeId, label: node.baseLabel });
+            return;
+          }
+          const marker = expandedState.get(nodeId) ? "▾ " : "▸ ";
+          updates.push({ id: nodeId, label: `${marker}${node.baseLabel}` });
+        });
+        visNodes.update(updates);
+      }
+
+      function computeVisibleNodes() {
+        const visible = new Set(["agent"]);
+        function walk(nodeId) {
+          if (!expandedState.get(nodeId)) return;
+          getChildren(nodeId).forEach(childId => {
+            visible.add(childId);
+            walk(childId);
+          });
+        }
+        walk("agent");
+        return visible;
+      }
+
+      function refreshVisibility() {
+        const visibleNodes = computeVisibleNodes();
+        visNodes.update(Array.from(nodeMap.keys()).map(id => ({ id, hidden: !visibleNodes.has(id) })));
+        visEdges.update(edgeList.map(edge => ({ id: edge.id, hidden: !(visibleNodes.has(edge.from) && visibleNodes.has(edge.to)) })));
+        updateLabelIndicators();
+      }
+
+      function collectVisibleSubtree(nodeId) {
+        const subtree = [];
+
+        function walk(currentId) {
+          const currentNode = visNodes.get(currentId);
+          if (!currentNode || currentNode.hidden) {
+            return;
+          }
+          subtree.push(currentId);
+          getChildren(currentId).forEach(childId => walk(childId));
+        }
+
+        walk(nodeId);
+        return subtree;
+      }
+
+      function fitToNodeSubtree(nodeId) {
+        const subtreeNodes = collectVisibleSubtree(nodeId);
+        if (!subtreeNodes.length) {
+          return;
+        }
+
+        network.fit({
+          nodes: subtreeNodes,
+          animation: { duration: 320, easingFunction: "easeInOutQuad" },
+          maxZoomLevel: 1.15
+        });
+      }
+
+      function collapseSubtree(nodeId) {
+        getChildren(nodeId).forEach(childId => {
+          expandedState.set(childId, false);
+          collapseSubtree(childId);
+        });
+      }
+
+      function expandPathToNode(nodeId) {
+        let current = nodeId;
+        while (parentByChild.has(current)) {
+          const parent = parentByChild.get(current);
+          expandedState.set(parent, true);
+          current = parent;
+        }
+      }
+
+      network.on("click", params => {
+        if (!params.nodes.length) return;
+        const nodeId = params.nodes[0];
+        if (hasChildren(nodeId)) {
+          const wasExpanded = expandedState.get(nodeId);
+          if (expandedState.get(nodeId)) {
+            expandedState.set(nodeId, false);
+            collapseSubtree(nodeId);
+          } else {
+            expandedState.set(nodeId, true);
+          }
+          refreshVisibility();
+          if (!wasExpanded) {
+            fitToNodeSubtree(nodeId);
+          } else {
+            network.focus(nodeId, { scale: 1.08, animation: { duration: 280 } });
+          }
+        }
+        renderNodeDetails(nodeId, expandedState);
+      });
+
+      document.getElementById("fitBtn").addEventListener("click", () => {
+        network.fit({ animation: { duration: 500, easingFunction: "easeInOutQuad" } });
+      });
+
+      document.getElementById("expandAllBtn").addEventListener("click", () => {
+        nodeMap.forEach((_, nodeId) => {
+          if (hasChildren(nodeId)) expandedState.set(nodeId, true);
+        });
+        refreshVisibility();
+        network.fit({ animation: { duration: 380 } });
+      });
+
+      document.getElementById("collapseAllBtn").addEventListener("click", () => {
+        nodeMap.forEach((_, nodeId) => expandedState.set(nodeId, false));
+        expandedState.set("agent", true);
+        refreshVisibility();
+        network.focus("agent", { scale: 1.05, animation: { duration: 420 } });
+        network.selectNodes(["agent"]);
+        renderNodeDetails("agent", expandedState);
+      });
+
+      document.getElementById("focusAgentBtn").addEventListener("click", () => {
+        network.focus("agent", { scale: 1.05, animation: { duration: 500 } });
+        network.selectNodes(["agent"]);
+        renderNodeDetails("agent", expandedState);
+      });
+
+      document.getElementById("search").addEventListener("input", e => {
+        const q = e.target.value.trim().toLowerCase();
+        if (!q) {
+          network.unselectAll();
+          return;
+        }
+
+        const matched = nodes.filter(n => n.baseLabel.toLowerCase().includes(q));
+        if (!matched.length) return;
+
+        const first = matched[0];
+        expandPathToNode(first.id);
+        refreshVisibility();
+        network.selectNodes([first.id]);
+        network.focus(first.id, { scale: 1.12, animation: { duration: 350 } });
+        renderNodeDetails(first.id, expandedState);
+      });
+
+      refreshVisibility();
+      network.fit({ animation: { duration: 420 } });
+      network.selectNodes(["agent"]);
+      renderNodeDetails("agent", expandedState);
+    }
+
+    async function initialize() {
+      try {
+        const dependenciesBySkill = await collectSkillDependencies();
+        const agentText = await fetchMarkdown(`../agents/${agentFile}`);
+        const parsedAgent = parseFrontmatter(agentText);
+        const uniqueReferenceFiles = new Set();
+        const uniqueScriptFiles = new Set();
+
+        addNode({
+          id: "agent",
+          label: parsedAgent.metadata.name || "powerbi-AI-developer",
+          group: "agent",
+          title: parsedAgent.metadata.description || "Orchestratore principale del workflow in 10 step",
+          size: 34,
+          meta: { category: "Agent", file: agentFile }
+        });
+
+        const skillIds = [];
+        skills.forEach((file, index) => {
+          const skillId = `skill-${index + 1}`;
+          skillIds.push(skillId);
+          const dep = dependenciesBySkill[skillId];
+          addNode({
+            id: skillId,
+            label: file.replace(".md", ""),
+            group: "skill",
+            title: dep?.title || file,
+            size: 20,
+            meta: { category: "Skill", file }
+          });
+          addEdge("agent", skillId, { width: 2.4 });
+
+          (dep?.refs || []).forEach(refFile => {
+            uniqueReferenceFiles.add(refFile);
+            const refId = slugFromFile(`${skillId}-ref`, refFile);
+            addNode({
+              id: refId,
+              label: refFile.replace(".md", ""),
+              group: "reference",
+              title: refFile,
+              size: 16,
+              meta: { category: "Reference", file: refFile }
+            });
+            addEdge(skillId, refId, { dashes: true, color: { opacity: 0.75 } });
+          });
+
+          (dep?.scripts || []).forEach(scriptFile => {
+            uniqueScriptFiles.add(scriptFile);
+            const scriptId = slugFromFile(`${skillId}-script`, scriptFile);
+            addNode({
+              id: scriptId,
+              label: scriptFile,
+              group: "script",
+              title: scriptFile,
+              size: 17,
+              meta: { category: "Script", file: scriptFile }
+            });
+            addEdge(skillId, scriptId, { width: 1.8 });
+          });
+        });
+
+        applyDefaultClockwiseLayout(skillIds);
+
+        const nodes = Array.from(nodeMap.values());
+        const visNodes = new vis.DataSet(nodes.map(node => ({ ...node, hidden: false })));
+        const visEdges = new vis.DataSet(edgeList.map(edge => ({ ...edge, hidden: false })));
+
+        const container = document.getElementById("network");
+        const data = { nodes: visNodes, edges: visEdges };
+
+        const options = {
+          layout: { improvedLayout: true },
+          physics: { enabled: false },
+          interaction: {
+            hover: true,
+            tooltipDelay: 120,
+            navigationButtons: true,
+            keyboard: true,
+            dragNodes: true,
+            zoomView: true,
+            dragView: true
+          },
+          nodes: {
+            borderWidth: 1,
+            borderWidthSelected: 2,
+            chosen: {
+              node(values) {
+                values.shadow = true;
+                values.shadowSize = 26;
+                values.shadowColor = "rgba(120,247,255,.45)";
+              }
+            },
+            shadow: { enabled: true, color: "rgba(0,0,0,0.45)", size: 16, x: 0, y: 8 },
+            margin: { top: 8, right: 12, bottom: 8, left: 12 }
+          },
+          edges: {
+            color: { color: "#40507a", highlight: "#78f7ff", hover: "#78f7ff" },
+            smooth: { type: "dynamic" },
+            arrows: { to: { enabled: true, scaleFactor: 0.65 } }
+          },
+          groups: {
+            agent: { color: { background: "#21d4fd", border: "#7de9ff" } },
+            skill: { color: { background: "#8f7cff", border: "#b7abff" } },
+            reference: { color: { background: "#29d391", border: "#75e9bf" } },
+            script: { color: { background: "#ffb454", border: "#ffd195" } }
+          }
+        };
+
+        const network = new vis.Network(container, data, options);
+
+        document.getElementById("agentCount").textContent = "1";
+        document.getElementById("skillsCount").textContent = String(skills.length);
+        document.getElementById("referencesCount").textContent = String(uniqueReferenceFiles.size);
+        document.getElementById("scriptsCount").textContent = String(uniqueScriptFiles.size);
+
+        bootstrapNetwork(visNodes, visEdges, nodes, network);
+      } catch (error) {
+        details.innerHTML = `<div class="hint">Errore durante inizializzazione grafo.<br/><small>${escapeHtml(String(error))}</small></div>`;
+      }
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

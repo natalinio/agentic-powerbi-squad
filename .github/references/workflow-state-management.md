@@ -111,6 +111,16 @@ The agent MUST maintain this file throughout the entire workflow. It is the sing
 4. **On step failure/rejection:** UPDATE `pendingStep.status` to `"rejected"` with user feedback in `notes`. Do NOT advance `currentStep`.
 5. **On every decision point:** APPEND an immutable record in `decisionLedger` and mirror it under the step (`decisionPoints`, `userInputs`).
 
+### Canonical State Shape (MANDATORY)
+
+To avoid state drift across sessions, the workflow file MUST maintain one canonical structure:
+
+- `completedSteps` is an **object** keyed by `step_00`, `step_01`, ..., `step_10` (never an array).
+- `pendingStep` uses fields: `stepNumber`, `stepName`, `status`, `startedAt`, `awaitingUserInput`, `decisionPoints`, `userInputs`.
+- Top-level timestamp fields use ISO 8601 UTC format (`YYYY-MM-DDTHH:mm:ssZ`).
+
+If a non-canonical or legacy structure is found, the agent MUST normalize it before executing the next step and record the normalization in step notes.
+
 ---
 
 ## 1.1 Decision Point Tracking Protocol (MANDATORY)
@@ -228,6 +238,16 @@ Agent proceeds: Step 5 (Mock Data Generation)
 2. VERIFY all prerequisite steps are "completed"
 3. READ artifact files from prerequisite steps (NOT from chat memory)
 4. UPDATE workflow_state.json with pendingStep = current step
+
+### Step Input Contract Gate (MANDATORY)
+
+Before starting step `N` (`N > 0`), the agent MUST verify:
+
+1. Required artifacts from step `N-1` exist on disk.
+2. Required artifact formats are valid for the incoming step (Markdown/JSON/TMDL/CSV as applicable).
+3. `workflow_state.json` is writable.
+
+If any check fails, STOP and emit a blocking report with minimal recovery actions.
 ```
 
 ### At the END of each step (BEFORE asking user for approval), the agent MUST:
@@ -241,6 +261,14 @@ Agent proceeds: Step 5 (Mock Data Generation)
    - Update lastUpdatedAt timestamp
 3. PRESENT summary to user
 4. STOP and wait for user approval
+
+### Step Output Contract Gate (MANDATORY)
+
+Before marking a step as completed, the agent MUST verify:
+
+1. Primary step artifact exists and is non-empty.
+2. Artifact paths are persisted in the current step record under `completedSteps`.
+3. Transition decision is recorded (`approval` or explicit `rejection`) in `decisionLedger` and step-local fields.
 ```
 
 ### On user APPROVAL:
@@ -261,10 +289,22 @@ Agent proceeds: Step 5 (Mock Data Generation)
 5. WRITE corrected artifacts to disk
 6. UPDATE workflow_state.json
 7. Present revised output and STOP
+```
 
 ---
 
-## 5. Incident Lessons Learned Protocol (Project-Scoped)
+## 5. Execution Topology (Recommended)
+
+Keep a **single orchestrator** as the only owner of workflow state and step transitions.
+
+- Do not split the end-to-end process into multiple independent top-level state owners.
+- Specialist workers are optional and should be used only inside a step (e.g., TMDL linting, DAX validation, PBIR schema checks).
+- Specialist workers MUST NOT write `workflow_state.json` directly.
+- The orchestrator is solely responsible for approvals, checkpointing, and state transitions.
+
+This model improves traceability and reduces handoff inconsistencies.
+
+## 6. Incident Lessons Learned Protocol (Project-Scoped)
 
 Create or append `<ProjectName>/tests/lessons-learned.md` only when:
 - the user reports a direct-check defect (model bug, report load failure, Power BI Desktop error, runtime malfunction), and
@@ -280,4 +320,3 @@ Each entry should include:
 5. Validation evidence
 6. Guardrail/process update
 7. Files changed
-```

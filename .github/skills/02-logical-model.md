@@ -1,9 +1,20 @@
+---
+name: powerbi-logical-model
+description: Design a Kimball-compliant logical star schema and relationships.
+---
+
 # Skill: Logical Data Model Design (Kimball Methodology)
 
 ## Prerequisites
 - Reference `.github/references/relationship-patterns.md` for advanced relationship patterns.
 - Reference `.github/references/naming-conventions.md` for naming rules.
 - If (and ONLY if) RLS is required by the specs, reference `.github/references/security-rls-best-practices.md` for recommended patterns (dynamic RLS, least privilege, governance).
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 02**. Do NOT preload downstream skills unless explicitly required by a blocking dependency.
+- Input gate: verify Step 01 artifact exists and is readable before modeling.
+- Output gate: before completion, verify `<ProjectName>/spec/er_diagram.md` exists, is non-empty, and is recorded in `workflow_state.json`.
 
 ## Design Rules
 

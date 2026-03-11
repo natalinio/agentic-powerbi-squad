@@ -1,3 +1,8 @@
+---
+name: powerbi-functional-testing
+description: Define and execute functional tests for measures, filters, and model behavior.
+---
+
 # Skill: Functional Testing & Calculation Validation
 
 ## Purpose
@@ -12,6 +17,12 @@ This skill covers:
 5. **Performance Tests**: Query response time validation
 6. **Business Rule Tests**: Consistency with functional specifications
 7. **Security Tests (if applicable)**: Validation of Row-Level Security behavior per role/user
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 07** and avoid loading future-step implementation skills unless explicitly needed.
+- Input gate: verify Step 06 report and model artifacts are present and readable.
+- Output gate: before completion, verify test artifacts exist (`tests_definition.json`, execution outputs), are non-empty, and are recorded in `workflow_state.json`.
 
 ## Prerequisites — MANDATORY
 Before starting the testing phase:

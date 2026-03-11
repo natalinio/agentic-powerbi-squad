@@ -1,3 +1,8 @@
+---
+name: powerbi-report-implementation
+description: Generate PBIR pages and visuals from blueprint with schema-safe mappings.
+---
+
 # Skill: Report Implementation (PBIR Visual Generation)
 
 ## Purpose
@@ -22,6 +27,12 @@ When starting this step, the agent MUST:
 - **READ** `<ProjectName>/spec/report_blueprint.json` from disk (the primary input for this step).
 - **READ** TMDL files from disk for exact table/column/measure names (anti-hallucination).
 - **DO NOT** rely on chat history for any data from previous steps.
+
+## Step Scope & I/O Gate Alignment (MANDATORY)
+
+- This skill is step-scoped: execute it only for **Step 09**. Do NOT preload Step 10 validation logic except where strictly required for schema correctness.
+- Input gate: verify Step 08 blueprint exists, is valid JSON, and all referenced fields are resolvable in TMDL.
+- Output gate: before completion, verify generated page/visual files exist, are non-empty, and are persisted in `workflow_state.json`.
 
 ## References — MANDATORY
 Before generating ANY PBIR JSON:
