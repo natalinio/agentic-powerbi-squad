@@ -22,7 +22,7 @@ __pycache__/
 
 # Project folders (user-created Power BI projects)
 # Uncomment lines below to exclude your project folders from source control:
-#SalesOverview/
+SalesOverview/
 # FinanceReport/
 # CustomerAnalytics/
 # (Keep [ProjectName]/ tracked as it's the template)
