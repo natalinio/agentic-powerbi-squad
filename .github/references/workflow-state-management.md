@@ -221,6 +221,29 @@ When transitioning between steps, the agent MUST:
 3. **WRITE** outputs to disk before presenting results to the user.
 4. **UPDATE** `workflow_state.json` after user approval.
 
+### Context Budgeting for Long 00-10 Workflows
+
+The 00-10 workflow is intentionally long-lived. To prevent performance degradation as artifacts accumulate, the agent MUST treat chat context as short-term working memory only.
+
+Mandatory context-budgeting rules:
+
+1. Prefer compact registries and generated summaries over raw artifact dumps.
+2. For bulk validation or scanning tasks, use repository scripts that write results to disk.
+3. Read only the artifacts required by the current step input contract.
+4. If a step generates many files, read a machine-generated summary first and inspect raw files only for targeted diagnosis.
+5. Do not repeatedly reload large PBIR or TMDL artifact sets into chat when the same information already exists in:
+  - `workflow_state.json`
+  - step artifacts on disk
+  - validation summaries in `tests/`
+
+Recommended pattern:
+
+```text
+Run local script -> write summary artifact -> read summary -> inspect only failing files
+```
+
+This rule is especially important for Step 09 and Step 10, where PBIR artifacts can grow rapidly and degrade chat performance if naively reloaded.
+
 ### Resumability
 
 If the chat session is interrupted or restarted mid-workflow:

@@ -312,6 +312,12 @@
           Clicca un nodo per vedere i dettagli.
           <br />
           Clicca di nuovo sui nodi con figli per espandere/collassare il livello sottostante.
+          <br />
+          I passaggi sono governati da input/output contract gate e da chiarimenti critici bloccanti.
+          <br />
+          Step 10 usa validazione automatica con `validate_pbir_report.py` e ispezione mirata solo sui file in errore.
+          <br />
+          I workflow lunghi usano summary artifact su disco per contenere il costo di contesto.
           <br /><br />
           Suggerimento: usa la ricerca per navigare rapidamente l’albero agentico.
         </div>
@@ -322,7 +328,7 @@
       <div class="toolbar">
         <div class="title">
           <h1>Agentic Workflow Explorer</h1>
-          <div class="sub">Gerarchia a 3 livelli: Agent → Skills → References/Scripts</div>
+          <div class="sub">Gerarchia a 3 livelli: Agent → Skills → References/Scripts con gate, validatori automatici e context budgeting</div>
         </div>
         <div class="controls">
           <input id="search" type="search" placeholder="Cerca nodo..." />
@@ -545,6 +551,13 @@
       const children = getChildren(nodeId).map(id => getNode(id)).filter(Boolean);
       const kind = node.group.charAt(0).toUpperCase() + node.group.slice(1);
       const stateText = hasChildren(nodeId) ? (expandedState.get(nodeId) ? "Expanded" : "Collapsed") : "Leaf node";
+      const extraNote = node.group === "script"
+        ? "Gli script sono eseguibili locali per bulk validation o automazione del workflow; il pattern preferito è script-first, poi inspection dei soli file problematici."
+        : node.group === "reference"
+          ? "Le reference definiscono sintassi, guardrail e regole di stato da leggere a step mirati, evitando di ricaricare tutto il contesto in chat."
+          : node.group === "skill"
+            ? "Le skill orchestrano input/output contract gate e consumano reference/script specifici dello step."
+            : "L'agent resta owner unico dello stato workflow_state.json e delle transizioni tra step.";
 
       details.innerHTML = `
         <div class="chip">${kind}</div>
@@ -552,6 +565,7 @@
         <div style="margin-bottom:8px;">${node.title || "Nessuna descrizione"}</div>
         <div><strong>Stato:</strong> ${stateText}</div>
         <div style="margin-top:6px;"><strong>File:</strong><br/>${node.meta?.file || "n/a"}</div>
+        <div style="margin-top:10px;"><strong>Ruolo operativo:</strong><br/>${extraNote}</div>
         <div style="margin-top:10px;"><strong>Figli diretti (${children.length})</strong></div>
         <ul>
           ${children.map(child => `<li>${child.baseLabel}</li>`).join("") || "<li>Nessuno</li>"}

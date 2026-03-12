@@ -1,38 +1,320 @@
 # Power BI Report Design and Visualization Best Practices
 
 ## Overview
-> This document provides comprehensive instructions for designing effective, accessible, and performant Power BI reports and dashboards following Microsoft's official guidance > and user experience best practices.
-> Source: https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualizations-overview, https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-decision-guide
+This document defines the design rules for Step 08 report blueprint generation.
 
-## Fundamental Design Principles
+It combines:
+- Microsoft official Power BI guidance on chart choice, accessibility, interaction, formatting, and performance
+- data storytelling principles centered on context, visual clarity, narrative flow, whitespace, and actionable communication
+- workflow-validated Power BI patterns already confirmed by manual page refinement in Desktop
 
-### 1. Information Architecture
-**Visual Hierarchy** - Organize information by importance:
-- **Primary**: Key metrics, KPIs, most critical insights (top-left, header area)
-- **Secondary**: Supporting details, trends, comparisons (main body)
-- **Tertiary**: Filters, controls, navigation elements (sidebars, footers)
+Primary sources:
+- https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-decision-guide
+- https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualizations-overview
+- https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips
+- https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports
 
-**Content Structure**:
+## Design Objective
+
+Every report page must answer a business question, guide the eye in a predictable order, and make the next action obvious.
+
+The target outcome is not a page full of visuals. The target outcome is a page that:
+- communicates one main message quickly,
+- supports that message with the right evidence,
+- avoids visual noise,
+- remains navigable and accessible,
+- and can be implemented consistently in PBIR.
+
+## Core Storytelling Principles
+
+### 1. Start from Context, Not from Visuals
+Before choosing a chart, define:
+- audience
+- business question
+- key takeaway
+- decision or action expected from the page
+
+Recommended page framing:
+- **Question**: what the reader needs answered
+- **Answer**: the headline KPI or conclusion
+- **Evidence**: trend, comparison, correlation, or ranking that supports the answer
+- **Action**: what to investigate, correct, escalate, or monitor next
+
+### 2. Tell One Screen Story at a Time
+The page should feel like a single narrative, not a gallery of unrelated visuals.
+
+Preferred reading flow:
+1. Filter context
+2. Hero KPI or KPI band
+3. Explanatory visuals
+4. Detail and ranking visuals
+
+Use multiple pages rather than forcing too many competing messages onto one canvas.
+
+### 3. Preserve a Strong Visual Hierarchy
+Organize page content by importance:
+- **Primary**: key KPIs and the most important conclusion
+- **Secondary**: comparisons, trends, and breakdowns that explain the KPI outcome
+- **Tertiary**: navigation, slicers, notes, and supporting detail
+
+Top-left and top-row positions should be reserved for the most important information because readers scan from left to right and top to bottom.
+
+### 4. Maximize Data-Ink Ratio
+Favor data over decoration.
+
+Remove or reduce non-essential elements:
+- redundant legends
+- heavy borders
+- unnecessary data labels
+- dense gridlines
+- decorative chart junk
+
+Use tooltips for secondary detail instead of crowding the surface.
+
+### 5. Use Whitespace as a Design Tool
+Whitespace is mandatory, not optional.
+
+It must:
+- separate unrelated sections,
+- create rhythm between components,
+- reduce cognitive load,
+- and reinforce hierarchy.
+
+Minimum layout rules:
+- use an 8 px grid or multiples of it
+- minimum gap between sibling visuals: 16 px
+- recommended gap between sections: 24 px
+- minimum page-edge breathing room: 16 px
+
+### 6. Apply Gestalt Principles Deliberately
+Use visual grouping to make relationships obvious.
+
+Power BI application:
+- **Proximity**: place related visuals close together
+- **Similarity**: keep repeated elements visually consistent
+- **Common region**: group slicers, KPI bands, and detail areas inside consistent containers
+- **Continuity**: align sections so the eye follows the narrative naturally
+- **Connection**: use color, layout, and labels to reinforce relationships between visuals
+
+### 7. Repeat the Message Without Repeating the Noise
+Important pages should repeat the same conclusion through:
+- the page title
+- the KPI band
+- the explanatory visual titles
+- the ranked detail view
+
+The narrative should become clearer as the reader moves down the page.
+
+## Page Composition System
+
+### Recommended Layout Grammar
+
+```text
+Top row       : slicers / context controls
+Second row    : KPI band
+Main body     : explanatory charts
+Lower section : detail tables, rankings, or drill targets
 ```
-Report Page Layout:
-┌─────────────────────────────────────┐
-│ Header: Title, KPIs, Key Metrics    │
-├─────────────────────────────────────┤
-│ Main Content Area                   │
-│ ┌─────────────┐ ┌─────────────────┐ │
-│ │  Primary    │ │  Supporting     │ │
-│ │  Visual     │ │  Visuals        │ │
-│ └─────────────┘ └─────────────────┘ │
-├─────────────────────────────────────┤
-│ Footer: Filters, Navigation, Notes  │
-└─────────────────────────────────────┘
-```
 
-### 2. User Experience Principles
-**Clarity**: Every element should have a clear purpose and meaning
-**Consistency**: Use consistent styling, colors, and interactions across all reports
-**Context**: Provide sufficient context for users to interpret data correctly
-**Action**: Guide users toward actionable insights and decisions
+### Container Separation
+Visuals must be distinguishable from the page background.
+
+Preferred approaches:
+- elevated surface with shadowing
+- light card container with subtle contrast
+- clear sectional grouping with shared background or border treatment
+
+This is especially important for:
+- slicers
+- KPI bands
+- major analytical visuals
+- tables
+
+If shadowing is used, use it consistently across repeated component types. Do not mix flat and elevated containers arbitrarily.
+
+### Slicer Band Rules
+Primary slicers should normally be placed on a dedicated top row.
+
+Rules:
+- align slicers on a common baseline
+- keep width and height consistent where possible
+- prefer dropdown slicers for dense categories
+- use the same location on every page unless the page purpose requires otherwise
+- give slicers their own elevated or clearly separated container treatment
+
+## KPI Presentation Rules
+
+### When to Use a Single Card
+Use a single card when:
+- one KPI is the dominant headline insight
+- the metric needs the strongest emphasis on the page
+- comparison to other KPIs is secondary
+
+### When to Use a Multi-Row Card
+Use a multi-row card when:
+- the specification requires multiple heterogeneous KPIs in the same narrative band
+- the KPIs share the same reporting context
+- equal or near-equal emphasis is acceptable
+- a compact summary is better than multiple disconnected cards
+
+### When to Use Multiple Separate Cards
+Use separate cards when:
+- each KPI needs independent emphasis
+- each KPI has distinct formatting, thresholds, or visual semantics
+- the page benefits from stronger scannability across a KPI strip
+
+### KPI Band Rules
+- keep KPI containers aligned and evenly spaced
+- use short, explicit labels
+- format numbers consistently
+- do not mix radically different scales without clear labeling
+- avoid overcrowding the KPI zone
+
+## Visual Selection Guidelines
+
+### Comparison and Ranking
+Use **bar/column charts** for category comparison.
+
+Rules:
+- prefer horizontal bars for long category names
+- sort by the most relevant measure
+- start at zero where comparison accuracy matters
+- avoid pie, donut, and 3D charts for ranking or category comparison
+
+### Time Trends
+Use **line charts** for continuous trends over time.
+
+Use **column charts** when period-to-period magnitude matters more than continuity.
+
+Use **combo charts** when the audience must compare period values with a supporting line metric such as budget or percentage.
+
+### Relationships and Outliers
+Use **scatter charts** for correlation, trade-off, and outlier detection.
+
+Good examples:
+- sales vs margin
+- volume vs profitability
+- growth vs target attainment
+
+### Exact Values and Detail
+Use **tables** when exact reading, ranking, or row-level browsing is required.
+
+Use **matrices** only when the business question truly needs a nested hierarchy.
+
+## Sorting Rules
+
+Sorting must be explicit in the blueprint. Never leave chart or table ordering implicit.
+
+### General Policy
+- if the goal is ranking or prioritization, sort by the primary KPI
+- if the goal is lookup, sort by the business label
+- if the goal is chronology, sort by the time attribute
+
+### Table Policy
+Every table must define:
+- primary KPI for ordering
+- sort direction
+- business reason for that sort
+
+Default rule:
+- leaderboard and performance tables sort **descending by the primary KPI**
+
+Allowed exceptions:
+- ascending for bottom-performer analysis
+- ascending for earliest-to-latest time sequences
+- alphabetical when the table is used primarily as a lookup view
+
+For multi-measure tables, one measure must be designated as the **primary sort KPI**. The others are supporting evidence.
+
+## Titles, Labels, and Narrative Affordances
+
+### Titles
+Titles must be descriptive and action-oriented.
+
+Good patterns:
+- `Sales Amount and Budget Amount by FiscalMonth`
+- `Sales Amount FYTD and Budget Amount FYTD by AreaName`
+- `Top Customers by Sales Amount FYTD`
+
+Avoid vague titles such as:
+- `Overview`
+- `Performance`
+- `Sales Data`
+
+### Subtitles and Context
+Use subtitles or supporting text only when they clarify:
+- fiscal scope
+- filter assumptions
+- metric definition
+- exception logic
+
+### Affordances
+Make interactions discoverable:
+- drillthrough destinations should be semantically obvious
+- tooltips should provide useful extra detail, not duplicate the visual
+- repeated layout patterns should teach the user how to read the page quickly
+
+## Accessibility and Consistency
+
+### Accessibility
+- use descriptive visual titles
+- provide alt text for visuals
+- maintain logical tab order
+- keep contrast high enough for readability
+- do not rely on color alone to convey meaning
+- preserve readable font sizes and aligned labels
+
+### Consistency
+- use the same slicer placement across pages
+- use the same typography scale across pages
+- keep semantic colors stable for the same business concepts
+- keep repeated visual types formatted consistently
+
+## Performance Guardrails
+
+- keep visual count per page under control
+- prefer focused pages over crowded canvases
+- avoid high-cardinality slicers unless necessary
+- use tables only where exact values are genuinely needed
+- minimize redundant visuals showing the same message twice
+
+## Blueprint Requirements for Step 08
+
+The Step 08 blueprint must capture not only fields and positions, but also the design intent required for Step 09.
+
+Mandatory blueprint metadata:
+- page business question
+- page key takeaway
+- page expected action
+- visual narrative role
+- container style
+- explicit sorting metadata
+- card vs multi-row card rationale for KPI zones
+
+## Quick Decision Matrix
+
+### Use this when designing Page 08 blueprints
+
+| Requirement | Preferred Visual |
+| --- | --- |
+| One hero KPI | Card |
+| Multiple heterogeneous KPIs in one band | Multi-row card |
+| Category comparison with long labels | Horizontal bar chart |
+| Monthly trend | Line or combo chart |
+| Actual vs budget by period | Combo chart |
+| Correlation or trade-off | Scatter chart |
+| Exact ranked detail | Table |
+
+## Anti-Patterns to Avoid
+
+- pie or donut charts for dense comparisons
+- 3D charts
+- overcrowded pages
+- inconsistent slicer placement
+- mixed container treatments without rationale
+- tables with implicit or arbitrary ordering
+- redundant data labels and borders
+- pages that do not answer a clear business question
 
 ## Chart Type Selection Guidelines
 

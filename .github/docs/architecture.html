@@ -134,7 +134,7 @@
 
     .state-strip {
       display: grid;
-      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
       gap: 10px;
     }
 
@@ -389,7 +389,7 @@
     <header class="header">
       <div>
         <h1 class="title">Power BI AI Developer - Architecture Workflow</h1>
-        <div class="subtitle">Vista unificata del processo agentico: flusso operativo end-to-end e navigazione esplorativa delle dipendenze.</div>
+        <div class="subtitle">Vista unificata del processo agentico: flusso end-to-end con gate contrattuali e chiarimenti critici bloccanti.</div>
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
         <div class="switch" role="tablist" aria-label="Selettore viste">
@@ -410,14 +410,28 @@
             <i data-lucide="file-json-2"></i>
             <div>
               <div class="k">State Memory</div>
-              <div class="v">workflow_state.json + artifacts checkpoint</div>
+              <div class="v">workflow_state.json + checkpoint artefatti + decision ledger</div>
             </div>
           </article>
           <article class="card">
             <i data-lucide="refresh-ccw"></i>
             <div>
               <div class="k">Context Loop</div>
-              <div class="v">Read disk state → execute step → write outputs</div>
+              <div class="v">Read state → validate input/output gate → execute → checkpoint</div>
+            </div>
+          </article>
+          <article class="card">
+            <i data-lucide="shield-check"></i>
+            <div>
+              <div class="k">Validation Layer</div>
+              <div class="v">Script-first checks, targeted inspection only on failures</div>
+            </div>
+          </article>
+          <article class="card">
+            <i data-lucide="gauge"></i>
+            <div>
+              <div class="k">Context Budget</div>
+              <div class="v">Summary artifacts first, raw PBIR/TMDL only when needed</div>
             </div>
           </article>
         </section>
@@ -435,11 +449,11 @@
             </div>
             <div class="tool">
               <i data-lucide="book-open"></i>
-              <div><div class="t">.github/references</div><div class="s">TMDL, DAX, PBIR, BPA patterns</div></div>
+              <div><div class="t">.github/references</div><div class="s">TMDL, DAX, PBIR, workflow-state and context-budgeting rules</div></div>
             </div>
             <div class="tool">
               <i data-lucide="terminal"></i>
-              <div><div class="t">.github/scripts</div><div class="s">Automation and utilities</div></div>
+              <div><div class="t">.github/scripts</div><div class="s">fix_lineage_tags.py, run_tests.py, validate_pbir_report.py</div></div>
             </div>
           </div>
         </section>
@@ -461,16 +475,16 @@
   <script>
     const steps = [
       { id: "00", title: "Project Initialization", desc: "Bootstrap PBIP canvas and project structure", icon: "folder-cog", color: "#64748b" },
-      { id: "01", title: "Requirements Analysis", desc: "Extract KPIs, dimensions, RLS, ambiguity checks", icon: "search", color: "#3b82f6" },
-      { id: "02", title: "Logical Data Model", desc: "Star schema + Mermaid ER structure", icon: "network", color: "#0ea5e9" },
-      { id: "03", title: "Physical Model & TMDL", desc: "Generate TMDL artifacts with syntax validation", icon: "database", color: "#8b5cf6" },
+      { id: "01", title: "Requirements Analysis", desc: "Consolida requisiti e risolve chiarimenti critici (bloccante)", icon: "search", color: "#3b82f6" },
+      { id: "02", title: "Logical Data Model", desc: "Star schema + gate carry-forward su assunzioni esplicite", icon: "network", color: "#0ea5e9" },
+      { id: "03", title: "Physical Model & TMDL", desc: "TMDL validato con hard-stop pre-Step 4 se chiarimenti aperti", icon: "database", color: "#8b5cf6" },
       { id: "04", title: "DAX Development", desc: "Measures, folders, time intelligence", icon: "calculator", color: "#6366f1" },
       { id: "05", title: "Mock Data", desc: "CSV generation using pandas/faker", icon: "file-spreadsheet", color: "#f59e0b" },
       { id: "06", title: "Quality Review", desc: "Cross-check TMDL, DAX, data model consistency", icon: "shield-check", color: "#f59e0b" },
       { id: "07", title: "Functional Testing", desc: "Automated tests and execution report", icon: "flask-conical", color: "#ef4444" },
-      { id: "08", title: "Report Design", desc: "Blueprint JSON for page and visuals", icon: "layout-template", color: "#06b6d4" },
-      { id: "09", title: "Report Implementation", desc: "Generate PBIR pages and visual payloads", icon: "paint-roller", color: "#14b8a6" },
-      { id: "10", title: "Report Quality Validation", desc: "PBIR syntax + semantic coherence with model", icon: "list-checks", color: "#22c55e" }
+      { id: "08", title: "Report Design", desc: "Storyboard-first blueprint with design tokens, sorting and UX rules", icon: "layout-template", color: "#06b6d4" },
+      { id: "09", title: "Report Implementation", desc: "Generate PBIR with runtime ids, pages.json sync and UTF-8 no BOM", icon: "paint-roller", color: "#14b8a6" },
+      { id: "10", title: "Report Quality Validation", desc: "Run validate_pbir_report.py then inspect only failing artifacts", icon: "list-checks", color: "#22c55e" }
     ];
 
     const lane = document.getElementById("lane");
@@ -518,7 +532,7 @@
         <ul>
           <li><i data-lucide="database"></i> SemanticModel (TMDL)</li>
           <li><i data-lucide="bar-chart-3"></i> Report (PBIR)</li>
-          <li><i data-lucide="folder"></i> Data, Spec, Tests</li>
+          <li><i data-lucide="folder"></i> Data, Spec, Tests + validation summaries</li>
         </ul>
       </aside>
     `;

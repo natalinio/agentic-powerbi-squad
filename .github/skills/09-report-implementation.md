@@ -47,7 +47,7 @@ Before generating ANY PBIR JSON:
    - `"Power BI report definition JSON format"`
 5. Use `microsoft_docs_fetch` for full documentation pages when search results are insufficient.
 
-> **CRITICAL**: NEVER invent or guess PBIR JSON structures. Always validate against Microsoft official documentation or the template reference file. In the current baseline, `drillFilterOtherVisuals` belongs to `visual` and cards use `visualType: cardVisual` with `queryState.Data`.
+> **CRITICAL**: NEVER invent or guess PBIR JSON structures. Always validate against Microsoft official documentation or the template reference file. In the current baseline, `drillFilterOtherVisuals` belongs to `visual`, cards use `visualType: cardVisual` with `queryState.Data`, page navigation is governed by `definition/pages/pages.json`, and PBIR JSON must be written as UTF-8 without BOM.
 
 ## Anti-Hallucination Protocol
 
@@ -57,6 +57,8 @@ Before generating ANY PBIR JSON:
 2. **Validate field names**: Every `Entity` and `Property` in visual queries MUST match exactly the TMDL table and column/measure names.
 3. **No invented visuals**: Only generate visuals defined in `report_blueprint.json`.
 4. **Schema compliance**: All JSON files MUST reference the correct Microsoft `$schema` URLs.
+5. **Physical ID discipline**: Page and visual runtime ids used in PBIR folders and `name` properties MUST be generated explicitly and kept synchronized across all referencing files.
+6. **Encoding discipline**: Write every generated PBIR JSON file as UTF-8 without BOM.
 
 ---
 
@@ -77,17 +79,38 @@ Before generating new pages:
 1. **CHECK** if `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/` already contains page folders.
 2. If the folder contains only the default `Page1/` from Step 00 initialization, **remove it** (it will be replaced by the blueprint pages).
 3. If the folder contains pages from a previous Step 9 execution, ask the user whether to overwrite or skip.
+4. **CHECK** `definition/pages/pages.json` before deletion or creation. Folder cleanup is invalid unless the metadata file is updated in the same operation.
 
-### 9.3 Generate Page Folders and Files
+### 9.3 Derive Physical PBIR IDs (MANDATORY)
+
+The blueprint provides canonical logical identifiers for design intent. Step 09 must translate them into physical PBIR runtime ids.
+
+For each page and visual:
+1. Generate a runtime-safe id following the repository-safe baseline observed from Desktop output:
+   - 20 lowercase alphanumeric characters
+2. Keep a deterministic mapping:
+   - `blueprint pageId` -> `pageRuntimeId`
+   - `blueprint visualId` -> `visualRuntimeId`
+3. Use the runtime id for:
+   - page folder names
+   - `page.json.name`
+   - `pages/pages.json.pageOrder[]`
+   - `pages/pages.json.activePageName`
+   - visual folder names
+   - `visual.json.name`
+
+> **CRITICAL**: Do NOT use user-facing labels like `Page1`, `Page2`, or `visual_01` as final PBIR folder names. They are blueprint identifiers, not the physical PBIR object names.
+
+### 9.4 Generate Page Folders and Files
 
 For each page defined in `report_blueprint.json`:
 
 #### A) Create Page Folder
 ```
-<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/
+<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageRuntimeId>/
 ```
 
-Where `<pageId>` matches the `pageId` from the blueprint (e.g., `Page1`, `Page2`).
+Where `<pageRuntimeId>` is the generated PBIR runtime id for the page.
 
 #### B) Create `page.json`
 
@@ -96,7 +119,7 @@ Use the page template from `.github/references/pbir-visual-templates.md`:
 ```json
 {
    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
-  "name": "<pageId>",
+   "name": "<pageRuntimeId>",
   "displayName": "<displayName from blueprint>",
    "displayOption": "FitToPage",
   "height": <height from blueprint>,
@@ -106,58 +129,99 @@ Use the page template from `.github/references/pbir-visual-templates.md`:
 
 > **CRITICAL**: The PBIR page schema `2.0.0` does NOT allow additional properties. Only use the 6 properties shown above. Do NOT add `ordinal` or any other custom property — Power BI Desktop enforces strict schema validation and rejects unknown properties with `AdditionalProperties` error.
 
-**File location**: `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/page.json`
+**File location**: `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageRuntimeId>/page.json`
 
 #### C) Create `visuals/` Folder
 ```
-<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/visuals/
+<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageRuntimeId>/visuals/
 ```
 
-### 9.4 Generate Visual Files
+#### D) Update `pages/pages.json`
+
+Generate or update:
+
+```json
+{
+   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+   "pageOrder": ["<pageRuntimeId1>", "<pageRuntimeId2>"],
+   "activePageName": "<firstPageRuntimeId>"
+}
+```
+
+Guardrails:
+- `pageOrder` must reflect blueprint navigation order.
+- `activePageName` must point to a generated page.
+- Page folders on disk and entries in `pageOrder` must match exactly.
+
+### 9.5 Generate Visual Files
 
 For each visual defined in a page's `visuals` array in the blueprint:
 
 #### A) Create Visual Folder
 ```
-<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/visuals/<visualId>/
+<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageRuntimeId>/visuals/<visualRuntimeId>/
 ```
 
-Where `<visualId>` matches the `visualId` from the blueprint (e.g., `visual_01`, `visual_02`).
+Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
 
 #### B) Create `visual.json`
 
 1. **Identify the visual type** from the blueprint's `visualType` field.
 2. **Look up the corresponding template** in `.github/references/pbir-visual-templates.md` (use the Visual Type Mapping table).
 3. **Populate the template** with:
-   - `name`: The `visualId` from the blueprint.
-   - `position`: Map `x`, `y`, `width`, `height` from the blueprint's `position` object. Set `z` based on visual order (increment by 1000 for each visual). Set `tabOrder` to the visual's index.
+    - `name`: The `visualRuntimeId` generated for the visual.
+    - `position`: Map `x`, `y`, `width`, `height` from the blueprint's `position` object. Set `z` and `tabOrder` as deterministic monotonic integers based on visual order. Do NOT assume that increments of `1000` are required.
+   - **usability sizing guardrails**:
+      - top-row dropdown slicers should default to about `width = 180`, `height = 64-66`
+      - grouped KPI bands should default to about `height = 120`
+      - gauges should default to a primary analytical tile size above `300 x 130`
+      - azure maps and treemaps should default to large analytical surfaces and should not be compressed into small tiles
+   - **operational token guardrails**:
+      - consume `designSystem.pagePadding`, `visualGap`, `sectionGap`, `gridUnit`, and per-visual `renderTokens` from the blueprint when present
+      - if tokens are absent, use repository-safe fallback defaults
+      - treat overlap as forbidden unless a visual explicitly sets `renderTokens.allowOverlap = true`
    - `visual.visualType`: The PBIR visual type (from mapping table).
    - `visual.query.queryState`: Map measures and fields from the blueprint to the correct PBIR query structure:
        - **Card measures** → `Data` projections with `Measure` field type, `Entity` = `_Measures`.
+          - **Grouped KPI band / multi-row card intent** → safe baseline is `cardVisual` with multiple `Data` projections.
        - **Table/Slicer values** → `Values` projections.
      - **Axis/Category fields** → `Category` projections with `Column` field type.
      - **Legend fields** → `Series` projections with `Column` field type.
        - **Combo chart** → `Y` (column values) + `Y2` (line values).
        - **Scatter chart** → `X`, `Y`, `Size`, optional `Series`.
+       - **Gauge** → `Y`, `TargetValue`, optional `Tooltips`.
+       - **Treemap** → `Group` plus `Values`.
+       - **Azure Map** → `Category` plus `Size`; include validated object settings when using the repository baseline map behavior.
      - **Row fields (matrix)** → `Rows` projections.
      - **Column group fields (matrix)** → `Columns` projections.
     - `visual.drillFilterOtherVisuals`: set `true` as baseline behavior.
     - `filterConfig`: optional for handcrafted files; Desktop may generate it automatically on save.
+      - `visual.query.sortDefinition`: generate explicitly whenever the blueprint defines `sortBy`.
+   - `visual.objects.value.fontSize`: for grouped KPI bands and the current card baseline, set explicit `20D` unless a user-approved design token overrides it.
+   - `visual.visualContainerObjects`: apply only the metadata needed by that visual family.
+      - slicers: prefer `title` metadata plus `dropShadow` when container separation is required
+      - gauge / azureMap: `dropShadow` is part of the observed stable baseline
+      - treemap: do not force `title` or `dropShadow` if the canonical baseline does not require them
 
 4. **Validate**: Ensure every `Entity` value matches a TMDL table name and every `Property` value matches a column or measure name.
+5. **Validate folder/name contract**: Ensure visual folder name equals `visual.json.name`.
+6. **Validate layout contract**: Ensure computed positions respect page bounds, token spacing, and non-overlap rules.
 
-5. **Selection/Layer Metadata Naming (MANDATORY)**:
-    - For every visual, set `visual.visualContainerObjects.title[0].properties.text.expr.Literal.Value` using this pattern:
+7. **Selection/Layer Metadata Naming (CONDITIONAL)**:
+    - When the visual family uses `visualContainerObjects.title`, set `text.expr.Literal.Value` using this pattern:
        - `'<ComponentName> - <DataOrMetadataReference>'`
     - Examples:
        - `'Slicer - FiscalYear'`
        - `'Card - Sales Amount FYTD'`
        - `'Chart - Sales Amount vs Budget Amount by FiscalMonth'`
-    - The label MUST be unique within the page and must help identify objects in the Selection pane for layer order/tab order management.
+    - The label must be unique within the page and must help identify objects in the Selection pane for layer order/tab order management.
 
-**File location**: `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageId>/visuals/<visualId>/visual.json`
+   - For slicers, it is acceptable and recommended to keep `show = false` while still populating the metadata title text.
+   - Do NOT force a `title` block onto every visual family if the canonical baseline for that visual works without it.
 
-### 9.5 Generate Slicer Visuals
+**File location**: `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/<pageRuntimeId>/visuals/<visualRuntimeId>/visual.json`
+
+### 9.6 Generate Slicer Visuals
 
 For each slicer defined in a page's `slicers` array in the blueprint:
 
@@ -167,10 +231,39 @@ For each slicer defined in a page's `slicers` array in the blueprint:
    - `dropdown` → `"Dropdown"`
    - `list` → `"List"`
    - `dateRange` → `"Between"`
-4. **Generate a unique visual ID** for each slicer (e.g., `slicer_01`, `slicer_02`).
+4. **Generate a unique visual runtime id** for each slicer.
 5. **Position slicers**: Place slicers at the top or left of the page (before data visuals).
+6. **Observed guardrail**: include `active: true` on the slicer projection when using the current Desktop baseline pattern.
+7. **Usability guardrail**: do not compress dropdown slicers below 64 px height in the standard top-row layout, otherwise the dropdown affordance can become visually cramped and hard to click.
 
-### 9.6 Update `report.json` (if needed)
+### 9.7 Encoding and Serialization Guardrails (MANDATORY)
+
+When writing PBIR files:
+- use UTF-8 without BOM
+- avoid shell or serializer defaults that prepend BOM bytes
+- avoid rewriting unrelated report baseline files
+- write JSON atomically where possible to prevent partial report corruption
+
+Recommended validation:
+- check that the first bytes of each generated JSON file are not `EF BB BF`
+- verify JSON parses cleanly before ending the step
+
+### 9.8 Apply Layout Tokens and Resolve Overlaps
+
+Before writing the final PBIR files:
+1. Read blueprint-level layout tokens when present.
+2. Apply page padding and inter-visual gaps before finalizing positions.
+3. Snap or normalize positions to the declared grid when required by the design system.
+4. Detect rectangle overlap between all visual bounding boxes on the page.
+5. If overlap is detected and `allowOverlap` is not explicitly enabled, reposition the later visual or stop with a blocking validation message.
+
+Fallback defaults when tokens are absent:
+- `pagePadding = 16`
+- `visualGap = 16`
+- `sectionGap = 24`
+- `gridUnit = 8`
+
+### 9.9 Update `report.json` (if needed)
 
 If the blueprint specifies navigation bookmarks, themes, or other report-level settings, update:
 ```
@@ -201,11 +294,23 @@ For basic reports, the existing `report.json` from Step 00 is sufficient.
 
 4. **Position Overlap**:
    - **Cause**: Multiple visuals have overlapping positions.
-   - **Action**: Adjust positions to avoid overlap. Use the blueprint's position values as guidelines, but ensure no two visuals share the same pixel space.
+   - **Action**: Apply operational layout tokens, recompute spacing, and adjust positions to avoid overlap. Use the blueprint's position values as guidelines, but ensure no two visuals share the same pixel space unless overlap is explicitly allowed.
 
-5. **Runtime Load Error (`visualContainers`)**:
+5. **Compressed Slicer / Unusable Dropdown**:
+   - **Cause**: Slicer height too small for the chosen layout and visual chrome.
+   - **Action**: Increase slicer height to the repository baseline range of `64-66 px` and revalidate alignment.
+
+6. **Oversized KPI Callout**:
+   - **Cause**: Default card value font too large for grouped KPI presentation.
+   - **Action**: Set explicit `objects.value.fontSize = 20D` for the grouped KPI band baseline unless a validated design token specifies another size.
+
+7. **Runtime Load Error (`visualContainers`)**:
    - **Cause**: Structurally valid files but unstable visual payload generated in bulk.
    - **Action**: Reset to empty visual canvas and reintroduce visuals incrementally (first slicer + card, then reopen Desktop, then next batch).
+
+8. **Compressed Analytical Visual**:
+   - **Cause**: Gauge, treemap, or map placed into a tile too small for legible rendering.
+   - **Action**: Expand the visual to the minimum analytical surface implied by tokens or repository defaults; if page space is insufficient, stop and request a layout revision instead of forcing a crowded render.
 
 ---
 
@@ -214,15 +319,27 @@ For basic reports, the existing `report.json` from Step 00 is sufficient.
 Before presenting results to the user, verify:
 
 - [ ] All pages from `report_blueprint.json` have corresponding folders in `pages/`
+- [ ] `definition/pages/pages.json` exists and includes every generated page runtime id in `pageOrder`
+- [ ] `activePageName` references an existing generated page runtime id
 - [ ] Each page folder contains a valid `page.json`
+- [ ] Each page folder name matches `page.json.name`
 - [ ] Each page has a `visuals/` folder with the correct number of visual subfolders
 - [ ] Each visual folder contains a valid `visual.json`
+- [ ] Each visual folder name matches `visual.json.name`
 - [ ] All `Entity` references in visual queries match TMDL table names exactly
 - [ ] All `Property` references match TMDL column/measure names exactly
 - [ ] Visual types use correct PBIR type names (from mapping table)
 - [ ] Slicer modes are valid PBIR slicer mode values
 - [ ] No duplicate visual IDs within a page
 - [ ] All JSON files reference the correct Microsoft `$schema` URLs
+- [ ] All JSON files are encoded as UTF-8 without BOM
+- [ ] Every visual requiring explicit ranking or ordering has `query.sortDefinition`
+- [ ] Top-row dropdown slicers respect the minimum usable height baseline (`>= 64 px`)
+- [ ] Grouped KPI bands use an explicit value font size baseline (`20D`) unless a validated design override exists
+- [ ] Gauge visuals use canonical `Y` / `TargetValue` query buckets
+- [ ] Treemap visuals use canonical `Group` / `Values` query buckets
+- [ ] Azure Map visuals use canonical `Category` / `Size` query buckets and stable map object settings when the baseline behavior is required
+- [ ] Visual positions respect page padding, spacing tokens, and no-overlap rules unless explicitly overridden
 
 ---
 

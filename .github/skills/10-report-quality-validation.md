@@ -23,9 +23,12 @@ Before starting report quality validation:
 When starting this step, the agent MUST:
 - **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-09 are completed.
 - **READ** `<ProjectName>/spec/report_blueprint.json` from disk.
-- **READ** all `page.json` and `visual.json` files from the PBIR report definition.
+- **PREFER** the shared PBIR validator script for bulk scanning of `page.json` and `visual.json` files.
+- **READ** raw PBIR JSON files individually only when targeted remediation or root-cause inspection is needed.
 - **READ** TMDL files from disk for field cross-referencing.
 - **DO NOT** rely on chat history for any data from previous steps.
+
+> **Performance Rule**: Step 10 must avoid loading the full PBIR payload into chat context when a deterministic local validation script can produce the same result. The default path is script-first, targeted file inspection second.
 
 ## Step Scope & I/O Gate Alignment (MANDATORY)
 
@@ -45,6 +48,11 @@ When starting this step, the agent MUST:
 ## Validation Methodology (MANDATORY)
 
 Apply validation in this exact order to reduce false positives and speed root-cause identification:
+
+0. **Automated Bulk Validation Layer**
+   - Run the shared validator script first to generate deterministic summary artifacts on disk.
+   - Use the generated Markdown and JSON summaries as the primary inspection surface.
+   - Fall back to direct PBIR file reads only for targeted diagnosis.
 
 1. **Structural & Syntax Layer**
    - Validate file presence, JSON parseability, required schema properties, and folder hierarchy.
@@ -66,6 +74,25 @@ Apply validation in this exact order to reduce false positives and speed root-ca
 
 ## Step 10 Procedure
 
+### 10.0 Run the Shared PBIR Validator (MANDATORY)
+
+Run the repository-wide validator:
+
+```powershell
+python .github/scripts/validate_pbir_report.py <ProjectName>
+```
+
+Expected outputs:
+- `<ProjectName>/tests/report_validation_execution.md`
+- `<ProjectName>/tests/report_validation_execution.json`
+
+The agent MUST treat these generated files as the primary validation artifacts for Step 10.
+
+If the validator fails to run:
+- report the execution error,
+- inspect only the minimum required PBIR files to diagnose the failure,
+- and avoid opening large portions of the report definition unless necessary.
+
 ### 10.1 Build Validation Context
 
 Load the three data sources needed for cross-validation:
@@ -85,7 +112,7 @@ Parse `report_blueprint.json` and extract:
 - **Visual types**: List of visual types used
 
 #### C) PBIR File Registry
-Scan the PBIR report definition folder and extract:
+Use the validator outputs as the primary PBIR registry and inspect raw PBIR files only when needed. Extract or confirm:
 - **Page folders**: List of folders in `pages/`
 - **Visual folders per page**: Count of visual subfolders in each page's `visuals/` folder
 - **Visual JSON content**: Parse each `visual.json` to extract:
@@ -284,6 +311,11 @@ If **FAIL** items are found:
 4. **Schema issues**: Add or correct the `$schema` URL in the affected JSON file.
 
 The agent SHOULD propose auto-fixes for all FAIL items. Upon user approval, apply fixes and re-run validation.
+
+When re-running validation after fixes:
+- re-run the shared validator script first,
+- compare the new summary against the previous summary,
+- and read only the specific PBIR files implicated by any remaining FAIL or WARNING items.
 
 ---
 
