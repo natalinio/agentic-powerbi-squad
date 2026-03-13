@@ -171,7 +171,8 @@ PowerBI-AI-FullStack-Developer/
 │   │   ├── 08-report-design.md
 │   │   ├── 09-report-implementation.md
 │   │   └── 10-report-quality-validation.md
-│   ├── references/                    # TMDL, DAX, PBIP reference material (11 files)
+│   ├── references/                    # TMDL, DAX, PBIP reference material
+│   │   ├── workflow-core.md           # Centralized per-step governance (context flushing, checkpointing, stop gate)
 │   │   ├── tmdl-syntax-reference.md
 │   │   ├── naming-conventions.md
 │   │   ├── pbip-folder-structure.md
@@ -180,9 +181,13 @@ PowerBI-AI-FullStack-Developer/
 │   │   ├── dax-optimization-framework.md
 │   │   ├── security-rls-best-practices.md
 │   │   ├── bpa-rules-reference.md
+│   │   ├── functional-testing-methodology.md  # Testing phase catalog, Python runner, anti-patterns
 │   │   ├── report-design-visualization-best-practices.md
 │   │   ├── pbir-visual-templates.md
 │   │   └── workflow-state-management.md
+│   ├── docs/                          # Interactive HTML documentation tools
+│   │   ├── architecture.html          # Workflow lane view + Agent Explorer tab
+│   │   └── agent-explorer.html        # Graph explorer: Agent → Skills → References/Scripts
 │   ├── scripts/                       # Universal tools (project-agnostic)
 │   │   ├── fix_lineage_tags.py        # GUID lineageTag regeneration
 │   │   ├── remove_tmdl_comments.py    # TMDL comment removal
@@ -312,12 +317,14 @@ User Specification (Markdown)
         ↓
 ┌───────────────────────────────────────────────────┐
 │  Knowledge Base (.github/references/)             │
+│  ├─ Workflow Core (governance: context, gate, checkpoint) │
 │  ├─ TMDL Syntax Reference                         │
 │  ├─ DAX Patterns & Optimization                   │
 │  ├─ Naming Conventions                            │
 │  ├─ Relationship Patterns                         │
 │  ├─ BPA Rules (27+ rules)                         │
 │  ├─ PBIR Visual Templates                         │
+│  ├─ Functional Testing Methodology                │
 │  └─ Workflow State Management                     │
 └───────────────────────────────────────────────────┘
         ↓
@@ -390,6 +397,8 @@ This ensures **100% accuracy** in TMDL syntax (whitespace-sensitive, tab-indente
 - **[Copilot Instructions](.github/copilot-instructions.md)**: Global rules for GitHub Copilot
 - **[Skills](.github/skills/)**: Step-by-step execution guides (Steps 00-10)
 - **[References](.github/references/)**: TMDL/DAX/BPA/PBIR knowledge base
+- **[Architecture Explorer](.github/docs/architecture.html)**: Interactive workflow lane view with dynamic skill descriptions + Agent Explorer tab (open locally in browser)
+- **[Agent Explorer](.github/docs/agent-explorer.html)**: Graph view of the Agent → Skills → References/Scripts hierarchy with Reload and Raw/Rendered preview
 - **[Specification Templates](spec/)**: Templates and examples for writing project specifications
 - **[Contributing](CONTRIBUTING.md)**: How to contribute to this project
 
