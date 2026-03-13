@@ -17,7 +17,7 @@ Before starting report implementation:
    - `definition/report.json` uses the current baseline schema and theme resources.
    - `definition/version.json` and `definition/pages/pages.json` exist.
    - At least one page folder exists and is referenced by `pages.json`.
-   - `StaticResources/SharedResources/BaseThemes/CY25SU12.json` exists.
+   - `StaticResources/SharedResources/BaseThemes/ProjectDefault.json` exists.
    - `<ProjectName>.Report/report.json` at report root does NOT exist.
 
 ## Step Contract

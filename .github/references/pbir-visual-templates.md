@@ -245,7 +245,7 @@ Observed report-level baseline:
 - `definition/report.json` schema: `report/3.1.0`
 - `definition/version.json` schema: `versionMetadata/1.0.0`, `version = 2.0.0`
 - `definition/pages/pages.json` schema: `pagesMetadata/1.0.0`
-- shared base theme: `StaticResources/SharedResources/BaseThemes/CY25SU12.json`
+- shared base theme: `StaticResources/SharedResources/BaseThemes/ProjectDefault.json`
 
 Guardrails:
 - Do not rewrite `report.json`, `version.json`, or theme resources unless required by the blueprint and verified against Desktop output.

@@ -40,42 +40,7 @@ Blocking policy:
 
 TMDL is **whitespace-sensitive**. Violations cause Power BI Desktop parsing failures.
 
-### ⛔ COMMENTS NOT SUPPORTED IN TMDL SYNTAX (CRITICAL)
-
-**CRITICAL DISTINCTION**:
-
-**❌ TMDL Syntax Comments NOT Supported** (outside expressions):
-- ❌ **NO** triple-slash comments: `///` before table/column/measure declarations
-- ❌ **NO** double-slash comments: `//` at TMDL property level
-- ❌ **NO** block comments: `/* */` in TMDL structure
-- ❌ **NO** XML-style comments: `<!-- -->`
-
-**✅ DAX Expression Comments ARE Supported** (inside measure expressions):
-- ✅ Single-line DAX comments: `// This is a DAX comment`
-- ✅ Multi-line DAX comments: `/* DAX comment block */`
-
-**Examples**:
-
-```tmdl
-❌ WRONG (TMDL comment):
-/// This is a table comment
-table Dim_Date
-	/// This is a column comment
-	column DateKey
-		dataType: int64
-
-✅ CORRECT (No TMDL comments, but DAX comments allowed in expressions):
-table _Measures
-
-	measure 'Sales Amount' =
-			// This DAX comment is OK inside the expression
-			VAR TotalSales = SUM(Fact_Sales[SalesAmount])  // Inline DAX comment OK
-			/* Multi-line DAX comment
-			   also acceptable here */
-			RETURN TotalSales
-		formatString: "#,##0.00"
-		displayFolder: "Sales Metrics"
-```
+### ⛔ DO NOT ADD COMMENTS, COMMENTS ARE NOT SUPPORTED IN TMDL SYNTAX (CRITICAL).
 
 **Rule Summary**:
 - **TMDL structure** (table, column, measure declarations, properties) → NO comments of any kind
@@ -86,8 +51,6 @@ If you need to document your model structure:
 - ✅ Use `description` property for measures/columns (where supported)
 - ✅ Use self-documenting naming conventions
 - ✅ Use DAX comments INSIDE measure expressions for business logic documentation
-
-**Historical Error**: In previous iterations, comments like `/// Date dimension for time intelligence` were added before table declarations, causing model load failures with cryptic error messages about "unexpected tokens".
 
 ### Indentation
 - Use **single TAB** for each indentation level. Do NOT use spaces.
@@ -259,6 +222,8 @@ database <ProjectName>
 
 > **CRITICAL**: The `defaultPowerBIDataSourceVersion: powerBI_V3` property is **MANDATORY**. Without it, Power BI Desktop (December 2025+) throws *"A data model with version 3 of metadata is required"* and cascading null-query errors on every refresh attempt.
 
+> **CRITICAL**: Auto date/time MUST remain disabled. The agent MUST NOT enable or preserve `annotation __PBI_TimeIntelligenceEnabled = 1`, MUST NOT add `ref table DateTableTemplate_*` or `ref table LocalDateTable_*` entries in `model.tmdl`, and MUST NOT generate `DateTableTemplate_*` or `LocalDateTable_*` artifacts. The semantic model MUST use only the explicit `Dim_Date` table for time intelligence.
+
 ```tmdl
 model Model
 	culture: en-US
@@ -274,7 +239,7 @@ ref table _Measures
 
 #### Dimension Table Template:
 
-**Note**: This example shows a Date dimension table. Do NOT add comments in actual TMDL files.
+**Note**: This example shows a Date dimension table.
 
 ```tmdl
 table Dim_Date

@@ -119,7 +119,7 @@ Located at `<ProjectName>.Report/definition/report.json`. Contains report-level 
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.1.0/schema.json",
   "themeCollection": {
     "baseTheme": {
-      "name": "CY25SU12",
+      "name": "ProjectDefault",
       "reportVersionAtImport": {
         "visual": "2.5.0",
         "report": "3.1.0",
@@ -134,8 +134,8 @@ Located at `<ProjectName>.Report/definition/report.json`. Contains report-level 
       "type": "SharedResources",
       "items": [
         {
-          "name": "CY25SU12",
-          "path": "BaseThemes/CY25SU12.json",
+          "name": "ProjectDefault",
+          "path": "BaseThemes/ProjectDefault.json",
           "type": "BaseTheme"
         }
       ]
@@ -178,7 +178,7 @@ Located at `<ProjectName>.Report/definition/pages/<PageId>/page.json`:
 > **Naming convention**: Microsoft PBIR uses object names that are often 20-character unique identifiers by default. Renaming is supported, but you must keep all references aligned.
 
 ### `StaticResources` Base Theme
-Located at `<ProjectName>.Report/StaticResources/SharedResources/BaseThemes/CY25SU12.json`.
+Located at `<ProjectName>.Report/StaticResources/SharedResources/BaseThemes/ProjectDefault.json`.
 
 This file is referenced by `definition/report.json` via `resourcePackages`.
 If missing, theme resolution can fail and destabilize report rendering in Desktop.
