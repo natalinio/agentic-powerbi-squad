@@ -112,6 +112,11 @@
       box-shadow: 0 0 0 2px rgba(143,124,255,.16);
     }
 
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     #network {
       flex: 1;
       min-height: 0;
@@ -208,7 +213,7 @@
     }
 
     .markdown-preview {
-      margin-top: 12px;
+      margin-top: 4px;
       padding: 10px;
       border-radius: 10px;
       border: 1px solid var(--line);
@@ -247,6 +252,44 @@
       border-radius: 8px;
       padding: 9px;
       overflow: auto;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      margin-bottom: 0;
+      gap: 8px;
+    }
+
+    .preview-ts {
+      font-size: 10px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .preview-toggle {
+      border: 1px solid var(--line);
+      background: #141f41;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all .15s ease;
+      font-family: inherit;
+    }
+
+    .preview-toggle.active {
+      background: #1e2e58;
+      color: var(--text);
+      border-color: rgba(143, 124, 255, 0.5);
+    }
+
+    .preview-toggle:hover {
+      border-color: rgba(143, 124, 255, 0.5);
     }
 
     .chip {
@@ -315,11 +358,13 @@
           <br />
           I passaggi sono governati da input/output contract gate e da chiarimenti critici bloccanti.
           <br />
-          Step 10 usa validazione automatica con `validate_pbir_report.py` e ispezione mirata solo sui file in errore.
+          Step 10 usa validazione automatica con <code>validate_pbir_report.py</code> e ispezione mirata solo sui file in errore.
           <br />
           I workflow lunghi usano summary artifact su disco per contenere il costo di contesto.
           <br /><br />
-          Suggerimento: usa la ricerca per navigare rapidamente l’albero agentico.
+          Suggerimento: usa la ricerca per navigare rapidamente l'albero agentico.
+          <br />
+          Usa <strong>Reload</strong> per ricaricare tutti i file markdown e script dal disco senza ricaricare la pagina.
         </div>
       </div>
     </aside>
@@ -336,6 +381,7 @@
           <button class="btn" id="expandAllBtn">Expand All</button>
           <button class="btn" id="collapseAllBtn">Collapse All</button>
           <button class="btn" id="focusAgentBtn">Focus Agent</button>
+          <button class="btn" id="reloadBtn" title="Ricarica tutti i file markdown e script dal disco">Reload</button>
         </div>
       </div>
       <div id="network"></div>
@@ -345,6 +391,8 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://unpkg.com/vis-network@9.1.9/dist/vis-network.min.js"></script>
   <script>
+    // ─── manifest ──────────────────────────────────────────────────────────────
+    // Update this list when skill files are added or removed.
     const agentFile = "powerbi-AI-developer.agent.md";
     const skills = [
       "00-project-initialization.md",
@@ -367,12 +415,19 @@
       script: "../scripts/"
     };
 
+    // ─── module-level state ────────────────────────────────────────────────────
+    let networkInstance = null;
+    let lastRawText = null;
+    let lastPreviewNode = null;
+    let currentPreviewMode = "rendered";
+
     const nodeMap = new Map();
     const edgeList = [];
     const childrenByParent = new Map();
     const parentByChild = new Map();
     const details = document.getElementById("details");
 
+    // ─── utilities ─────────────────────────────────────────────────────────────
     function slugFromFile(prefix, file) {
       return `${prefix}-${file.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
     }
@@ -412,6 +467,17 @@
       return Array.from(values).sort((a, b) => a.localeCompare(b));
     }
 
+    // ─── fetch with optional cache-busting ─────────────────────────────────────
+    async function fetchMarkdown(path, bustCache = false) {
+      const url = bustCache ? `${path}?t=${Date.now()}` : path;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} - ${path}`);
+      }
+      return response.text();
+    }
+
+    // ─── graph builders ────────────────────────────────────────────────────────
     function addNode(node) {
       nodeMap.set(node.id, {
         ...node,
@@ -443,21 +509,13 @@
       parentByChild.set(to, from);
     }
 
-    async function fetchMarkdown(path) {
-      const response = await fetch(path);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} - ${path}`);
-      }
-      return response.text();
-    }
-
-    async function collectSkillDependencies() {
+    async function collectSkillDependencies(bustCache = false) {
       const dependencies = {};
 
       for (let index = 0; index < skills.length; index++) {
         const file = skills[index];
         const skillId = `skill-${index + 1}`;
-        const raw = await fetchMarkdown(`../skills/${file}`);
+        const raw = await fetchMarkdown(`../skills/${file}`, bustCache);
         const { metadata, body } = parseFrontmatter(raw);
 
         const refs = extractMatches(body, /\.github\/references\/([a-zA-Z0-9._-]+\.md)/g);
@@ -519,7 +577,27 @@
       return getChildren(nodeId).length > 0;
     }
 
-    async function loadMarkdownPreview(node) {
+    // ─── preview: Raw / Rendered toggle ───────────────────────────────────────
+    function setPreviewMode(mode) {
+      currentPreviewMode = mode;
+      const preview = document.getElementById("markdownPreview");
+      if (!preview || !lastRawText) return;
+
+      document.querySelectorAll(".preview-toggle").forEach(b => b.classList.remove("active"));
+      const activeId = mode === "rendered" ? "btnRendered" : "btnRaw";
+      document.getElementById(activeId)?.classList.add("active");
+
+      if (mode === "raw" || lastPreviewNode?.group === "script") {
+        preview.innerHTML = `<pre><code>${escapeHtml(lastRawText)}</code></pre>`;
+      } else {
+        preview.innerHTML = window.marked
+          ? marked.parse(lastRawText)
+          : `<pre><code>${escapeHtml(lastRawText)}</code></pre>`;
+      }
+    }
+
+    async function loadMarkdownPreview(node, bustCache = false) {
+      lastPreviewNode = node;
       const preview = document.getElementById("markdownPreview");
       if (!preview) return;
 
@@ -530,21 +608,21 @@
         return;
       }
 
-      try {
-        const text = await fetchMarkdown(`${basePath}${file}`);
-        if (node.group === "script") {
-          preview.innerHTML = `<pre><code>${escapeHtml(text.slice(0, 3500))}</code></pre>`;
-          return;
-        }
+      preview.innerHTML = "<em style='color:var(--muted)'>Caricamento...</em>";
 
-        const snippet = text.slice(0, 4500);
-        preview.innerHTML = window.marked ? marked.parse(snippet) : `<pre><code>${escapeHtml(snippet)}</code></pre>`;
+      try {
+        lastRawText = await fetchMarkdown(`${basePath}${file}`, bustCache);
+        const ts = document.getElementById("previewTs");
+        if (ts) ts.textContent = `Caricato: ${new Date().toLocaleTimeString()}`;
+        setPreviewMode(currentPreviewMode);
       } catch (error) {
-        preview.innerHTML = `Anteprima non caricabile.<br/><small>${escapeHtml(String(error))}</small>`;
+        lastRawText = null;
+        preview.innerHTML = `<span style="color:#ff7b7b">Anteprima non caricabile.</span><br/><small>${escapeHtml(String(error))}</small>`;
       }
     }
 
-    function renderNodeDetails(nodeId, expandedState) {
+    // ─── detail panel ──────────────────────────────────────────────────────────
+    function renderNodeDetails(nodeId, expandedState, bustCache = false) {
       const node = getNode(nodeId);
       if (!node) return;
 
@@ -570,13 +648,24 @@
         <ul>
           ${children.map(child => `<li>${child.baseLabel}</li>`).join("") || "<li>Nessuno</li>"}
         </ul>
-        <div id="markdownPreview" class="markdown-preview">Caricamento anteprima markdown...</div>
+        <div class="preview-header">
+          <span class="preview-ts" id="previewTs"></span>
+          <div style="display:flex;gap:4px;">
+            <button class="preview-toggle${currentPreviewMode === "rendered" ? " active" : ""}" id="btnRendered">Rendered</button>
+            <button class="preview-toggle${currentPreviewMode === "raw" ? " active" : ""}" id="btnRaw">Raw</button>
+          </div>
+        </div>
+        <div id="markdownPreview" class="markdown-preview"><em style="color:var(--muted)">Caricamento anteprima...</em></div>
       `;
 
-      loadMarkdownPreview(node);
+      document.getElementById("btnRendered")?.addEventListener("click", () => setPreviewMode("rendered"));
+      document.getElementById("btnRaw")?.addEventListener("click", () => setPreviewMode("raw"));
+
+      loadMarkdownPreview(node, bustCache);
     }
 
-    function bootstrapNetwork(visNodes, visEdges, nodes, network) {
+    // ─── network bootstrap ─────────────────────────────────────────────────────
+    function bootstrapNetwork(visNodes, visEdges, nodes, network, bustCache) {
       const expandedState = new Map();
       nodeMap.forEach((_, nodeId) => expandedState.set(nodeId, false));
       expandedState.set("agent", true);
@@ -616,26 +705,19 @@
 
       function collectVisibleSubtree(nodeId) {
         const subtree = [];
-
         function walk(currentId) {
           const currentNode = visNodes.get(currentId);
-          if (!currentNode || currentNode.hidden) {
-            return;
-          }
+          if (!currentNode || currentNode.hidden) return;
           subtree.push(currentId);
           getChildren(currentId).forEach(childId => walk(childId));
         }
-
         walk(nodeId);
         return subtree;
       }
 
       function fitToNodeSubtree(nodeId) {
         const subtreeNodes = collectVisibleSubtree(nodeId);
-        if (!subtreeNodes.length) {
-          return;
-        }
-
+        if (!subtreeNodes.length) return;
         network.fit({
           nodes: subtreeNodes,
           animation: { duration: 320, easingFunction: "easeInOutQuad" },
@@ -677,7 +759,7 @@
             network.focus(nodeId, { scale: 1.08, animation: { duration: 280 } });
           }
         }
-        renderNodeDetails(nodeId, expandedState);
+        renderNodeDetails(nodeId, expandedState, bustCache);
       });
 
       document.getElementById("fitBtn").addEventListener("click", () => {
@@ -698,13 +780,13 @@
         refreshVisibility();
         network.focus("agent", { scale: 1.05, animation: { duration: 420 } });
         network.selectNodes(["agent"]);
-        renderNodeDetails("agent", expandedState);
+        renderNodeDetails("agent", expandedState, bustCache);
       });
 
       document.getElementById("focusAgentBtn").addEventListener("click", () => {
         network.focus("agent", { scale: 1.05, animation: { duration: 500 } });
         network.selectNodes(["agent"]);
-        renderNodeDetails("agent", expandedState);
+        renderNodeDetails("agent", expandedState, bustCache);
       });
 
       document.getElementById("search").addEventListener("input", e => {
@@ -713,28 +795,42 @@
           network.unselectAll();
           return;
         }
-
         const matched = nodes.filter(n => n.baseLabel.toLowerCase().includes(q));
         if (!matched.length) return;
-
         const first = matched[0];
         expandPathToNode(first.id);
         refreshVisibility();
         network.selectNodes([first.id]);
         network.focus(first.id, { scale: 1.12, animation: { duration: 350 } });
-        renderNodeDetails(first.id, expandedState);
+        renderNodeDetails(first.id, expandedState, bustCache);
       });
 
       refreshVisibility();
       network.fit({ animation: { duration: 420 } });
       network.selectNodes(["agent"]);
-      renderNodeDetails("agent", expandedState);
+      renderNodeDetails("agent", expandedState, bustCache);
     }
 
-    async function initialize() {
+    // ─── initialize ────────────────────────────────────────────────────────────
+    async function initialize(bustCache = false) {
+      // clear previous state
+      nodeMap.clear();
+      edgeList.length = 0;
+      childrenByParent.clear();
+      parentByChild.clear();
+      lastRawText = null;
+      lastPreviewNode = null;
+
+      if (networkInstance) {
+        networkInstance.destroy();
+        networkInstance = null;
+      }
+
+      details.innerHTML = `<div class="hint">Caricamento grafo dal disco...</div>`;
+
       try {
-        const dependenciesBySkill = await collectSkillDependencies();
-        const agentText = await fetchMarkdown(`../agents/${agentFile}`);
+        const dependenciesBySkill = await collectSkillDependencies(bustCache);
+        const agentText = await fetchMarkdown(`../agents/${agentFile}`, bustCache);
         const parsedAgent = parseFrontmatter(agentText);
         const uniqueReferenceFiles = new Set();
         const uniqueScriptFiles = new Set();
@@ -839,18 +935,31 @@
           }
         };
 
-        const network = new vis.Network(container, data, options);
+        networkInstance = new vis.Network(container, data, options);
 
         document.getElementById("agentCount").textContent = "1";
         document.getElementById("skillsCount").textContent = String(skills.length);
         document.getElementById("referencesCount").textContent = String(uniqueReferenceFiles.size);
         document.getElementById("scriptsCount").textContent = String(uniqueScriptFiles.size);
 
-        bootstrapNetwork(visNodes, visEdges, nodes, network);
+        bootstrapNetwork(visNodes, visEdges, nodes, networkInstance, bustCache);
       } catch (error) {
         details.innerHTML = `<div class="hint">Errore durante inizializzazione grafo.<br/><small>${escapeHtml(String(error))}</small></div>`;
       }
     }
+
+    // ─── reload button ─────────────────────────────────────────────────────────
+    document.getElementById("reloadBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("reloadBtn");
+      btn.textContent = "...";
+      btn.disabled = true;
+      try {
+        await initialize(true);
+      } finally {
+        btn.textContent = "Reload";
+        btn.disabled = false;
+      }
+    });
 
     initialize();
   </script>

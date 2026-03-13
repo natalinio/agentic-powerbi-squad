@@ -8,11 +8,14 @@ description: Produce realistic CSV mock datasets and align partitions for local 
 ## Purpose
 Generate realistic mock data as CSV files to validate the PBIP semantic model locally in Power BI Desktop.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 05**. Do NOT preload downstream step skills unless explicitly required.
-- Input gate: verify Step 04 model/measures artifacts exist and target data/script folders are writable.
-- Output gate: before completion, verify generated CSV files and `<ProjectName>/scripts/generate_mock_data.py` exist, are non-empty, and are registered in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 01-04 completed), TMDL table files (column names and data types) |
+| **Writes** | `<ProjectName>/scripts/generate_mock_data.py`, `<ProjectName>/data/*.csv`, updated TMDL partitions |
 
 ## Python Environment Setup
 
@@ -219,23 +222,4 @@ partition Dim_Date = entity
 - [ ] CSV files are comma-delimited, UTF-8 encoded
 - [ ] Script runs without errors in the `.venv` environment
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **VERIFY** the Python script has been saved to `<ProjectName>/scripts/generate_mock_data.py`.
-2. **VERIFY** CSV files have been generated in `<ProjectName>/data/`.
-3. **VERIFY** TMDL partitions have been updated with correct CSV paths.
-4. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 05 completed.
-   - Add artifact paths for the script and CSV files.
-5. **CONFIRM** to the user that all data generation artifacts have been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-04 are completed.
-- **READ** TMDL table files from disk to know exact column names and data types (NOT from chat memory).
-- **DO NOT** rely on chat history for any data from previous steps.
-
-**STOP here. Await user validation before proceeding to Step 6.**
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**

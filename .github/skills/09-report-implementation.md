@@ -20,19 +20,14 @@ Before starting report implementation:
    - `StaticResources/SharedResources/BaseThemes/CY25SU12.json` exists.
    - `<ProjectName>.Report/report.json` at report root does NOT exist.
 
-## Context Flushing Rule
+## Step Contract
 
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-08 are completed.
-- **READ** `<ProjectName>/spec/report_blueprint.json` from disk (the primary input for this step).
-- **READ** TMDL files from disk for exact table/column/measure names (anti-hallucination).
-- **DO NOT** rely on chat history for any data from previous steps.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
-
-- This skill is step-scoped: execute it only for **Step 09**. Do NOT preload Step 10 validation logic except where strictly required for schema correctness.
-- Input gate: verify Step 08 blueprint exists, is valid JSON, and all referenced fields are resolvable in TMDL.
-- Output gate: before completion, verify generated page/visual files exist, are non-empty, and are persisted in `workflow_state.json`.
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 01-08 completed), `spec/report_blueprint.json`, all TMDL files (model object registry) |
+| **Writes** | PBIR files in `<ProjectName>/PBIP/<ProjectName>.Report/definition/pages/` + updated `pages/pages.json` |
 
 ## References — MANDATORY
 Before generating ANY PBIR JSON:
@@ -343,21 +338,7 @@ Before presenting results to the user, verify:
 
 ---
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **VERIFY** all page folders and visual files have been created.
-2. **GENERATE** a summary listing:
-   - Number of pages created
-   - Number of visuals per page
-   - List of field references used
-3. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 09 completed.
-   - Add artifact paths for all generated page and visual files.
-4. **CONFIRM** to the user that all PBIR files have been saved.
-
-Present a summary of generated files and **STOP here**. Await user approval before proceeding to Step 10 (Report Quality Validation).
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**
 
 ---
 

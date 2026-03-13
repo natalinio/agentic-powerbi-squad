@@ -11,11 +11,14 @@ description: Extract KPIs, dimensions, grain, and constraints from functional sp
 - **Word documents** (`.docx`): Ask the user to paste or convert the content. Do NOT attempt binary parsing.
 - Detect the input language (Italian or English) and communicate in that language throughout the session.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 01**. Do NOT preload Step 08/09/10 (or any other future-step skill) unless explicitly needed for a blocking clarification.
-- Input gate: verify prerequisite artifacts from previous completed step(s) exist and are readable.
-- Output gate: before completion, verify `<ProjectName>/spec/requirements_summary.md` exists, is non-empty, and is registered in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Step 00 completed) |
+| **Writes** | `<ProjectName>/spec/requirements_summary.md` |
 
 ## Extraction Procedure
 
@@ -110,23 +113,4 @@ Present the analysis as a structured table:
 |------|-------------------|-------------|
 ```
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **SAVE** the full requirements analysis to disk as `<ProjectName>/spec/requirements_summary.md`.
-   - The file must contain ALL tables from the Output Format above (KPIs, Dimensions, Fact Tables, RLS Rules).
-   - Include any flagged ambiguities or missing requirements at the end of the file.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 01 completed.
-   - Add artifact path `<ProjectName>/spec/requirements_summary.md`.
-3. **CONFIRM** to the user that the artifact file has been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Step 00 is completed.
-- **READ** any existing artifacts from previous steps from disk (NOT from chat memory).
-- **DO NOT** rely on chat history for any data from previous steps.
-
-**STOP here. Await user validation before proceeding to Step 2.**
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**

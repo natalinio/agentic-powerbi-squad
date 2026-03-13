@@ -93,6 +93,7 @@
       font-weight: 600;
       cursor: pointer;
       font-size: 12px;
+      font-family: inherit;
     }
 
     .switch button.active {
@@ -112,6 +113,30 @@
       font-size: 12px;
       font-weight: 600;
       white-space: nowrap;
+    }
+
+    .btn-reload {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #1a2448, #121b37);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-weight: 600;
+      font-size: 12px;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-reload:hover {
+      border-color: rgba(143,124,255,.66);
+      box-shadow: 0 0 0 2px rgba(143,124,255,.16);
+    }
+
+    .btn-reload:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .ms-logo {
@@ -396,6 +421,7 @@
           <button id="tabArchitecture" class="active" role="tab" aria-selected="true">Architecture</button>
           <button id="tabExplorer" role="tab" aria-selected="false">Explorer</button>
         </div>
+        <button class="btn-reload" id="reloadLaneBtn" title="Ricarica titoli e descrizioni dei step dai file markdown">Reload</button>
         <div class="badge">
           <span class="ms-logo" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
           Microsoft aligned
@@ -441,7 +467,7 @@
         </section>
 
         <section class="tooling">
-          <h2>Tooling & References</h2>
+          <h2>Tooling &amp; References</h2>
           <div class="tool-grid">
             <div class="tool">
               <i data-lucide="bot"></i>
@@ -461,7 +487,7 @@
 
       <section id="explorerView" class="view" aria-label="Explorer view">
         <div class="explorer-wrap">
-          <iframe src="./agent-explorer.html" title="Agent Explorer"></iframe>
+          <iframe id="explorerFrame" src="./agent-explorer.html" title="Agent Explorer"></iframe>
         </div>
       </section>
     </main>
@@ -473,20 +499,70 @@
 
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
-    const steps = [
-      { id: "00", title: "Project Initialization", desc: "Bootstrap PBIP canvas and project structure", icon: "folder-cog", color: "#64748b" },
-      { id: "01", title: "Requirements Analysis", desc: "Consolida requisiti e risolve chiarimenti critici (bloccante)", icon: "search", color: "#3b82f6" },
-      { id: "02", title: "Logical Data Model", desc: "Star schema + gate carry-forward su assunzioni esplicite", icon: "network", color: "#0ea5e9" },
-      { id: "03", title: "Physical Model & TMDL", desc: "TMDL validato con hard-stop pre-Step 4 se chiarimenti aperti", icon: "database", color: "#8b5cf6" },
-      { id: "04", title: "DAX Development", desc: "Measures, folders, time intelligence", icon: "calculator", color: "#6366f1" },
-      { id: "05", title: "Mock Data", desc: "CSV generation using pandas/faker", icon: "file-spreadsheet", color: "#f59e0b" },
-      { id: "06", title: "Quality Review", desc: "Cross-check TMDL, DAX, data model consistency", icon: "shield-check", color: "#f59e0b" },
-      { id: "07", title: "Functional Testing", desc: "Automated tests and execution report", icon: "flask-conical", color: "#ef4444" },
-      { id: "08", title: "Report Design", desc: "Storyboard-first blueprint with design tokens, sorting and UX rules", icon: "layout-template", color: "#06b6d4" },
-      { id: "09", title: "Report Implementation", desc: "Generate PBIR with runtime ids, pages.json sync and UTF-8 no BOM", icon: "paint-roller", color: "#14b8a6" },
-      { id: "10", title: "Report Quality Validation", desc: "Run validate_pbir_report.py then inspect only failing artifacts", icon: "list-checks", color: "#22c55e" }
+    // ─── skill file manifest ───────────────────────────────────────────────────
+    // Order must match the skill step numbers 00–10.
+    const skillFiles = [
+      "00-project-initialization.md",
+      "01-requirements-analysis.md",
+      "02-logical-model.md",
+      "03-physical-model-tmdl.md",
+      "04-dax-development.md",
+      "05-mock-data-generation.md",
+      "06-code-review.md",
+      "07-functional-testing.md",
+      "08-report-design.md",
+      "09-report-implementation.md",
+      "10-report-quality-validation.md"
     ];
 
+    // Visual-only per-step metadata (icon + color + fallback title/desc).
+    // title and desc are overridden at runtime from skill frontmatter when available.
+    const stepVisuals = [
+      { id: "00", icon: "folder-cog",      color: "#64748b", title: "Project Initialization",     desc: "Bootstrap PBIP canvas and project structure" },
+      { id: "01", icon: "search",           color: "#3b82f6", title: "Requirements Analysis",      desc: "Consolida requisiti e risolve chiarimenti critici" },
+      { id: "02", icon: "network",          color: "#0ea5e9", title: "Logical Data Model",         desc: "Star schema Kimball con gate carry-forward" },
+      { id: "03", icon: "database",         color: "#8b5cf6", title: "Physical Model & TMDL",      desc: "TMDL con hard-stop pre-Step 4 se chiarimenti aperti" },
+      { id: "04", icon: "calculator",       color: "#6366f1", title: "DAX Development",            desc: "Measures, folders, time intelligence" },
+      { id: "05", icon: "file-spreadsheet", color: "#f59e0b", title: "Mock Data",                  desc: "CSV generation using pandas/faker" },
+      { id: "06", icon: "shield-check",     color: "#f59e0b", title: "Quality Review",             desc: "Cross-check TMDL, DAX, data model consistency" },
+      { id: "07", icon: "flask-conical",    color: "#ef4444", title: "Functional Testing",         desc: "Automated tests and execution report" },
+      { id: "08", icon: "layout-template",  color: "#06b6d4", title: "Report Design",              desc: "Storyboard-first blueprint with design tokens and UX rules" },
+      { id: "09", icon: "paint-roller",     color: "#14b8a6", title: "Report Implementation",      desc: "Generate PBIR with runtime ids, pages.json sync" },
+      { id: "10", icon: "list-checks",      color: "#22c55e", title: "Report Quality Validation",  desc: "Run validate_pbir_report.py then inspect only failing artifacts" }
+    ];
+
+    // ─── utilities ─────────────────────────────────────────────────────────────
+    function parseFrontmatter(text) {
+      const match = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+      if (!match) return { metadata: {}, body: text };
+      const metadata = {};
+      match[1].split("\n").forEach(line => {
+        const sep = line.indexOf(":");
+        if (sep <= 0) return;
+        const key = line.slice(0, sep).trim();
+        const val = line.slice(sep + 1).trim().replace(/^['"]|['"]$/g, "");
+        metadata[key] = val;
+      });
+      return { metadata, body: text.slice(match[0].length) };
+    }
+
+    async function fetchText(path, bustCache = false) {
+      const url = bustCache ? `${path}?t=${Date.now()}` : path;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status} - ${path}`);
+      return res.text();
+    }
+
+    // Convert frontmatter name like "powerbi-logical-model" to "Logical Model".
+    function humanizeName(name) {
+      return name
+        .replace(/^powerbi-/, "")
+        .split("-")
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+    }
+
+    // ─── lane rendering ────────────────────────────────────────────────────────
     const lane = document.getElementById("lane");
 
     function stepCard(step) {
@@ -505,40 +581,69 @@
       `;
     }
 
-    let html = "";
-    html += `
-      <aside class="out" style="border-color: rgba(142,129,255,.55); width: 220px;">
-        <h3>Primary Input</h3>
-        <ul>
-          <li><i data-lucide="file-text"></i> Functional specification</li>
-          <li><i data-lucide="languages"></i> Markdown / pasted text</li>
-          <li><i data-lucide="target"></i> Start condition for step execution</li>
-        </ul>
-      </aside>
-      <div class="arrow"><i data-lucide="arrow-right"></i></div>
-    `;
+    async function renderLane(bustCache = false) {
+      // Show loading placeholder while fetching
+      lane.innerHTML = `
+        <div style="display:inline-flex;align-items:center;padding:16px 24px;color:var(--muted);font-size:13px;gap:10px;">
+          <span>Caricamento skill files...</span>
+        </div>
+      `;
 
-    steps.forEach((step, index) => {
-      html += stepCard(step);
-      if (index < steps.length - 1) {
-        html += `<div class="arrow"><i data-lucide="arrow-right"></i></div>`;
+      // Fetch all skill frontmatter in parallel; fall back gracefully on error
+      const steps = await Promise.all(skillFiles.map(async (file, i) => {
+        const visual = stepVisuals[i];
+        try {
+          const text = await fetchText(`../skills/${file}`, bustCache);
+          const { metadata } = parseFrontmatter(text);
+          return {
+            ...visual,
+            title: metadata.name ? humanizeName(metadata.name) : visual.title,
+            desc: metadata.description || visual.desc
+          };
+        } catch {
+          return visual;
+        }
+      }));
+
+      let html = `
+        <aside class="out" style="border-color: rgba(142,129,255,.55); width: 220px;">
+          <h3>Primary Input</h3>
+          <ul>
+            <li><i data-lucide="file-text"></i> Functional specification</li>
+            <li><i data-lucide="languages"></i> Markdown / pasted text</li>
+            <li><i data-lucide="target"></i> Start condition for step execution</li>
+          </ul>
+        </aside>
+        <div class="arrow"><i data-lucide="arrow-right"></i></div>
+      `;
+
+      steps.forEach((step, index) => {
+        html += stepCard(step);
+        if (index < steps.length - 1) {
+          html += `<div class="arrow"><i data-lucide="arrow-right"></i></div>`;
+        }
+      });
+
+      html += `
+        <div class="arrow"><i data-lucide="arrow-right"></i></div>
+        <aside class="out">
+          <h3>PBIP Output</h3>
+          <ul>
+            <li><i data-lucide="database"></i> SemanticModel (TMDL)</li>
+            <li><i data-lucide="bar-chart-3"></i> Report (PBIR)</li>
+            <li><i data-lucide="folder"></i> Data, Spec, Tests + validation summaries</li>
+          </ul>
+        </aside>
+      `;
+
+      lane.innerHTML = html;
+
+      if (window.lucide) {
+        window.lucide.createIcons();
       }
-    });
+    }
 
-    html += `
-      <div class="arrow"><i data-lucide="arrow-right"></i></div>
-      <aside class="out">
-        <h3>PBIP Output</h3>
-        <ul>
-          <li><i data-lucide="database"></i> SemanticModel (TMDL)</li>
-          <li><i data-lucide="bar-chart-3"></i> Report (PBIR)</li>
-          <li><i data-lucide="folder"></i> Data, Spec, Tests + validation summaries</li>
-        </ul>
-      </aside>
-    `;
-
-    lane.innerHTML = html;
-
+    // ─── tab switching & scroll sync ───────────────────────────────────────────
     const tabArchitecture = document.getElementById("tabArchitecture");
     const tabExplorer = document.getElementById("tabExplorer");
     const architectureView = document.getElementById("architectureView");
@@ -550,9 +655,7 @@
     let useTransformFallback = false;
 
     function syncBottomScrollWidth() {
-      if (!workflowContainer || !bottomScrollTrack || !laneElement) {
-        return;
-      }
+      if (!workflowContainer || !bottomScrollTrack || !laneElement) return;
       const nativeWidth = Math.max(workflowContainer.scrollWidth, laneElement.scrollWidth);
       const ensuredWidth = Math.max(nativeWidth, workflowContainer.clientWidth + 1);
       bottomScrollTrack.style.width = `${ensuredWidth}px`;
@@ -562,9 +665,7 @@
     let syncing = false;
 
     function syncWorkflowToBottom() {
-      if (syncing) {
-        return;
-      }
+      if (syncing) return;
       syncing = true;
       const targetLeft = bottomScroll.scrollLeft;
       if (useTransformFallback && laneElement) {
@@ -577,9 +678,7 @@
     }
 
     function syncBottomToWorkflow() {
-      if (syncing) {
-        return;
-      }
+      if (syncing) return;
       syncing = true;
       if (useTransformFallback) {
         bottomScroll.scrollLeft = Math.min(bottomScroll.scrollLeft, bottomScroll.scrollWidth - bottomScroll.clientWidth);
@@ -598,6 +697,7 @@
       tabArchitecture.setAttribute("aria-selected", architectureActive ? "true" : "false");
       tabExplorer.setAttribute("aria-selected", architectureActive ? "false" : "true");
       bottomScroll.style.display = architectureActive ? "block" : "none";
+      document.getElementById("reloadLaneBtn").style.display = architectureActive ? "inline-flex" : "none";
       if (architectureActive) {
         syncBottomScrollWidth();
         syncBottomToWorkflow();
@@ -614,10 +714,28 @@
       syncBottomToWorkflow();
     });
 
-    requestAnimationFrame(() => {
+    // ─── reload lane button ────────────────────────────────────────────────────
+    document.getElementById("reloadLaneBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("reloadLaneBtn");
+      btn.textContent = "...";
+      btn.disabled = true;
+      try {
+        await renderLane(true);
+        syncBottomScrollWidth();
+        syncBottomToWorkflow();
+      } finally {
+        btn.textContent = "Reload";
+        btn.disabled = false;
+      }
+    });
+
+    // ─── init ──────────────────────────────────────────────────────────────────
+    requestAnimationFrame(async () => {
+      await renderLane();
       syncBottomScrollWidth();
       syncBottomToWorkflow();
     });
+
     setActiveView("architecture");
 
     if (window.lucide) {

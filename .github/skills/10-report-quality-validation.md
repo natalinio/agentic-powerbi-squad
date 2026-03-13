@@ -18,32 +18,19 @@ Before starting report quality validation:
 2. ✅ Report blueprint exists — `<ProjectName>/spec/report_blueprint.json` on disk.
 3. ✅ Semantic Model exists — `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/` contains valid TMDL files.
 
-## Context Flushing Rule
+## Step Contract
 
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-09 are completed.
-- **READ** `<ProjectName>/spec/report_blueprint.json` from disk.
-- **PREFER** the shared PBIR validator script for bulk scanning of `page.json` and `visual.json` files.
-- **READ** raw PBIR JSON files individually only when targeted remediation or root-cause inspection is needed.
-- **READ** TMDL files from disk for field cross-referencing.
-- **DO NOT** rely on chat history for any data from previous steps.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
 
-> **Performance Rule**: Step 10 must avoid loading the full PBIR payload into chat context when a deterministic local validation script can produce the same result. The default path is script-first, targeted file inspection second.
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 01-09 completed), `spec/report_blueprint.json`, all TMDL files, PBIR page/visual files |
+| **Writes** | `<ProjectName>/tests/report_validation_execution.md` |
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+> **Performance Rule**: Load the full PBIR payload into context only when strictly necessary. Run `.github/scripts/validate_pbir_report.py <ProjectName>` for bulk validation first; inspect raw PBIR files individually only for targeted remediation.
 
-- This skill is step-scoped: execute it only for **Step 10** and do not reload upstream implementation skills unless needed for targeted remediation.
-- **In scope**:
-  - PBIR syntax and structural validation
-  - cross-check between visual bindings and model objects
-  - coherence checks between blueprint intent and generated visuals
-  - production of a reproducible validation report with PASS/WARNING/FAIL outcomes
-- **Out of scope**:
-  - redesigning report UX or adding new visuals/pages
-  - changing business requirements/KPIs
-  - broad model redesign unrelated to PBIR binding inconsistencies
-- Input gate: verify Step 09 PBIR artifacts and Step 08 blueprint are present and readable.
-- Output gate: before completion, verify `<ProjectName>/tests/report_validation_execution.md` exists, is non-empty, and is recorded in `workflow_state.json`.
+**In scope**: PBIR syntax and structural validation, visual binding cross-check, blueprint coherence, validation report with PASS/WARNING/FAIL outcomes.
+**Out of scope**: redesigning report UX, adding visuals/pages, changing business requirements, broad model redesign.
 
 ## Validation Methodology (MANDATORY)
 
@@ -328,18 +315,7 @@ Before declaring Step 10 complete:
 
 ---
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **SAVE** the validation report to `<ProjectName>/tests/report_validation_execution.md`.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 10 completed.
-   - Add artifact path `<ProjectName>/tests/report_validation_execution.md`.
-   - If this is the final step, set `currentStep: 10` and mark workflow as complete.
-3. **CONFIRM** to the user that the validation report has been saved.
-
-Present the validation report summary and **STOP here**. Await user approval. Upon approval, the workflow is **COMPLETE**.
+**STOP. Save validation report → update `workflow_state.json` (mark workflow complete) → await user approval. Upon approval, the workflow is COMPLETE.**
 
 ---
 

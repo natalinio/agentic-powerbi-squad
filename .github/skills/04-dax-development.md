@@ -12,11 +12,14 @@ Before writing ANY DAX code:
 3. **Search** Microsoft documentation with `microsoft_docs_search` for any DAX function you are uncertain about.
 4. **Search** for code examples with `microsoft_code_sample_search` when implementing time intelligence or complex calculations.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 04**. Do NOT preload unrelated future-step skills.
-- Input gate: verify Step 03 model artifacts exist and are readable before authoring measures.
-- Output gate: before completion, verify `_Measures.tmdl` is updated, non-empty, and recorded in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 01-03 completed), TMDL table files, `spec/requirements_summary.md` |
+| **Writes** | `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/tables/_Measures.tmdl` |
 
 ## Measures Table
 
@@ -423,22 +426,4 @@ Before finalizing DAX code, verify syntax with MCP:
 - [ ] All referenced columns exist in the model
 - [ ] No references to calculated columns in large fact tables (BPA)
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **VERIFY** `_Measures.tmdl` has been written to `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/tables/_Measures.tmdl`.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 04 completed.
-   - Add artifact path for `_Measures.tmdl`.
-3. **CONFIRM** to the user that the DAX measures file has been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-03 are completed.
-- **READ** TMDL table files from disk to know existing columns and tables (NOT from chat memory).
-- **READ** `<ProjectName>/spec/requirements_summary.md` for KPI definitions.
-- **DO NOT** rely on chat history for any data from previous steps.
-
-**STOP here. Await user validation before proceeding to Step 5.**
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**

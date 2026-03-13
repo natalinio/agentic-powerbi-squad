@@ -10,11 +10,14 @@ description: Design a Kimball-compliant logical star schema and relationships.
 - Reference `.github/references/naming-conventions.md` for naming rules.
 - If (and ONLY if) RLS is required by the specs, reference `.github/references/security-rls-best-practices.md` for recommended patterns (dynamic RLS, least privilege, governance).
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 02**. Do NOT preload downstream skills unless explicitly required by a blocking dependency.
-- Input gate: verify Step 01 artifact exists and is readable before modeling.
-- Output gate: before completion, verify `<ProjectName>/spec/er_diagram.md` exists, is non-empty, and is recorded in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Step 01 completed), `spec/requirements_summary.md` |
+| **Writes** | `<ProjectName>/spec/er_diagram.md` |
 
 ### Critical Clarification Carry-Forward Gate (MANDATORY)
 
@@ -160,25 +163,4 @@ erDiagram
 - [ ] **NO ambiguous paths**: Verify that between any two tables there is ONLY ONE active relationship path (no redundant FKs in fact tables)
 - [ ] If snowflaking is used, ensure fact tables connect only to the lowest-grain dimension in the hierarchy
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **SAVE** the ER diagram and model design to disk as `<ProjectName>/spec/er_diagram.md`.
-   - The file must contain the full Mermaid.js ER diagram code block.
-   - Include the grain definitions for each fact table.
-   - Include the checklist results.
-   - Include any design decisions and rationale.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 02 completed.
-   - Add artifact path `<ProjectName>/spec/er_diagram.md`.
-3. **CONFIRM** to the user that the artifact file has been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Step 01 is completed.
-- **READ** `<ProjectName>/spec/requirements_summary.md` from disk (Step 01 artifact).
-- **DO NOT** rely on chat history for requirements data.
-
-**STOP here. Present the ER diagram and await user validation before proceeding to Step 3.**
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**

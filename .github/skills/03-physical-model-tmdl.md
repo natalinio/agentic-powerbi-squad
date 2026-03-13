@@ -13,11 +13,14 @@ Before writing ANY TMDL code:
 4. If (and ONLY if) the specification includes Row-Level Security requirements, **read** `.github/references/security-rls-best-practices.md` before defining any RLS roles, table permissions, or bidirectional security propagation.
 5. **Verify** any uncertain syntax using `microsoft_docs_search` MCP tool with query: `"TMDL <object_type> definition syntax"`.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 03** and avoid loading future-step skill instructions unless strictly required.
-- Input gate: verify Step 02 artifact exists and semantic model target folders are writable.
-- Output gate: before completion, verify required TMDL artifacts exist and are non-empty, then register them in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 01-02 completed), `spec/requirements_summary.md`, `spec/er_diagram.md` |
+| **Writes** | TMDL files in `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/` |
 
 ### Pre-Step4 Critical Clarification Hard Stop (MANDATORY)
 
@@ -903,21 +906,4 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **VERIFY** all TMDL files have been written to `<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 03 completed.
-   - Add all generated TMDL file paths to the artifacts list.
-3. **CONFIRM** to the user that all TMDL files have been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-02 are completed.
-- **READ** `<ProjectName>/spec/requirements_summary.md` and `<ProjectName>/spec/er_diagram.md` from disk.
-- **DO NOT** rely on chat history for requirements or model design data.
-
-**STOP here. Await user validation before proceeding to Step 4.**
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**

@@ -25,11 +25,14 @@ This step must convert requirements into a report that is:
 - NEVER invent measure/field names: always read them from TMDL.
 - If the user has manually refined one or more pages in Power BI Desktop, treat that validated visual grammar as authoritative unless it conflicts with the specification.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 08**. Do NOT preload Step 09/10 skill instructions unless explicitly required to resolve a blocking ambiguity.
-- Input gate: verify Step 07 artifacts and semantic model metadata are available and readable.
-- Output gate: before completion, verify `<ProjectName>/spec/report_blueprint.json` exists, is valid JSON, non-empty, and recorded in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 01-07 completed), functional spec, all TMDL files (visual field registry) |
+| **Writes** | `<ProjectName>/spec/report_blueprint.json` |
 
 ## Prerequisites — MANDATORY
 Before starting report design:
@@ -294,23 +297,7 @@ Before declaring Step 8 complete:
 
 Present a summary of the saved blueprint and **STOP here**. Await user approval before proceeding to Step 9 (Report Implementation).
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **SAVE** the report design blueprint to `<ProjectName>/spec/report_blueprint.json`.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 08 completed.
-   - Add artifact path `<ProjectName>/spec/report_blueprint.json`.
-3. **CONFIRM** to the user that the blueprint file has been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 01-07 are completed.
-- **READ** the functional specification from disk.
-- **READ** TMDL files from disk for the Visual Design Field Registry.
-- **DO NOT** rely on chat history for any data from previous steps.
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**
 
 ## Reference (load only if needed)
 - `.github/references/report-design-visualization-best-practices.md`

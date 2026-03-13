@@ -17,11 +17,14 @@ Before starting the review:
 5. **Load** the CSV mock data files from `<ProjectName>/data/`.
 6. **Verify** any uncertain TMDL syntax using `microsoft_docs_search` or `microsoft_docs_fetch` MCP tool.
 
-## Step Scope & I/O Gate Alignment (MANDATORY)
+## Step Contract
 
-- This skill is step-scoped: execute it only for **Step 06** and avoid preloading unrelated future-step skills.
-- Input gate: verify Step 05 artifacts are complete and readable.
-- Output gate: before completion, verify `<ProjectName>/tests/quality_review.md` exists, is non-empty, and is persisted in `workflow_state.json`.
+> Governance: `.github/references/workflow-core.md` — context flushing, checkpointing, and stop/approval gate apply automatically.
+
+| | |
+|---|---|
+| **Reads** | `workflow_state.json` (verify Steps 03-05 completed), all TMDL files, all CSV files in `data/` |
+| **Writes** | `<ProjectName>/tests/quality_review.md` |
 
 ## Review Checklist
 
@@ -362,24 +365,4 @@ If errors are found:
 2. Ask the user for permission to apply all fixes.
 3. Apply fixes directly to the TMDL files upon approval.
 
-## Artifact Checkpointing (MANDATORY)
-
-**BEFORE presenting results to the user**, the agent MUST:
-
-1. **SAVE** the quality review report to disk as `<ProjectName>/tests/quality_review.md`.
-   - The file must contain the full review checklist with PASS/WARNING/FAIL status.
-   - Include BPA severity-graded report.
-   - Include all error details and proposed fixes.
-2. **UPDATE** `<ProjectName>/workflow_state.json`:
-   - Set `pendingStep` to Step 06 completed.
-   - Add artifact path `<ProjectName>/tests/quality_review.md`.
-3. **CONFIRM** to the user that the artifact file has been saved.
-
-## Context Flushing Rule
-
-When starting this step, the agent MUST:
-- **READ** `<ProjectName>/workflow_state.json` to verify Steps 03-05 are completed.
-- **READ** TMDL files and CSV files from disk (NOT from chat memory).
-- **DO NOT** rely on chat history for any data from previous steps.
-
-**Present the complete report and await user validation.**
+**STOP. Save primary artifact → update `workflow_state.json` → await user approval.**
