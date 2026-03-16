@@ -189,6 +189,8 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
        - **Azure Map** → `Category` plus `Size`; include validated object settings when using the repository baseline map behavior.
      - **Row fields (matrix)** → `Rows` projections.
      - **Column group fields (matrix)** → `Columns` projections.
+      - **Field parameter bindings** → keep the active concrete projection for the target role and also emit `queryState.<Role>.fieldParameters[]` referencing the parameter display column.
+      - **Measure parameter on `Values`** → keep any companion grouping dimensions only if they are valid filter context for all selectable measures.
     - `visual.drillFilterOtherVisuals`: set `true` as baseline behavior.
     - `filterConfig`: optional for handcrafted files; Desktop may generate it automatically on save.
       - `visual.query.sortDefinition`: generate explicitly whenever the blueprint defines `sortBy`.
@@ -201,8 +203,10 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
 4. **Validate**: Ensure every `Entity` value matches a TMDL table name and every `Property` value matches a column or measure name.
 5. **Validate folder/name contract**: Ensure visual folder name equals `visual.json.name`.
 6. **Validate layout contract**: Ensure computed positions respect page bounds, token spacing, and non-overlap rules.
+7. **Validate field-parameter contract**: When a blueprint visual declares `fieldParameterBindings`, ensure the consuming PBIR role contains both the concrete projection and the matching `fieldParameters` descriptor.
+8. **Validate context compatibility**: When a blueprint visual declares a measure parameter, ensure any non-parameter grouping fields are present in `allowedContextDimensions` and are reachable from every selectable measure through the active relationships.
 
-7. **Selection/Layer Metadata Naming (CONDITIONAL)**:
+9. **Selection/Layer Metadata Naming (CONDITIONAL)**:
     - When the visual family uses `visualContainerObjects.title`, set `text.expr.Literal.Value` using this pattern:
        - `'<ComponentName> - <DataOrMetadataReference>'`
     - Examples:
@@ -230,6 +234,11 @@ For each slicer defined in a page's `slicers` array in the blueprint:
 5. **Position slicers**: Place slicers at the top or left of the page (before data visuals).
 6. **Observed guardrail**: include `active: true` on the slicer projection when using the current Desktop baseline pattern.
 7. **Usability guardrail**: do not compress dropdown slicers below 64 px height in the standard top-row layout, otherwise the dropdown affordance can become visually cramped and hard to click.
+
+If the slicer is bound to a field parameter:
+- Bind the slicer projection to the **visible parameter column** (for example `Dimension[Dimension]`).
+- If the blueprint declares a default selection, emit the Desktop-observed `visual.objects.general[].properties.filter` payload against the hidden object-reference column (for example `Dimension[Dimension Fields]`) using the corresponding `NAMEOF(...)` literal value.
+- Keep the slicer metadata title readable, because field-parameter slicers behave like report controls and are harder to identify later in the Selection pane.
 
 ### 9.7 Encoding and Serialization Guardrails (MANDATORY)
 
@@ -325,6 +334,9 @@ Before presenting results to the user, verify:
 - [ ] All `Property` references match TMDL column/measure names exactly
 - [ ] Visual types use correct PBIR type names (from mapping table)
 - [ ] Slicer modes are valid PBIR slicer mode values
+- [ ] Visuals that declare field parameter bindings also serialize `queryState.<Role>.fieldParameters[]` correctly
+- [ ] Field-parameter slicers bind to the visible parameter column and use the hidden metadata column only for explicit default selection filters
+- [ ] Measure-parameter visuals use only relationship-safe context dimensions declared in the blueprint
 - [ ] No duplicate visual IDs within a page
 - [ ] All JSON files reference the correct Microsoft `$schema` URLs
 - [ ] All JSON files are encoded as UTF-8 without BOM

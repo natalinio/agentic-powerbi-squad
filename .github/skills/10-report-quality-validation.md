@@ -90,6 +90,8 @@ Read all TMDL files and build the registry (same as Steps 7 and 9):
 - **Columns**: All column names per table (PascalCase)
 - **Measures**: All measure names from `_Measures.tmdl` (natural language with spaces)
 - **Relationships**: All relationship pairs
+- **Field parameter metadata**: detect parameter tables, visible parameter columns, hidden metadata columns, and allowed target objects
+- **Context compatibility metadata**: for measure-parameter visuals, collect allowed context dimensions from the blueprint and compare them with model reachability
 
 #### B) Blueprint Registry
 Parse `report_blueprint.json` and extract:
@@ -106,6 +108,7 @@ Use the validator outputs as the primary PBIR registry and inspect raw PBIR file
   - `Entity` references (table names)
   - `Property` references (column/measure names)
   - `visualType` values
+   - `queryState.<Role>.fieldParameters[]` references (when present)
    - `filterConfig.filters[].field` references (when present)
   - Title text
 
@@ -138,6 +141,19 @@ For EACH `visual.json` file:
    - **PASS**: `filterConfig` references only valid columns/measures.
    - **FAIL**: `filterConfig` contains unknown field references.
 
+6. **Field Parameter Binding Validation**: When a visual uses `queryState.<Role>.fieldParameters[]`, validate that:
+   - the referenced parameter table exists in TMDL,
+   - the parameter display column exists,
+   - the target role also contains at least one concrete projection compatible with the current selection baseline,
+   - and the parameter table metadata on the model side is present.
+
+7. **Field Parameter Default Selection Validation**: When a field-parameter slicer defines `visual.objects.general[].properties.filter`, validate that the filter targets the hidden object-reference column and that the literal value matches one of the allowed `NAMEOF(...)` entries from the parameter table.
+
+8. **Measure Parameter Context Validation**: When a visual uses a measure parameter, validate that every non-parameter grouping field in the same visual is semantically safe for all selectable measures:
+   - the grouping dimension is reachable through active relationships from every fact table or measure lineage involved,
+   - the dimension is declared in the blueprint as an allowed context dimension,
+   - and the resulting filter context does not become partial or misleading for one or more selectable measures.
+
 #### Output Format for Field Validation
 
 ```
@@ -148,6 +164,7 @@ For EACH `visual.json` file:
 | 1 | Page1 | visual_01 | _Measures | Sales Amount FYTD | Measure | ✅ PASS | Exists in _Measures.tmdl |
 | 2 | Page1 | visual_02 | Dim_Date | FiscalYear | Column | ✅ PASS | Exists in Dim_Date.tmdl |
 | 3 | Page1 | visual_03 | Dim_Area | Area Name | Column | ❌ FAIL | Column not found. Did you mean 'AreaName'? |
+| 4 | Page2 | visual_01 | Dimension | Dimension | FieldParameter | ✅ PASS | Parameter table and display column exist |
 ```
 
 ---

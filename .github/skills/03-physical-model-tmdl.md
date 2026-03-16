@@ -343,6 +343,116 @@ table _Measures
 				Source
 ```
 
+	#### Field Parameter Table Template (validated dimension-switch baseline):
+
+	Use a calculated disconnected table when the approved requirements call for dynamic switching of dimensions in report visuals.
+
+	```tmdl
+	table Dimension
+		lineageTag: <generate-guid>
+
+		column Dimension
+			lineageTag: <generate-guid>
+			summarizeBy: none
+			sourceColumn: [Value1]
+			sortByColumn: 'Dimension Order'
+
+			relatedColumnDetails
+				groupByColumn: 'Dimension Fields'
+
+		column 'Dimension Fields'
+			isHidden
+			lineageTag: <generate-guid>
+			summarizeBy: none
+			sourceColumn: [Value2]
+			sortByColumn: 'Dimension Order'
+
+			extendedProperty ParameterMetadata =
+					{
+					  "version": 3,
+					  "kind": 2
+					}
+
+		column 'Dimension Order'
+			isHidden
+			formatString: 0
+			lineageTag: <generate-guid>
+			summarizeBy: sum
+			sourceColumn: [Value3]
+
+		partition Dimension = calculated
+			mode: import
+			source =
+					{
+					    ("AreaName", NAMEOF('Dim_Area'[AreaName]), 0),
+					    ("CustomerName", NAMEOF('Dim_Customer'[CustomerName]), 1),
+					    ("IndustryName", NAMEOF('Dim_Industry'[IndustryName]), 2),
+					    ("SalespersonName", NAMEOF('Dim_Salesperson'[SalespersonName]), 3)
+					}
+	```
+
+	Field parameter rules:
+	- The parameter table must remain **disconnected** from fact and dimension relationships.
+	- The DAX table expression must keep the canonical three-value tuple shape: display label, `NAMEOF(...)` reference, ordinal.
+	- The visible display column must sort by the ordinal column.
+	- For the validated dimension-switch baseline, the hidden object-reference column must expose `extendedProperty ParameterMetadata` with `version = 3` and `kind = 2`, and the visible display column must declare `relatedColumnDetails.groupByColumn` pointing to that hidden column.
+	- Add `ref table <ParameterTableName>` to `model.tmdl` so the parameter table is part of the semantic model ordering.
+	- If the requirement is a measure-switch or mixed field parameter, the DAX tuple pattern is still valid, but any extra metadata beyond the validated Desktop-generated baseline must be confirmed from a Desktop reference before standardizing it in TMDL templates.
+
+	#### Measure Parameter Table Template (validated measure-switch baseline):
+
+	Use a calculated disconnected table when the approved requirements call for dynamic switching of measures in report visuals.
+
+	```tmdl
+	table Measure
+		lineageTag: <generate-guid>
+
+		column Measure
+			lineageTag: <generate-guid>
+			summarizeBy: none
+			sourceColumn: [Value1]
+			sortByColumn: 'Measure Order'
+
+			relatedColumnDetails
+				groupByColumn: 'Measure Fields'
+
+		column 'Measure Fields'
+			isHidden
+			lineageTag: <generate-guid>
+			summarizeBy: none
+			sourceColumn: [Value2]
+			sortByColumn: 'Measure Order'
+
+			extendedProperty ParameterMetadata =
+					{
+					  "version": 3,
+					  "kind": 2
+					}
+
+		column 'Measure Order'
+			isHidden
+			formatString: 0
+			lineageTag: <generate-guid>
+			summarizeBy: sum
+			sourceColumn: [Value3]
+
+		partition Measure = calculated
+			mode: import
+			source =
+					{
+					    ("Sales Amount FYTD", NAMEOF('_Measures'[Sales Amount FYTD]), 0),
+					    ("Budget Amount FYTD", NAMEOF('_Measures'[Budget Amount FYTD]), 1),
+					    ("Adjusted Profit FYTD", NAMEOF('_Measures'[Adjusted Profit FYTD]), 2)
+					}
+	```
+
+	Measure-parameter rules:
+	- Keep the table disconnected from model relationships.
+	- Only include measures that are semantically comparable inside the same visual intent.
+	- The dimensions kept in the consuming visual must remain valid filter context for **every** selectable measure.
+	- If one selectable measure comes from a fact table that is not reachable from the chosen dimension through an active relationship path, that measure must not be included in the same parameter for that visual.
+	- If measures come from different fact tables at different grains, document and test the reconciliation semantics before approving the parameter design.
+
 #### Advanced Partition Templates (Based on Refresh Strategy)
 
 ##### A. Import Mode with Incremental Refresh

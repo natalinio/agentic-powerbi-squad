@@ -65,6 +65,13 @@ For EACH relationship in `relationships.tmdl`:
   - [ ] Fact_Sales → Dim_Industry (direct) AND Fact_Sales → Dim_Customer → Dim_Industry (indirect)
   - **Fix**: Remove redundant direct relationships from fact tables. Keep only the path through the most granular dimension.
 
+### 3.1 Field Parameter Semantic Review
+- [ ] Dimension parameter tables are disconnected and contain only user-facing fields that are safe to swap within the same visual role.
+- [ ] Measure parameter tables are disconnected and contain only measures that are semantically comparable within the same visual.
+- [ ] For each measure parameter, the dimensions used in the consuming visual are reachable through active relationships for **all** selectable measures.
+- [ ] If a measure parameter mixes measures from different fact tables, the visual context is intentionally restricted to shared conformed dimensions or explicitly documented reconciliation logic.
+- [ ] Reject any measure-switch design where a selected dimension produces ambiguous, partial, or misleading filtering for one or more selectable measures.
+
 ### 4. Data Type Consistency
 For EACH column across all tables:
 - [ ] `dataType` matches expected type (int64 for keys, decimal for amounts, string for text, dateTime for dates).

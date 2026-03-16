@@ -374,6 +374,160 @@ Do not assume that all visual families also need a `title` object. In the curren
 }
 ```
 
+### Field Parameter Role Binding
+
+Desktop-generated field-parameter visuals keep a concrete projection in the consuming role and add a `fieldParameters` descriptor for that same role.
+
+```json
+{
+  "Rows": {
+    "projections": [
+      {
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": { "Entity": "Dim_Area" }
+            },
+            "Property": "AreaName"
+          }
+        },
+        "queryRef": "Dim_Area.AreaName",
+        "nativeQueryRef": "AreaName",
+        "active": true,
+        "displayName": "AreaName"
+      }
+    ],
+    "fieldParameters": [
+      {
+        "parameterExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": { "Entity": "Dimension" }
+            },
+            "Property": "Dimension"
+          }
+        },
+        "index": 0,
+        "length": 1
+      }
+    ]
+  }
+}
+```
+
+Guardrails:
+- `parameterExpr` must point to the visible parameter column, not the hidden metadata column.
+- The target role must still include a concrete projection aligned with the active default selection.
+- `index` and `length` must remain coherent with the number of active parameter-driven fields in that role.
+
+### Measure Parameter Binding In Values
+
+Desktop-generated measure-parameter visuals can place the field-parameter descriptor inside `queryState.Values` while keeping the current active measure projection alongside any compatible grouping dimensions.
+
+```json
+{
+  "Values": {
+    "projections": [
+      {
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": { "Entity": "Dim_Area" }
+            },
+            "Property": "AreaName"
+          }
+        },
+        "queryRef": "Dim_Area.AreaName",
+        "nativeQueryRef": "AreaName"
+      },
+      {
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": { "Entity": "_Measures" }
+            },
+            "Property": "Sales Amount FYTD"
+          }
+        },
+        "queryRef": "_Measures.Sales Amount FYTD",
+        "nativeQueryRef": "Sales Amount FYTD",
+        "displayName": "Sales Amount FYTD"
+      }
+    ],
+    "fieldParameters": [
+      {
+        "parameterExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": { "Entity": "Measure" }
+            },
+            "Property": "Measure"
+          }
+        },
+        "index": 1,
+        "length": 1
+      }
+    ]
+  }
+}
+```
+
+Guardrails:
+- The active concrete measure projection must match the default selection serialized by the measure-parameter slicer.
+- Any companion grouping dimension in the same `Values` list must remain meaningful for all selectable measures.
+- Do not treat a relationship-safe grouping field as interchangeable with the measure parameter itself; it is stable context, not part of the switch.
+
+### Field Parameter Slicer Default Selection
+
+When a field-parameter slicer needs an explicit default value, Desktop serializes a filter on the hidden object-reference column while the slicer projection itself remains bound to the visible parameter column.
+
+```json
+{
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": { "Entity": "Dimension" }
+                  },
+                  "Property": "Dimension"
+                }
+              },
+              "queryRef": "Dimension.Dimension",
+              "nativeQueryRef": "Dimension",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "filter": {
+              "filter": {
+                "Version": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Guardrails:
+- Keep the projection on the visible display column.
+- Use the hidden metadata column only inside the default-selection filter payload.
+- The filter literal value must match one of the `NAMEOF(...)` values emitted by the parameter table.
+
 ---
 
 ## Visual Templates

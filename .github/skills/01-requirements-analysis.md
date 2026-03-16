@@ -63,6 +63,20 @@ When analyzing the functional specifications document, perform the following ext
 - Identify the grain of each fact table independently.
 - Note any many-to-many relationships that may require bridge tables.
 
+### 6. Detect Dynamic Switching Requirements
+- Explicitly detect whether the report requires **field parameters** for dynamic switching of dimensions, measures, or mixed field sets.
+- For each requested dynamic switch, capture:
+  - **Business intent**: what the user wants to change dynamically and why
+  - **Parameter scope**: dimension switch, measure switch, or mixed switch
+  - **Target visuals**: which charts, tables, or matrices consume the parameter
+  - **Selection behavior**: single-select or multi-select
+  - **Default selection**: which field should be active when the report opens
+- For **measure-switch** requirements, also capture the **allowed analysis context**:
+  - which dimensions are valid to keep on rows, columns, axis, legend, or table grouping when the measure parameter changes
+  - why those dimensions remain semantically correct for every selectable measure
+  - whether some dimensions are forbidden because one or more selectable measures do not propagate correctly through the active model relationships
+- If the specification says users should "change the breakdown", "switch the axis", "change KPIs", or "choose what the visual shows", treat that as a field-parameter requirement unless the user says otherwise.
+
 ## Validation Gate
 
 Before declaring Step 1 complete, check:
@@ -72,6 +86,7 @@ Before declaring Step 1 complete, check:
 - [ ] Data types are specified or inferrable for all fields
 - [ ] RLS requirements are documented (or explicitly none)
 - [ ] Time/period calculation requirements are clear (calendar/period boundary definitions, ordering, label semantics)
+- [ ] Dynamic switching requirements are explicitly classified as regular slicers, field parameters, or not needed
 
 If ANY of these are missing or ambiguous, **flag them explicitly and ask the user** before proceeding.
 
@@ -111,6 +126,10 @@ Present the analysis as a structured table:
 ### RLS Rules
 | Role | Filtered Dimension | Filter Logic |
 |------|-------------------|-------------|
+
+### Dynamic Switching Requirements
+| # | Intent | Parameter Scope | Target Visuals | Default Selection | Selection Mode | Allowed Context Dimensions |
+|---|--------|-----------------|----------------|-------------------|----------------|----------------------------|
 ```
 
 **STOP. Save primary artifact → update `workflow_state.json` → await user approval.**

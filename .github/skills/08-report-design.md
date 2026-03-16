@@ -65,6 +65,7 @@ Create an internal registry of report-usable objects by reading TMDL (same anti-
 - **Date table**: confirm the Date table and main Date column
 - **Dimensions**: user-facing attributes (prefer non-hidden descriptive columns)
 - **Facts**: avoid exposing technical keys; prefer measures
+- **Field parameters**: detect disconnected calculated tables that expose dynamic-switch semantics and record their visible column, hidden metadata column, and allowed target fields
 
 **CRITICAL RULES**:
 - NEVER guess object names.
@@ -107,6 +108,8 @@ The design system must include:
 - Place primary slicers on a dedicated top row whenever space allows.
 - Use consistent width, height, alignment, and container treatment.
 - Prefer dropdown slicers for dense categorical filters.
+- If a slicer controls a field parameter, treat it as an interaction control rather than a business filter and map its downstream target roles explicitly in the blueprint.
+- If a slicer controls a **measure parameter**, explicitly constrain the companion dimensions used in the visual to ones that remain meaningful for every selectable measure.
 
 **KPI presentation**
 - Use a **single card** when one metric is the dominant headline insight.
@@ -270,10 +273,30 @@ The agent MUST follow these rules when generating the JSON:
 4. **Positions**: Provide approximate `x`, `y`, `width`, `height` values for visual layout (based on 1280x720 canvas) and keep consistent spacing.
 5. **No invented content**: Every page, visual, and field must trace back to the functional specification.
 6. **Slicer definitions**: Include all required filters/slicers with their source fields.
-7. **Narrative metadata**: Every page must define the business question, key message, and expected action.
-8. **Container treatment**: Every slicer, KPI band, and analysis visual must declare a container style or explicitly opt out with a reason.
-9. **Sorting metadata**: Every sortable chart or table must define `sortBy`, including field and direction.
-10. **KPI grouping rationale**: If a page shows multiple KPIs in one zone, choose between `card` and `multiRowCard` explicitly and record the reason.
+7. **Field parameter definitions**: If dynamic switching is required, represent it explicitly in the blueprint with the parameter table, visible parameter column, target visual(s), target role(s), and optional default selection.
+8. **Context compatibility**: If a measure parameter is used, declare the allowed context dimensions for the visual and reject dimension choices that are not consistently related to every selectable measure through the active model relationships.
+9. **Narrative metadata**: Every page must define the business question, key message, and expected action.
+10. **Container treatment**: Every slicer, KPI band, and analysis visual must declare a container style or explicitly opt out with a reason.
+11. **Sorting metadata**: Every sortable chart or table must define `sortBy`, including field and direction.
+12. **KPI grouping rationale**: If a page shows multiple KPIs in one zone, choose between `card` and `multiRowCard` explicitly and record the reason.
+
+Recommended blueprint extension for field parameters:
+
+```json
+{
+  "visualId": "visual_02",
+  "visualType": "tableEx",
+  "fieldParameterBindings": [
+    {
+      "parameterTable": "Measure",
+      "parameterColumn": "Measure",
+      "targetRole": "Values",
+      "defaultSelection": "Sales Amount FYTD",
+      "allowedContextDimensions": ["Dim_Area[AreaName]"]
+    }
+  ]
+}
+```
 
 #### Saving the Blueprint
 
@@ -292,6 +315,8 @@ Before declaring Step 8 complete:
 - [ ] Every page has a business question, key takeaway, and expected action
 - [ ] Spacing and container rules are consistent across pages
 - [ ] Slicers are positioned and styled consistently unless a page-specific exception is justified
+- [ ] Field parameter controls are distinguished from ordinary filters and include explicit target-role bindings
+- [ ] Measure-parameter visuals declare relationship-safe context dimensions for all selectable measures
 - [ ] Every table/chart with sortable categories has explicit sorting metadata
 - [ ] KPI zones explicitly justify `card` vs `multiRowCard`
 

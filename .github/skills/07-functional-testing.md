@@ -92,6 +92,7 @@ Save to `<ProjectName>/tests/tests_definition.json`.
 | TS02 Time Intelligence | CRITICAL | FYTD with ≥4 FY start scenarios: Jan, Apr, Jul, Oct |
 | TS03 Derived Calculations | HIGH | Variance measures, percentage measures (DIVIDE check) |
 | TS04 Edge Cases | MEDIUM | Zero denominator → BLANK, no-data filters → BLANK |
+| TS05 Field Parameters | CRITICAL when used | Dimension switch coverage, measure switch coverage, default selections, compatible filter propagation |
 
 For detailed test case examples per suite, see `.github/references/functional-testing-methodology.md`.
 
@@ -179,6 +180,8 @@ Before marking Step 07 complete:
 - [ ] FYTD measures tested with ≥ 4 fiscal year start values (Jan, Apr, Jul, Oct)
 - [ ] DIVIDE() zero-denominator verified → returns BLANK, not error
 - [ ] Dimensional filter propagation and relationship paths validated
+- [ ] If field parameters are used, every selectable dimension/measure combination is tested in at least one representative visual context
+- [ ] If measure parameters are used, shared context dimensions are validated to produce sensible results for all selectable measures
 - [ ] Performance benchmarks documented
 - [ ] All failures triaged and resolved (or risk-accepted by user)
 - [ ] `tests_execution.md` saved to `<ProjectName>/tests/`
