@@ -384,7 +384,7 @@
 
     .tool-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
       gap: 10px;
     }
 
@@ -413,8 +413,8 @@
   <div class="app">
     <header class="header">
       <div>
-        <h1 class="title">Power BI AI Developer - Architecture Workflow</h1>
-        <div class="subtitle">Vista unificata del processo agentico: flusso end-to-end con gate contrattuali e chiarimenti critici bloccanti.</div>
+        <h1 class="title">Power BI AI Developer - Workflow Architecture</h1>
+        <div class="subtitle">Vista coerente con il repository: agente invocabile, skill 00-10, reference condivise, script Python e struttura PBIP di progetto.</div>
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
         <div class="switch" role="tablist" aria-label="Selettore viste">
@@ -436,7 +436,7 @@
             <i data-lucide="file-json-2"></i>
             <div>
               <div class="k">State Memory</div>
-              <div class="v">workflow_state.json + checkpoint artefatti + decision ledger</div>
+              <div class="v">workflow_state.json + workflow-core.md + checkpoint artefatti</div>
             </div>
           </article>
           <article class="card">
@@ -450,14 +450,14 @@
             <i data-lucide="shield-check"></i>
             <div>
               <div class="k">Validation Layer</div>
-              <div class="v">Script-first checks, targeted inspection only on failures</div>
+              <div class="v">MCP grounding + script-first checks + targeted inspection on failures</div>
             </div>
           </article>
           <article class="card">
-            <i data-lucide="gauge"></i>
+            <i data-lucide="folders"></i>
             <div>
-              <div class="k">Context Budget</div>
-              <div class="v">Summary artifacts first, raw PBIR/TMDL only when needed</div>
+              <div class="k">Repository Contract</div>
+              <div class="v">.github/agents, skills, references, scripts + project-scoped PBIP, data, tests, spec</div>
             </div>
           </article>
         </section>
@@ -467,19 +467,23 @@
         </section>
 
         <section class="tooling">
-          <h2>Tooling &amp; References</h2>
+          <h2>Repository Building Blocks</h2>
           <div class="tool-grid">
             <div class="tool">
               <i data-lucide="bot"></i>
-              <div><div class="t">MCP Tools</div><div class="s">Validation and anti-hallucination</div></div>
+              <div><div class="t">.github/agents</div><div class="s">powerbi-AI-developer.agent.md: orchestration rules, state ownership, approval gate</div></div>
+            </div>
+            <div class="tool">
+              <i data-lucide="workflow"></i>
+              <div><div class="t">.github/skills</div><div class="s">11 step files: bootstrap Step 00 + delivery workflow Steps 01-10</div></div>
             </div>
             <div class="tool">
               <i data-lucide="book-open"></i>
-              <div><div class="t">.github/references</div><div class="s">TMDL, DAX, PBIR, workflow-state and context-budgeting rules</div></div>
+              <div><div class="t">.github/references</div><div class="s">workflow-core governance, TMDL/DAX/PBIR rules, naming, BPA, state management</div></div>
             </div>
             <div class="tool">
               <i data-lucide="terminal"></i>
-              <div><div class="t">.github/scripts</div><div class="s">fix_lineage_tags.py, run_tests.py, validate_pbir_report.py</div></div>
+              <div><div class="t">.github/scripts</div><div class="s">fix_lineage_tags.py, remove_tmdl_comments.py, run_tests.py, validate_pbir_report.py</div></div>
             </div>
           </div>
         </section>
@@ -518,17 +522,17 @@
     // Visual-only per-step metadata (icon + color + fallback title/desc).
     // title and desc are overridden at runtime from skill frontmatter when available.
     const stepVisuals = [
-      { id: "00", icon: "folder-cog",      color: "#64748b", title: "Project Initialization",     desc: "Bootstrap PBIP canvas and project structure" },
-      { id: "01", icon: "search",           color: "#3b82f6", title: "Requirements Analysis",      desc: "Consolida requisiti e risolve chiarimenti critici" },
-      { id: "02", icon: "network",          color: "#0ea5e9", title: "Logical Data Model",         desc: "Star schema Kimball con gate carry-forward" },
-      { id: "03", icon: "database",         color: "#8b5cf6", title: "Physical Model & TMDL",      desc: "TMDL con hard-stop pre-Step 4 se chiarimenti aperti" },
-      { id: "04", icon: "calculator",       color: "#6366f1", title: "DAX Development",            desc: "Measures, folders, time intelligence" },
-      { id: "05", icon: "file-spreadsheet", color: "#f59e0b", title: "Mock Data",                  desc: "CSV generation using pandas/faker" },
-      { id: "06", icon: "shield-check",     color: "#f59e0b", title: "Quality Review",             desc: "Cross-check TMDL, DAX, data model consistency" },
-      { id: "07", icon: "flask-conical",    color: "#ef4444", title: "Functional Testing",         desc: "Automated tests and execution report" },
-      { id: "08", icon: "layout-template",  color: "#06b6d4", title: "Report Design",              desc: "Storyboard-first blueprint with design tokens and UX rules" },
-      { id: "09", icon: "paint-roller",     color: "#14b8a6", title: "Report Implementation",      desc: "Generate PBIR with runtime ids, pages.json sync" },
-      { id: "10", icon: "list-checks",      color: "#22c55e", title: "Report Quality Validation",  desc: "Run validate_pbir_report.py then inspect only failing artifacts" }
+      { id: "00", icon: "folder-cog",      color: "#64748b", title: "Project Initialization",     desc: "Bootstrap PBIP canvas and required project folders before step execution." },
+      { id: "01", icon: "search",           color: "#3b82f6", title: "Requirements Analysis",      desc: "Extract KPIs, dimensions, grain, and constraints from functional specifications." },
+      { id: "02", icon: "network",          color: "#0ea5e9", title: "Logical Data Model",         desc: "Design a Kimball-compliant logical star schema and relationships." },
+      { id: "03", icon: "database",         color: "#8b5cf6", title: "Physical Model & TMDL",      desc: "Generate semantic model artifacts in TMDL with validated structure and naming." },
+      { id: "04", icon: "calculator",       color: "#6366f1", title: "DAX Development",            desc: "Implement optimized DAX measures with time intelligence and formatting standards." },
+      { id: "05", icon: "file-spreadsheet", color: "#f59e0b", title: "Mock Data",                  desc: "Produce realistic CSV mock datasets and align partitions for local validation." },
+      { id: "06", icon: "shield-check",     color: "#f59e0b", title: "Quality Review",             desc: "Run quality checks across TMDL, DAX, schema consistency, and BPA compliance." },
+      { id: "07", icon: "flask-conical",    color: "#ef4444", title: "Functional Testing",         desc: "Define and execute functional tests for measures, filters, and model behavior." },
+      { id: "08", icon: "layout-template",  color: "#06b6d4", title: "Report Design",              desc: "Design report layout, storytelling, UX, and interactions and persist blueprint artifacts." },
+      { id: "09", icon: "paint-roller",     color: "#14b8a6", title: "Report Implementation",      desc: "Generate PBIR pages and visuals from blueprint with schema-safe mappings." },
+      { id: "10", icon: "list-checks",      color: "#22c55e", title: "Report Quality Validation",  desc: "Verify PBIR syntax and semantic consistency between report visuals and the semantic model." }
     ];
 
     // ─── utilities ─────────────────────────────────────────────────────────────
@@ -607,11 +611,11 @@
 
       let html = `
         <aside class="out" style="border-color: rgba(142,129,255,.55); width: 220px;">
-          <h3>Primary Input</h3>
+          <h3>Workflow Inputs</h3>
           <ul>
             <li><i data-lucide="file-text"></i> Functional specification</li>
-            <li><i data-lucide="languages"></i> Markdown / pasted text</li>
-            <li><i data-lucide="target"></i> Start condition for step execution</li>
+            <li><i data-lucide="bot"></i> Agent orchestration + current step skill</li>
+            <li><i data-lucide="book-copy"></i> Minimal references loaded on demand</li>
           </ul>
         </aside>
         <div class="arrow"><i data-lucide="arrow-right"></i></div>
@@ -627,11 +631,12 @@
       html += `
         <div class="arrow"><i data-lucide="arrow-right"></i></div>
         <aside class="out">
-          <h3>PBIP Output</h3>
+          <h3>Project Output</h3>
           <ul>
+            <li><i data-lucide="file-json-2"></i> workflow_state.json + saved step artifacts</li>
             <li><i data-lucide="database"></i> SemanticModel (TMDL)</li>
             <li><i data-lucide="bar-chart-3"></i> Report (PBIR)</li>
-            <li><i data-lucide="folder"></i> Data, Spec, Tests + validation summaries</li>
+            <li><i data-lucide="folder"></i> PBIP, data, spec, scripts, tests and validation summaries</li>
           </ul>
         </aside>
       `;

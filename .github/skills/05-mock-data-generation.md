@@ -6,7 +6,7 @@ description: Produce realistic CSV mock datasets and align partitions for local 
 # Skill: Mock Data Generation
 
 ## Purpose
-Generate realistic mock data as CSV files to validate the PBIP semantic model locally in Power BI Desktop.
+Generate realistic mock data as CSV files using SDV probabilistic synthesis to validate the PBIP semantic model locally in Power BI Desktop.
 
 ## Step Contract
 
@@ -41,20 +41,36 @@ pip install -r requirements.txt
 
 ### Verify Installation
 ```powershell
-python -c "import pandas; import faker; print('OK')"
+python -c "import pandas; import sdv; import faker; print('OK')"
 ```
 
 ## Script Generation Rules
 
 ### Technology
-- Use **Python** with `pandas` and `faker` libraries.
+- Use **Python** with `pandas` and `sdv` libraries.
+- Use `faker` only to bootstrap compact seed datasets when no source extracts are available.
 - Generate ONE script file: `<ProjectName>/scripts/generate_mock_data.py`
 - Output CSV files to `<ProjectName>/data/` folder.
+
+### SDV Strategy for Star Schema Models
+Use a star-schema-oriented generation flow optimized for performance and referential integrity:
+
+1. Generate deterministic seed datasets for conformed dimensions:
+    - `Dim_Date` MUST remain fully programmatic.
+    - Low-cardinality dimensions may use controlled lists or `faker` to create a compact bootstrap sample.
+2. Build SDV metadata from the seed tables and explicitly define primary keys and fact-to-dimension relationships.
+3. Prefer a **hybrid SDV strategy** for performance:
+    - Use SDV single-table synthesizers for dimensions.
+    - Use an SDV probabilistic synthesizer for each fact table with FK columns treated as categorical business keys.
+4. Use `HMASynthesizer` only when preserving cross-table dependency structure is more important than runtime.
+5. After sampling, run post-processing to enforce integer keys, decimal precision, null rules, and orphan-key repair.
+
+This hybrid pattern is preferred for Power BI star schemas because dimensions are usually small and stable, while fact tables require faster generation at higher volumes.
 
 ### Data Quality Requirements
 1. **Referential Integrity**: ALL Foreign Keys in Fact tables MUST exist as Primary Keys in the corresponding Dimension tables.
 2. **Data Type Consistency**: Generated data types must EXACTLY match the TMDL `dataType` definitions.
-3. **Realistic Values**: Use `faker` for names, addresses, company names. Use controlled random for numbers.
+3. **Realistic Values**: Use SDV probabilistic synthesis to learn realistic value distributions from the bootstrap seed data. Use `faker` only to create the minimal seed sample when needed.
 4. **Volume**: Generate sufficient data for meaningful visuals:
    - Dimension tables: 20-100 rows (depending on cardinality)
    - Fact tables: 500-2000 rows
@@ -87,28 +103,75 @@ def generate_dim_date(start_date, end_date, fiscal_year_start_month=7):
     return df
 ```
 
+### SDV Metadata and Sampling Pattern
+```python
+from sdv.metadata import MultiTableMetadata, SingleTableMetadata
+from sdv.single_table import GaussianCopulaSynthesizer
+
+def build_metadata(dim_date_seed, dim_customer_seed, dim_area_seed, fact_sales_seed):
+    metadata = MultiTableMetadata()
+    metadata.detect_table_from_dataframe(table_name='Dim_Date', data=dim_date_seed)
+    metadata.detect_table_from_dataframe(table_name='Dim_Customer', data=dim_customer_seed)
+    metadata.detect_table_from_dataframe(table_name='Dim_Area', data=dim_area_seed)
+    metadata.detect_table_from_dataframe(table_name='Fact_Sales', data=fact_sales_seed)
+
+    metadata.set_primary_key(table_name='Dim_Date', column_name='DateKey')
+    metadata.set_primary_key(table_name='Dim_Customer', column_name='CustomerKey')
+    metadata.set_primary_key(table_name='Dim_Area', column_name='AreaKey')
+    metadata.set_primary_key(table_name='Fact_Sales', column_name='SalesKey')
+
+    metadata.add_relationship(
+        parent_table_name='Dim_Date',
+        parent_primary_key='DateKey',
+        child_table_name='Fact_Sales',
+        child_foreign_key='DateKey',
+    )
+    metadata.add_relationship(
+        parent_table_name='Dim_Customer',
+        parent_primary_key='CustomerKey',
+        child_table_name='Fact_Sales',
+        child_foreign_key='CustomerKey',
+    )
+    metadata.add_relationship(
+        parent_table_name='Dim_Area',
+        parent_primary_key='AreaKey',
+        child_table_name='Fact_Sales',
+        child_foreign_key='AreaKey',
+    )
+    return metadata
+
+def synthesize_dimension(seed_df, num_rows):
+    metadata = SingleTableMetadata()
+    metadata.detect_from_dataframe(data=seed_df)
+    synthesizer = GaussianCopulaSynthesizer(metadata)
+    synthesizer.fit(seed_df)
+    return synthesizer.sample(num_rows=num_rows)
+```
+
 ### Fact Table Generation Pattern
 ```python
-import random
+from sdv.metadata import SingleTableMetadata
+from sdv.single_table import GaussianCopulaSynthesizer
 
-def generate_fact_sales(dim_date, dim_customer, dim_area, n_rows=1000):
-    rows = []
-    for i in range(n_rows):
-        rows.append({
-            'SalesKey': i + 1,
-            'DateKey': random.choice(dim_date['DateKey'].tolist()),
-            'CustomerKey': random.choice(dim_customer['CustomerKey'].tolist()),
-            'AreaKey': random.choice(dim_area['AreaKey'].tolist()),
-            'SalesAmountLC': round(random.uniform(100, 50000), 2),
-            'AdjustedProfitLC': round(random.uniform(10, 15000), 2),
-        })
-    df = pd.DataFrame(rows)
-    # Ensure AdjustedProfit < SalesAmount
-    df['AdjustedProfitLC'] = df.apply(
-        lambda r: min(r['AdjustedProfitLC'], r['SalesAmountLC'] * 0.4), axis=1
-    )
+def generate_fact_sales(dim_date, dim_customer, dim_area, fact_seed, num_rows=1000):
+    fact_metadata = SingleTableMetadata()
+    fact_metadata.detect_from_dataframe(data=fact_seed)
+    synthesizer = GaussianCopulaSynthesizer(fact_metadata)
+    synthesizer.fit(fact_seed)
+    df = synthesizer.sample(num_rows=num_rows)
+
+    df['DateKey'] = df['DateKey'].where(df['DateKey'].isin(dim_date['DateKey']), dim_date['DateKey'].sample(len(df), replace=True).to_numpy())
+    df['CustomerKey'] = df['CustomerKey'].where(df['CustomerKey'].isin(dim_customer['CustomerKey']), dim_customer['CustomerKey'].sample(len(df), replace=True).to_numpy())
+    df['AreaKey'] = df['AreaKey'].where(df['AreaKey'].isin(dim_area['AreaKey']), dim_area['AreaKey'].sample(len(df), replace=True).to_numpy())
+    df['AdjustedProfitLC'] = df[['AdjustedProfitLC', 'SalesAmountLC']].min(axis=1)
+
     return df
 ```
+
+### When to Use `HMASynthesizer`
+- Use `HMASynthesizer` when you already have a representative relational seed dataset and must preserve multi-table correlations across the entire star schema.
+- Do NOT make `HMASynthesizer` the default for Step 05 when the goal is fast local mock generation for Power BI validation.
+- If `HMASynthesizer` is used, keep the seed dataset compact and sample up to the target row counts instead of fitting on large bootstrap datasets.
 
 ### CSV Output
 - Files go to `<ProjectName>/data/` folder
@@ -219,6 +282,8 @@ partition Dim_Date = entity
 - [ ] CSV column names match TMDL `sourceColumn` values exactly
 - [ ] Data types are consistent (integers for keys, decimals for amounts)
 - [ ] Date dimension covers the full required date range
+- [ ] SDV metadata declares PK/FK relationships explicitly
+- [ ] Post-processing repairs any orphan FK values before CSV export
 - [ ] CSV files are comma-delimited, UTF-8 encoded
 - [ ] Script runs without errors in the `.venv` environment
 

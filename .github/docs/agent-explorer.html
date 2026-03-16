@@ -356,11 +356,11 @@
           <br />
           Clicca di nuovo sui nodi con figli per espandere/collassare il livello sottostante.
           <br />
-          I passaggi sono governati da input/output contract gate e da chiarimenti critici bloccanti.
+          Ogni skill eredita la governance condivisa di <code>workflow-core.md</code> e l'agente resta owner unico di <code>workflow_state.json</code>.
           <br />
-          Step 10 usa validazione automatica con <code>validate_pbir_report.py</code> e ispezione mirata solo sui file in errore.
+          Il grafo mostra dipendenze operative: agente invocabile, skill 00-10, reference richieste e script condivisi sotto <code>.github/</code>.
           <br />
-          I workflow lunghi usano summary artifact su disco per contenere il costo di contesto.
+          Le cartelle di progetto restano fuori dal grafo ma sono parte del contratto di output: <code>PBIP</code>, <code>data</code>, <code>scripts</code>, <code>tests</code>, <code>spec</code>.
           <br /><br />
           Suggerimento: usa la ricerca per navigare rapidamente l'albero agentico.
           <br />
@@ -373,7 +373,7 @@
       <div class="toolbar">
         <div class="title">
           <h1>Agentic Workflow Explorer</h1>
-          <div class="sub">Gerarchia a 3 livelli: Agent → Skills → References/Scripts con gate, validatori automatici e context budgeting</div>
+          <div class="sub">Dipendenze operative del repository: .github/agents → skills → reference/script, con workflow-core ereditato da tutti gli step</div>
         </div>
         <div class="controls">
           <input id="search" type="search" placeholder="Cerca nodo..." />
@@ -394,6 +394,7 @@
     // ─── manifest ──────────────────────────────────────────────────────────────
     // Update this list when skill files are added or removed.
     const agentFile = "powerbi-AI-developer.agent.md";
+    const inheritedReferenceFiles = ["workflow-core.md"];
     const skills = [
       "00-project-initialization.md",
       "01-requirements-analysis.md",
@@ -459,6 +460,17 @@
       return { metadata, body: markdownText.slice(match[0].length) };
     }
 
+    function humanizeSlug(value) {
+      return value
+        .replace(/^powerbi-/, "")
+        .replace(/^\d+-/, "")
+        .replace(/\.md$/, "")
+        .split("-")
+        .filter(Boolean)
+        .map(token => token.charAt(0).toUpperCase() + token.slice(1))
+        .join(" ");
+    }
+
     function extractMatches(text, regex) {
       const values = new Set();
       for (const match of text.matchAll(regex)) {
@@ -518,11 +530,15 @@
         const raw = await fetchMarkdown(`../skills/${file}`, bustCache);
         const { metadata, body } = parseFrontmatter(raw);
 
-        const refs = extractMatches(body, /\.github\/references\/([a-zA-Z0-9._-]+\.md)/g);
+        const refs = Array.from(new Set([
+          ...inheritedReferenceFiles,
+          ...extractMatches(body, /\.github\/references\/([a-zA-Z0-9._-]+\.md)/g)
+        ])).sort((a, b) => a.localeCompare(b));
         const scripts = extractMatches(body, /\.github\/scripts\/([a-zA-Z0-9._-]+\.py)/g);
 
         dependencies[skillId] = {
           file,
+          name: metadata.name || file,
           title: metadata.description || file,
           refs,
           scripts
@@ -632,10 +648,10 @@
       const extraNote = node.group === "script"
         ? "Gli script sono eseguibili locali per bulk validation o automazione del workflow; il pattern preferito è script-first, poi inspection dei soli file problematici."
         : node.group === "reference"
-          ? "Le reference definiscono sintassi, guardrail e regole di stato da leggere a step mirati, evitando di ricaricare tutto il contesto in chat."
+          ? "Le reference definiscono sintassi, guardrail e regole di stato. workflow-core.md e un riferimento ereditato da ogni skill, mentre le altre reference vengono caricate in modo mirato."
           : node.group === "skill"
-            ? "Le skill orchestrano input/output contract gate e consumano reference/script specifici dello step."
-            : "L'agent resta owner unico dello stato workflow_state.json e delle transizioni tra step.";
+            ? "Le skill orchestrano input/output contract gate, consumano reference/script specifici dello step e non scrivono direttamente workflow_state.json."
+            : "L'agent resta owner unico dello stato workflow_state.json, delle approvazioni step-by-step e del routing verso skill, reference e MCP tools.";
 
       details.innerHTML = `
         <div class="chip">${kind}</div>
@@ -851,7 +867,7 @@
           const dep = dependenciesBySkill[skillId];
           addNode({
             id: skillId,
-            label: file.replace(".md", ""),
+            label: `${String(index).padStart(2, "0")} ${humanizeSlug(dep?.name || file)}`,
             group: "skill",
             title: dep?.title || file,
             size: 20,
