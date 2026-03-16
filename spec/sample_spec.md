@@ -1,98 +1,112 @@
-# Sales Performance Analytics report
+# Semantic Model Specification: Sales Performance Analytics
 
 ## 1. Report Objective & Target Audience
 
 **Report Objective:**
-Fornire una soluzione di analisi centralizzata per monitorare le performance di vendita, la redditività e il raggiungimento dei target (Budget) per Contoso LDT. Il report permette di analizzare i trend temporali e di confrontare le performance attuali con il budget e l'anno precedente (PY).
+Fornire una soluzione di monitoraggio delle performance di vendita per **Yoda Networks LLC**, che permetta di analizzare i ricavi (Sales), il raggiungimento dei target (Budget) e la marginalità (Profit) attraverso una dashboard di sintesi e una tabella analitica granulare.
 
 **Target Audience:**
-- Executive Management
-- Sales Managers
-- Financial Analysts
+- Executive Management (Monitoraggio KPI macro)
+- Sales Managers (Performance dei venditori e delle aree)
+- Financial Analysts (Analisi scostamenti e trend)
 
 **Key Business Questions:**
-- Qual è l'andamento delle vendite (Sales LC) rispetto al budget stabilito?
-- Qual è la marginalità percentuale (Adjusted Profit %) per area e industria?
-- Come si confrontano le performance attuali rispetto allo stesso periodo dell'anno precedente (YOY)?
+- Stiamo raggiungendo i target di vendita stabiliti per l'anno fiscale?
+- Qual è il trend mensile delle vendite rispetto al budget e all'anno precedente?
+- Quali aree e industrie presentano i migliori margini di profitto?
 
 ---
 
 ## 2. Key Performance Indicators (KPIs)
 
 ### KPI 1: Sales (LC)
-- **Description:** Valore totale delle vendite in valuta locale.
-- **Business Logic:** Sum of transaction amounts in local currency.
-- **Format:** Currency
+- **Description:** Totale dei ricavi in valuta locale.
+- **Business Logic:** Somma delle vendite lorde effettive.
+- **Format:** Currency (LC).
 - **Time Intelligence:** Current Period, YTD, Prior Year (PY), YOY Growth %.
 
 ### KPI 2: Budget Variance (LC & %)
-- **Description:** Differenza tra vendite effettive e budget.
-- **Business Logic:** `[Sales (LC)] - [Budget (LC)]` e `[Budget Variance (LC)] / [Budget (LC)]`.
-- **Format:** Currency / Percentage
-- **Time Intelligence:** Current Period, YTD.
+- **Description:** Differenza tra vendite effettive e budget pianificato.
+- **Business Logic:** `Sales (LC) - Budget (LC)` e `(Sales / Budget) - 1`.
+- **Format:** Currency / Percentage.
+- **Visual Indicator:** Bandiere colorate (Verde/Giallo/Rosso) basate sulle soglie di scostamento.
 
 ### KPI 3: Adjusted Profit %
-- **Description:** Percentuale di profitto rettificato sulle vendite.
-- **Business Logic:** `[Adjusted Profit (LC)] / [Sales (LC)]`.
-- **Format:** Percentage
-- **Time Intelligence:** Current Period.
+- **Description:** Percentuale di profitto rettificato calcolata sulle vendite.
+- **Business Logic:** `Adjusted Profit (LC) / Sales (LC)`.
+- **Format:** Percentage.
+- **Visual Indicator:** Cerchi colorati (Stato del profitto).
 
+- Da generare ogni altro kpi rilevante o che viene usato da quelli rilevanti.
 ---
 
 ## 3. Data Groupings & Segmentations
 
 **Primary Groupings:**
-- **Area:** Segmentazione geografica (es. NT, SA, NSW, etc.).
-- **Industry:** Settore industriale del cliente.
-- **Salesperson:** Persona responsabile della vendita.
-- **Time:** Gerarchia basata sull'anno fiscale (Fiscal Year → Month).
+- **Area:** Localizzazione geografica (es. NT, SA, NSW, VIC, QLD, WA, ACT).
+- **Industry:** Settore industriale del cliente (es. Accommodations, TV-station, etc.).
+- **Salesperson:** Nome del consulente/venditore.
+- **Date:** Calendario Fiscale (Inizio Luglio) con gerarchia Anno -> Mese.
 
 **Expected Granularity:**
-Livello transazionale (Transaction/Invoice level) per supportare aggregazioni dinamiche.
+Livello transazionale (singola riga di vendita).
 
 ---
 
 ## 4. Filter Dimensions
 
-**Global Filters:**
-- Fiscal Year
-- Month
-- Area
-- Industry
-- Salesperson
-- Sales Budget Status
+**Global Filters (Sidebar):**
+- **Fiscal Year:** Selezione anno (Default: Current Fiscal Year).
+- **Month:** Selezione singola o multipla.
+- **Area:** Filtro geografico.
+- **Industry:** Filtro per settore industriale.
+- **Sales Budget:** Filtro per stato del budget.
 
-**Report-Specific Filters:**
-- **Dimension Switcher:** Slicer basato su Field Parameters per cambiare dinamicamente l'asse delle righe nella "Sales Table" tra Area, Industry e Salesperson.
+**Dynamic Switcher (Page 2 Only):**
+- **Field Parameter:** Uno slicer che permette all'utente di cambiare l'asse delle righe della "Sales Table" tra Area, Industry e Salesperson.
 
 ---
 
 ## 5. Visualization Structure
 
-### Chart 1: Sales vs. Budget (LC) over Time (Page 1)
+### Page 1: SALES OVERVIEW
+
+#### 5.1 KPI Scorecards (Top)
+- **Type:** KPI Cards (x5).
+- **Measures:** Sales vs Budget FYTD, Sales FYOYTD, Adjusted Profit FYOYTD, Avg Monthly Sales, Adjusted Profit %.
+
+#### 5.2 Sales vs. Budget (LC) over Time
 - **Type:** Clustered Column Chart with Target Markers.
-- **Purpose:** Monitoraggio mensile dei ricavi rispetto al budget.
-- **Dimensions:** Fiscal Month.
-- **Measures:** Sales (LC), Budget (LC).
+- **Logic:** Colonne per Sales (LC), marcatori orizzontali per Budget (LC). Colore dinamico delle barre basato sul raggiungimento del target (Verde/Giallo/Rosso).
 
-### Chart 2: Sales (LC) vs. Profit % by Area (Page 1)
-- **Type:** Bubble Chart (Scatter Plot).
-- **Purpose:** Analisi della profittabilità in relazione ai volumi di vendita per area.
-- **Dimensions:** Area.
-- **Measures:** Sales (LC), Adjusted Profit %.
+#### 5.3 Sales vs. Budget (LC) by Area
+- **Type:** Clustered Column Chart.
+- **Dimensions:** Area. Measures: Sales (LC) e Budget (LC).
 
-### Chart 3: Sales Performance Ranking (Page 1)
-- **Type:** Bar Charts.
-- **Purpose:** Top 10 per Clienti, Paesi, Venditori e Industrie.
-- **Dimensions:** Customer, Country, Salesperson, Industry.
-- **Measures:** Sales (LC).
+#### 5.4 Sales (LC) vs. Adjusted Profit % by Area
+- **Type:** Scatter Plot (Bubble Chart).
+- **X-Axis:** Adjusted Profit %. Y-Axis: Sales (LC). Bubble Size: Sales (LC).
 
-### Chart 4: Analytical Sales Matrix (Page 2)
-- **Type:** Matrix with Sparklines and Icons.
-- **Purpose:** Analisi tabellare comparativa con KPI di stato.
-- **Dimensions:** Dynamic Dimension (Area, Industry, or Salesperson).
-- **Measures:** Sales (LC), Sales Sparkline, Budget Variance, Adjusted Profit %, Sales YOY %.
-- **Conditional Formatting:** Semafori (Verde, Giallo, Rosso) per Budget Variance e Profit %.
+#### 5.5 Rankings (Bottom)
+- **Type:** Horizontal Bar Charts (x4).
+- **Dimensions:** Customer Bill, Country, Salesperson, Industry.
+
+---
+
+### Page 2: SALES TABLE
+
+#### 5.6 Analytical Matrix (Main Visual)
+- **Type:** Matrix con formattazione condizionale e Sparklines.
+- **Rows:** **Dynamic Dimension** (Switch via Slicer: Area, Industry, o Salesperson).
+- **Columns & Metrics:**
+    - **Sales (LC):** Valore + Barra Dati (Data Bar).
+    - **Sales (LC) by Month Year:** Sparkline (Trend 12 mesi).
+    - **Item Sales (LC):** Dettaglio vendite prodotto.
+    - **Budget (LC):** Target monetario.
+    - **Budget Variance (LC & %):** Valore + Icone Bandiera (Flag).
+    - **Adjusted Profit (LC & %):** Valore + Icone Cerchio (Circle).
+    - **Sales (LC) PY:** Vendite periodo precedente.
+    - **Sales (LC) YOY %:** Variazione % con Icone Freccia (Up/Down).
 
 ---
 
@@ -100,82 +114,50 @@ Livello transazionale (Transaction/Invoice level) per supportare aggregazioni di
 
 ### Table 1: Fact_Sales
 
-| Column Name | Data Type | Description | Sample Values |
-|-------------|-----------|-------------|---------------|
-| OrderID | String | Transaction ID | "SO-12345" |
-| DateKey | Date | Reference to Date Table | 2024-07-01 |
-| AreaID | String | Link to Geography | "NSW", "VIC" |
-| SalespersonID | String | Link to Salesperson | "S_001" |
-| Sales_LC | Decimal | Gross Sales Amount | 4340325.14 |
-| Budget_LC | Decimal | Targeted Budget | 3306204.67 |
-| Profit_LC | Decimal | Adjusted Profit | 1126358.72 |
-
-### Table 2: Dim_Date
-
-| Column Name | Data Type | Description | Sample Values |
-|-------------|-----------|-------------|---------------|
-| Date | Date | Full Date | 2024-07-01 |
-| FiscalYear | String | Fiscal Year Label | "FY2024" |
-| FiscalMonth | Integer | Month of Fiscal Year | 1, 2, 3 |
+| Column Name | Data Type | Description |
+|-------------|-----------|-------------|
+| TransactionID | String | ID Univoco transazione |
+| DateKey | Date | Chiave data vendita |
+| AreaID | String | FK per Dim_Area |
+| Sales_LC | Decimal | Importo vendita |
+| Budget_LC | Decimal | Valore budget |
+| Profit_LC | Decimal | Profitto rettificato |
 
 ---
 
-## 7. Logical Relationships Between Data
+## 7. Logical Relationships
 
-**Relationship 1:**
-- **From:** `Fact_Sales[DateKey]`
-- **To:** `Dim_Date[Date]`
-- **Cardinality:** Many-to-One (N:1)
-
-**Relationship 2:**
-- **From:** `Fact_Sales[AreaID]`
-- **To:** `Dim_Area[AreaID]`
-- **Cardinality:** Many-to-One (N:1)
+- **Fact_Sales[DateKey]** -> **Dim_Date[Date]** (Many-to-One).
+- **Fact_Sales[AreaID]** -> **Dim_Geography[AreaID]** (Many-to-One).
+- **Fact_Sales[SalespersonID]** -> **Dim_Staff[SalespersonID]** (Many-to-One).
 
 ---
 
-## 8. Row-Level Security (RLS) Requirements
+## 8. Row-Level Security (RLS)
 
-**No RLS Required:**
-- [x] Tutti gli utenti vedono tutti i dati.
+- **No RLS Required:** Tutti gli utenti hanno accesso alla totalità dei dati.
 
 ---
 
 ## 9. Functional Requirements
 
 ### 9.1 Data Refresh Strategy
+- **Storage Mode:** **Import Mode**.
+- **Refresh Frequency:** **Daily**.
+- **Data Latency:** I dati devono essere pronti per l'inizio del business day.
 
-**Refresh Frequency:**
-- [x] Daily (Scheduled at 08:00 AM)
+### 9.2 Technical Implementation (DAX in English)
+- Tutte le misure DAX e i commenti al codice devono essere scritti esclusivamente in **inglese**.
+- **Field Parameter Script:**
+  ```dax
+  Dynamic Dimension = {
+      ("Area", NAMEOF('Dim_Geography'[AreaName]), 0),
+      ("Industry", NAMEOF('Dim_Customer'[IndustryName]), 1),
+      ("Salesperson", NAMEOF('Dim_Staff'[SalespersonName]), 2)
+  }
+- Time Intelligence: Utilizzare un calendario fiscale con inizio Luglio per i calcoli YTD e PY.
 
-**Storage Mode Preference:**
-- [x] **Import Mode**
-
-**Expected Data Volumes:**
-- **Fact Table:** ~5,000,000 rows.
-- **Dimension Tables:** ~50,000 rows.
-
-**Incremental Refresh Requirements:**
-- [x] **Not needed** (Current volume is manageable with full refresh).
-
-### 9.2 Technical Implementation Rules
-
-**Field Parameters (Dynamic Dimension):**
-Implementare un parametro di campo denominato `Dynamic Dimension Selector` che includa:
-- `Dim_Area[AreaName]`
-- `Dim_Industry[IndustryName]`
-- `Dim_Salesperson[SalespersonName]`
-
-**DAX Language:**
-Tutte le misure e i commenti nel codice DAX devono essere in **Inglese**.
-
----
 
 ## 10. Additional Notes
-
-**Business Rules:**
-- I colori dei semafori (Above, Close, Below Target) sono definiti come:
-  - Green (Above): Variance > 5%
-  - Yellow (Close): Variance between -5% and 5%
-  - Red (Below): Variance < -5%
-- L'anno fiscale inizia il 1° Luglio.
+Conditional Formatting: Utilizzare icone SVG o set di icone native per Flags (Budget) e Circles (Profit).
+Theme: Corporate orange/dark grey theme come da mockup.
