@@ -91,7 +91,8 @@ measure 'Sales Amount FYTD' =
 - This prevents division-by-zero errors.
 
 ### Time Intelligence
-- Assume `Dim_Date` is marked as the official **Date Table** in the model.
+- Assume the dedicated date dimension will be marked as the official **Date Table** in the model before final Desktop validation.
+- That marking must be done only after the date table data has been loaded and validated as contiguous in Power BI Desktop.
 - Use standard time intelligence functions:
   - **YTD**: `TOTALYTD([Measure], Dim_Date[Date])` or `DATESYTD(Dim_Date[Date])` for fiscal year: `DATESYTD(Dim_Date[Date], "6/30")`
   - **Previous Year**: `CALCULATE([Measure], SAMEPERIODLASTYEAR(Dim_Date[Date]))`
