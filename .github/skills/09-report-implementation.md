@@ -211,6 +211,7 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
 8. **Validate context compatibility**: When a blueprint visual declares a measure parameter, ensure any non-parameter grouping fields are present in `allowedContextDimensions` and are reachable from every selectable measure through the active relationships.
 9. **Validate reference coverage**: If the chosen visual family or payload pattern is not already represented in the PBIR references, add the generalized rule or stop and capture a Desktop-generated reference before continuing.
 10. **Validate scatter grouping**: If a scatter visual breaks down by category, ensure the payload includes a point-grouping role such as `Values`. Do not assume a categorical `Series` projection alone will produce a working handcrafted scatter chart.
+11. **Validate unique nativeQueryRef**: When the same measure is placed in multiple query-state roles within the same visual, each projection must have a distinct `nativeQueryRef`. Duplicate values cause a Desktop runtime error. Append a disambiguating suffix such as `(Size)` or `(Tooltip)` to the secondary occurrence.
 
 9. **Selection/Layer Metadata Naming (CONDITIONAL)**:
     - When the visual family uses `visualContainerObjects.title`, set `text.expr.Literal.Value` using this pattern:

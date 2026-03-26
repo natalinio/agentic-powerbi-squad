@@ -244,8 +244,9 @@ Guardrail:
 - do not rely on `queryState.Series` alone as the handcrafted grouping mechanism for scatter points
 - mark the primary analytical axis as `active: true` when observed in the Desktop reference pattern
 
-Guardrail:
+Guardrails:
 - Microsoft scatter-chart guidance explicitly calls out the **Values** well as the grouping field that tells Power BI how to create distinct points. If a handcrafted PBIR scatter chart contains categorical breakdown but omits a point-grouping role, treat that payload as unstable and fix it before closing Step 09 or Step 10.
+- When the same measure appears in multiple query-state roles (e.g. `Y` and `Size`), each projection must have a **unique `nativeQueryRef`**. Duplicate `nativeQueryRef` values cause a runtime error: *"The query contains at least two expressions in its select clause with identical native reference name"*. Use a disambiguating suffix such as `"Sales Amount FYTD (Size)"` for the secondary role.
 
 #### Gauge
 - use `visualType: "gauge"`
@@ -1176,6 +1177,7 @@ Guardrails:
 16. Azure Map uses `Category` plus `Size` and can require explicit `mapControls`, `bubbleLayer`, and `filledMap` object settings for a stable baseline.
 17. Elevated container treatment on page 3 is implemented through `visualContainerObjects.dropShadow` on slicers, gauge, and azureMap.
 18. Not every canonical visual needs `visualContainerObjects.title`; treat it as conditional metadata, not a universal requirement.
+19. Every `nativeQueryRef` within a single visual's query must be unique. When the same measure appears in multiple roles, append a disambiguating suffix such as `(Size)` or `(Tooltip)` to the secondary reference.
 
 ---
 

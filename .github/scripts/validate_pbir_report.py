@@ -338,6 +338,22 @@ class PbirValidator:
                 )
                 self.add_issue("Accessibility & Best Practices", "Position within bounds", "FAIL" if out_of_bounds else "PASS", page=page_runtime_id, visual=visual_dir.name)
 
+                query_state = visual.get("query", {}).get("queryState", {})
+                all_native_refs: List[str] = []
+                for _role_name, role_data in query_state.items():
+                    for proj in role_data.get("projections", []):
+                        nqr = proj.get("nativeQueryRef")
+                        if nqr:
+                            all_native_refs.append(nqr)
+                seen_refs: set = set()
+                duplicate_refs: List[str] = []
+                for nqr in all_native_refs:
+                    if nqr in seen_refs:
+                        duplicate_refs.append(nqr)
+                    seen_refs.add(nqr)
+                dup_status = "FAIL" if duplicate_refs else "PASS"
+                self.add_issue("Structural", "Unique nativeQueryRef", dup_status, page=page_runtime_id, visual=visual_dir.name, details=f"Duplicates: {duplicate_refs}" if duplicate_refs else "")
+
                 if visual_type == "slicer":
                     slicer_height = float(position.get("height", 0))
                     status = "PASS" if slicer_height >= 64 else "WARNING"
