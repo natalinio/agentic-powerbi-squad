@@ -385,15 +385,16 @@ class PbirValidator:
                     status = "PASS" if required_roles.issubset(set(query_state.keys())) else "FAIL"
                     self.add_issue("Structural", "Scatter required buckets", status, page=page_runtime_id, visual=visual_dir.name, details=f"Present roles: {sorted(query_state.keys())}")
 
-                    point_grouping_keys = {"Values", "Details", "Category"}
-                    grouping_status = "PASS" if point_grouping_keys.intersection(set(query_state.keys())) else "FAIL"
+                    has_categorical = "Series" in query_state or "Details" in query_state
+                    grouping_status = "PASS" if has_categorical else "FAIL"
+                    detail_msg = "Scatter must have a categorical field in Series (Legend, colored bubbles) or Details (Values, point identity). Without either, all data collapses to a single point."
                     self.add_issue(
                         "Structural",
                         "Scatter point grouping",
                         grouping_status,
                         page=page_runtime_id,
                         visual=visual_dir.name,
-                        details="Scatter visuals with categorical breakdown must include a point-grouping role such as Values/Details/Category; Series alone is not sufficient as a safe handcrafted baseline.",
+                        details=detail_msg,
                     )
 
                 if visual_type == "gauge":

@@ -238,14 +238,27 @@ Guardrail:
 - use `queryState.Y2` for line values
 
 #### Scatter Chart
+
+Desktop-validated PBIR role mapping (confirmed by Desktop save round-trip):
+
+| Desktop UI well | PBIR queryState role | Purpose |
+|---|---|---|
+| Values | `Details` | creates distinct data points (point identity) |
+| Legend | `Series` | colors bubbles/points by category |
+| X Axis | `X` | horizontal numeric axis |
+| Y Axis | `Y` | vertical numeric axis |
+| Size | `Size` | bubble size (third numeric dimension) |
+
+Rules:
 - use `queryState.X` and `queryState.Y` for the numerical axes
 - use `queryState.Size` when the visual is a bubble chart
-- when the chart groups or identifies points by a categorical field, use a point-grouping role such as `queryState.Values`
-- do not rely on `queryState.Series` alone as the handcrafted grouping mechanism for scatter points
+- to **color bubbles by category** (recommended default for readability), place the categorical field in `queryState.Series` (Legend well)
+- to create **distinct unlabeled points** without color legend, place the categorical field in `queryState.Details` (Values well)
 - mark the primary analytical axis as `active: true` when observed in the Desktop reference pattern
+- `Series` and `Details` can coexist when the visual needs both point identity and color grouping on different fields
 
 Guardrails:
-- Microsoft scatter-chart guidance explicitly calls out the **Values** well as the grouping field that tells Power BI how to create distinct points. If a handcrafted PBIR scatter chart contains categorical breakdown but omits a point-grouping role, treat that payload as unstable and fix it before closing Step 09 or Step 10.
+- A scatter visual must have at least one categorical field in either `Series` or `Details` to avoid collapsing all data into a single aggregate point.
 - When the same measure appears in multiple query-state roles (e.g. `Y` and `Size`), each projection must have a **unique `nativeQueryRef`**. Duplicate `nativeQueryRef` values cause a runtime error: *"The query contains at least two expressions in its select clause with identical native reference name"*. Use a disambiguating suffix such as `"Sales Amount FYTD (Size)"` for the secondary role.
 
 #### Gauge
@@ -1166,7 +1179,7 @@ Guardrails:
 6. Observed slicer projections include `active: true`.
 7. Top-row dropdown slicers are materially more usable at about `65 px` height than at `60 px` in the current baseline.
 7. Combo chart uses `queryState.Category`, `Y`, and `Y2` sections.
-8. Scatter chart uses `queryState.X` and `queryState.Y`, may use `queryState.Size`, and requires a point-grouping role such as `queryState.Values` when the visual breaks down by category.
+8. Scatter chart PBIR roles: `X` (x-axis), `Y` (y-axis), `Size` (bubble size), `Series` (Legend — colors by category), `Details` (Values — point identity). Use `Series` when colored bubbles are desired; use `Details` for distinct unlabeled points. At least one of `Series` or `Details` must contain a categorical field to avoid single-point collapse.
 9. Tables and ranking visuals use `query.sortDefinition` when ordering matters.
 10. `filterConfig` was not required in the current manually authored sample and should remain optional unless a Desktop-generated baseline demonstrates a need.
 11. Metadata titles inside `visualContainerObjects.title` are valuable for selection-pane readability even when the visible title is hidden.

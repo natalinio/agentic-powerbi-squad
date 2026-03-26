@@ -187,7 +187,7 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
      - **Axis/Category fields** → `Category` projections with `Column` field type.
      - **Legend fields** → `Series` projections with `Column` field type.
        - **Combo chart** → `Y` (column values) + `Y2` (line values).
-      - **Scatter chart** → `X`, `Y`, optional `Size`, plus a point-grouping role such as `Values` whenever the chart is broken down by category.
+      - **Scatter chart** → `X`, `Y`, optional `Size`. For **colored bubbles by category**, place the categorical field in `Series` (Legend). For **distinct unlabeled points**, use `Details` (Values). At least one of `Series` or `Details` must carry a categorical field.
        - **Gauge** → `Y`, `TargetValue`, optional `Tooltips`.
        - **Treemap** → `Group` plus `Values`.
        - **Azure Map** → `Category` plus `Size`; include validated object settings when using the repository baseline map behavior.
@@ -210,7 +210,7 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
 7. **Validate field-parameter contract**: When a blueprint visual declares `fieldParameterBindings`, ensure the consuming PBIR role contains both the concrete projection and the matching `fieldParameters` descriptor.
 8. **Validate context compatibility**: When a blueprint visual declares a measure parameter, ensure any non-parameter grouping fields are present in `allowedContextDimensions` and are reachable from every selectable measure through the active relationships.
 9. **Validate reference coverage**: If the chosen visual family or payload pattern is not already represented in the PBIR references, add the generalized rule or stop and capture a Desktop-generated reference before continuing.
-10. **Validate scatter grouping**: If a scatter visual breaks down by category, ensure the payload includes a point-grouping role such as `Values`. Do not assume a categorical `Series` projection alone will produce a working handcrafted scatter chart.
+10. **Validate scatter grouping**: A scatter visual must have at least one categorical field in `queryState.Series` (Legend — colored bubbles) or `queryState.Details` (Values — point identity). Use `Series` when the design requires color-coded bubbles per category. If neither role contains a categorical field, the visual collapses to a single point.
 11. **Validate unique nativeQueryRef**: When the same measure is placed in multiple query-state roles within the same visual, each projection must have a distinct `nativeQueryRef`. Duplicate values cause a Desktop runtime error. Append a disambiguating suffix such as `(Size)` or `(Tooltip)` to the secondary occurrence.
 
 9. **Selection/Layer Metadata Naming (CONDITIONAL)**:
