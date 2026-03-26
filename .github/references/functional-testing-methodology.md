@@ -44,28 +44,41 @@
 
 ### Phase 2: Time Intelligence Validation
 
-**Objective**: Verify FYTD calculations work correctly with dynamic fiscal year parameter.
+**Objective**: Verify FYTD calculations work correctly for the fiscal-calendar design actually implemented in the model.
+
+Choose one mode before building tests:
+
+- **Mode TI-A — Parameterized fiscal start**: use when the semantic model exposes a `Parameters` table and DAX reads `Parameters[ParameterValue]`.
+- **Mode TI-B — Fixed fiscal calendar**: use when DAX hardcodes a fiscal year end or start month and no runtime parameter table exists.
 
 #### Test Suite 2.1 — FYTD Base Measures
 
-| Test ID | Measure | Parameter | Test Description |
+| Test ID | Measure | Fiscal Mode Input | Test Description |
 |---|---|---|---|
-| T2.1.1 | `Sales Amount FYTD` | FY Start = 1 (Jan) | FYTD accumulates Jan-to-selected-month in calendar year |
-| T2.1.2 | `Sales Amount FYTD` | FY Start = 7 (Jul) | FYTD accumulates Jul-to-selected-month in fiscal year |
-| T2.1.3 | `Budget Amount FYTD` | FY Start = 1 | Budget FYTD logic mirrors Sales FYTD |
-| T2.1.4 | `Adjusted Profit FYTD` | FY Start = 7 | Profit FYTD logic mirrors Sales FYTD |
+| T2.1.1 | `Sales Amount FYTD` | Mode TI-A: FY Start = 1 (Jan) | FYTD accumulates Jan-to-selected-month in calendar year |
+| T2.1.2 | `Sales Amount FYTD` | Mode TI-A: FY Start = 7 (Jul) | FYTD accumulates Jul-to-selected-month in fiscal year |
+| T2.1.3 | `Budget Amount FYTD` | Mode TI-A: FY Start = 1 | Budget FYTD logic mirrors Sales FYTD |
+| T2.1.4 | `Adjusted Profit FYTD` | Mode TI-A: FY Start = 7 | Profit FYTD logic mirrors Sales FYTD |
+| T2.1.5 | `Sales Amount FYTD` | Mode TI-B: Representative boundary dates | Validate the hardcoded fiscal definition at four dates across the fiscal year |
 
-**Method for T2.1.1**:
+**Method for T2.1.1 (Mode TI-A)**:
 1. Set `Parameters[ParameterValue]` = `"1"` (January)
 2. Date slicer to March 2024
 3. Table visual: Rows = `Dim_Date[FiscalMonth]`, Values = `Sales Amount`, `Sales Amount FYTD`
 4. Expected: each row cumulates from Jan — March value = Jan + Feb + Mar
 
-**Method for T2.1.2**:
+**Method for T2.1.2 (Mode TI-A)**:
 Same visual, change parameter to `"7"`, date to October 2024.
 Expected: FY2025 starts Jul 2024. FYTD for Oct = Jul + Aug + Sep + Oct sales.
 
-**Pass criteria**: FYTD increases monotonically within each fiscal year; resets at FY boundary; parameter change recalculates dynamically.
+**Method for T2.1.5 (Mode TI-B)**:
+1. Pick at least four representative dates that cross the active fiscal boundaries, for example first fiscal month end, quarter boundary, mid-year, and fiscal year end.
+2. Evaluate the FYTD measure at each date with `TREATAS({ DATE(...) }, Dim_Date[Date])` or an equivalent date-context query.
+3. Compare each actual value to a CSV-derived expected total for the fixed fiscal window.
+
+**Pass criteria**:
+- Mode TI-A: FYTD increases monotonically within each fiscal year, resets at FY boundary, and parameter change recalculates dynamically.
+- Mode TI-B: FYTD matches the expected fixed fiscal windows at each boundary date and shows no hidden dependency on a missing parameter table.
 
 #### Test Suite 2.2 — Year-over-Year Measures
 
@@ -143,6 +156,8 @@ Test FYTD measures with all four common fiscal year starts:
 
 ### Phase 5: Edge Case & Error Handling
 
+**Important**: when a measure uses `ISINSCOPE`, `HASONEVALUE`, or row suppression behavior, a plain slicer-style `CALCULATE(..., TREATAS(...))` query is not enough. Reproduce the visual row context with `SUMMARIZECOLUMNS` and assert either the resulting row value or the fact that the row is suppressed.
+
 #### Test Suite 5.1 — BLANK and Zero Values
 
 | Test ID | Scenario | Expected Result |
@@ -151,6 +166,25 @@ Test FYTD measures with all four common fiscal year starts:
 | T5.1.2 | Period with no budget records | Budget Amount FYTD = BLANK |
 | T5.1.3 | Sales Amount = 0 | All profit % measures = BLANK (DIVIDE protection) |
 | T5.1.4 | No date filters applied | Measures calculate grand total |
+
+**Visual-row-context example**:
+
+```dax
+EVALUATE
+ROW(
+    "Actual",
+    ISEMPTY(
+        SUMMARIZECOLUMNS(
+            Dim_Staff[SalespersonName],
+            FILTER(ALL(Dim_Staff[SalespersonName]), Dim_Staff[SalespersonName] = "Andrea Henson"),
+            "Metric",
+            [Budget Amount]
+        )
+    )
+)
+```
+
+Use this pattern when the expected behavior is "the row disappears because the measure is blank at row scope".
 
 #### Test Suite 5.2 — Extreme Date Ranges
 
@@ -193,30 +227,32 @@ python-dateutil>=2.8.2
 Get-ChildItem "$env:LOCALAPPDATA\Microsoft\Power BI Desktop\AnalysisServicesWorkspaces" -Recurse -Filter "msmdsrv.port.txt" | Get-Content
 ```
 
-### Python Execution Pattern (pyodbc + OLEDB)
+**Operational note**: recent Power BI Desktop builds commonly store the active port file under `AnalysisServicesWorkspace_<id>\Data\msmdsrv.port.txt`, not only at the workspace root. Any automated detector must support both layouts and should log the resolved file path.
+
+### Python Execution Pattern (ADOMD.NET + Assertion Validation)
 
 ```python
-import pyodbc, json
+import json
 import pandas as pd
 
 with open('tests_definition.json', 'r') as f:
     test_plan = json.load(f)
 
-conn_str = "Provider=MSOLAP;Data Source=localhost:{port};Initial Catalog={ModelName};"
-conn = pyodbc.connect(conn_str, autocommit=True)
+# Connect with ADOMD.NET or another tabular-compatible client.
 test_results = []
 
 for suite in test_plan['testSuites']:
     for test in suite['tests']:
         try:
-            cursor = conn.cursor()
-            cursor.execute(test['daxQuery'])
-            result = cursor.fetchall()
+            result = execute_dax(test['daxQuery'])
+            assertion = evaluate_assertion(test, result)
             test_results.append({
                 'testId': test['testId'],
                 'testName': test['testName'],
-                'status': 'PASS',
-                'actualValue': result[0][0] if result else None
+                'status': assertion['status'],
+                'actualValue': assertion['actualValue'],
+                'expectedValue': assertion['expectedValue'],
+                'delta': assertion['delta']
             })
         except Exception as e:
             test_results.append({
@@ -238,6 +274,33 @@ budget_total = fact_budget['BudgetAmountLC'].sum()
 
 # Compare with DAX query result; tolerance: abs difference < 0.01
 ```
+
+### Machine-Readable Assertions
+
+New test definitions should include explicit assertion metadata instead of relying only on prose:
+
+```json
+{
+    "testId": "T01.01",
+    "testName": "[Sales Amount] total",
+    "daxQuery": "EVALUATE ROW(\"Actual\", [Sales Amount])",
+    "assertionType": "numeric_tolerance",
+    "expectedValue": 1234567.89,
+    "tolerance": 0.01,
+    "expectedBehavior": "Matches SUM of source CSV column within 0.01 tolerance"
+}
+```
+
+Supported assertion styles:
+
+| Assertion Type | Use Case |
+|---|---|
+| `numeric_tolerance` | scalar numeric comparisons with tolerance |
+| `exact` | exact string, boolean, or integer matches |
+| `blank` | BLANK result expected |
+| `row_numeric_tolerance` | one-row, multi-column results such as Sales and Budget in the same query |
+
+Legacy definitions can be interpreted heuristically, but that should be treated as backward compatibility only, not as the target standard.
 
 ---
 
@@ -331,6 +394,18 @@ RETURN CALCULATE([Sales Amount], CALCULATETABLE(Dim_Date, Dim_Date[Date] >= FYSt
 ### ❌ Generate DAX queries without reading the model first
 **Problem**: Column names in TMDL use PascalCase without spaces (`AreaName`). Assuming `Area Name` causes 100% column-not-found failures.
 **Solution**: Always execute B.0 Model Introspection. Validate every `Table[Column]` reference against the registry.
+
+### ❌ Mark tests as PASS when the query only executes
+**Problem**: A query can execute successfully while still validating the wrong business behavior.
+**Solution**: Require machine-readable assertions and fail the run when actual values do not satisfy `expectedValue` or `expectedRow`.
+
+### ❌ Force a `Parameters` table for every fiscal model
+**Problem**: Some models hardcode the fiscal year in DAX and do not expose a runtime parameter table.
+**Solution**: Detect whether the model is parameterized or fixed-fiscal before building TS02 and choose the matching scenario set.
+
+### ❌ Test `ISINSCOPE` logic with slicer-only filters
+**Problem**: `ISINSCOPE` depends on row grouping, not just filter context, so slicer-style tests can produce false positives or false negatives.
+**Solution**: Use `SUMMARIZECOLUMNS` or an equivalent row-context query shape for visual-row edge cases.
 
 ### ❌ Test only with one fiscal year start value
 **Problem**: FYTD may appear correct for calendar year (Jan) but fail for Jul start.

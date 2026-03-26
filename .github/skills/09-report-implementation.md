@@ -41,8 +41,11 @@ Before generating ANY PBIR JSON:
    - `"Power BI PBIR visual container schema"`
    - `"Power BI report definition JSON format"`
 5. Use `microsoft_docs_fetch` for full documentation pages when search results are insufficient.
+6. If the step uncovers a **new reusable PBIR rule** about schema, folder structure, serialization, payload stability, or visual-role mapping, **update the relevant reference file in `.github/references/` before ending the step**. Do not leave recurring guidance only in chat output.
 
 > **CRITICAL**: NEVER invent or guess PBIR JSON structures. Always validate against Microsoft official documentation or the template reference file. In the current baseline, `drillFilterOtherVisuals` belongs to `visual`, cards use `visualType: cardVisual` with `queryState.Data`, page navigation is governed by `definition/pages/pages.json`, and PBIR JSON must be written as UTF-8 without BOM.
+
+> **CRITICAL**: Schema lookup findings belong in repository knowledge, not in ad-hoc local scratch files. Temporary inspection artifacts may be used while working, but any durable conclusion must be normalized into a reference file and temporary files must not remain as project artifacts.
 
 ## Anti-Hallucination Protocol
 
@@ -54,6 +57,7 @@ Before generating ANY PBIR JSON:
 4. **Schema compliance**: All JSON files MUST reference the correct Microsoft `$schema` URLs.
 5. **Physical ID discipline**: Page and visual runtime ids used in PBIR folders and `name` properties MUST be generated explicitly and kept synchronized across all referencing files.
 6. **Encoding discipline**: Write every generated PBIR JSON file as UTF-8 without BOM.
+7. **Knowledge-base discipline**: If a new rule is discovered that is not specific to the current report, persist it in the corresponding reference before closing the step.
 
 ---
 
@@ -183,7 +187,7 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
      - **Axis/Category fields** → `Category` projections with `Column` field type.
      - **Legend fields** → `Series` projections with `Column` field type.
        - **Combo chart** → `Y` (column values) + `Y2` (line values).
-       - **Scatter chart** → `X`, `Y`, `Size`, optional `Series`.
+      - **Scatter chart** → `X`, `Y`, optional `Size`, plus a point-grouping role such as `Values` whenever the chart is broken down by category.
        - **Gauge** → `Y`, `TargetValue`, optional `Tooltips`.
        - **Treemap** → `Group` plus `Values`.
        - **Azure Map** → `Category` plus `Size`; include validated object settings when using the repository baseline map behavior.
@@ -205,6 +209,8 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
 6. **Validate layout contract**: Ensure computed positions respect page bounds, token spacing, and non-overlap rules.
 7. **Validate field-parameter contract**: When a blueprint visual declares `fieldParameterBindings`, ensure the consuming PBIR role contains both the concrete projection and the matching `fieldParameters` descriptor.
 8. **Validate context compatibility**: When a blueprint visual declares a measure parameter, ensure any non-parameter grouping fields are present in `allowedContextDimensions` and are reachable from every selectable measure through the active relationships.
+9. **Validate reference coverage**: If the chosen visual family or payload pattern is not already represented in the PBIR references, add the generalized rule or stop and capture a Desktop-generated reference before continuing.
+10. **Validate scatter grouping**: If a scatter visual breaks down by category, ensure the payload includes a point-grouping role such as `Values`. Do not assume a categorical `Series` projection alone will produce a working handcrafted scatter chart.
 
 9. **Selection/Layer Metadata Naming (CONDITIONAL)**:
     - When the visual family uses `visualContainerObjects.title`, set `text.expr.Literal.Value` using this pattern:
@@ -251,6 +257,7 @@ When writing PBIR files:
 Recommended validation:
 - check that the first bytes of each generated JSON file are not `EF BB BF`
 - verify JSON parses cleanly before ending the step
+- convert any generalized lesson from this validation into `.github/references/pbir-visual-templates.md` or `.github/references/pbip-folder-structure.md`
 
 ### 9.8 Apply Layout Tokens and Resolve Overlaps
 

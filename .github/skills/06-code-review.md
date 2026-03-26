@@ -92,8 +92,8 @@ For EACH measure in `_Measures.tmdl`:
 - [ ] `formatString` is appropriate for the measure type.
 
 ### 6. Dim_Date Validation
-- [ ] `Dim_Date` table has `isKey` on the `DateKey` column.
-- [ ] A `Date` column with `dataType: dateTime` exists.
+- [ ] `Dim_Date` table contains a hidden integer surrogate key column for joins.
+- [ ] A `Date` column with `dataType: dateTime` exists and is the key column after Date Table marking is persisted in Desktop.
 - [ ] Fiscal year/month/quarter columns are present if fiscal periods are referenced in specs.
 - [ ] The generated date range covers the full reporting period.
 

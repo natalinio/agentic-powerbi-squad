@@ -26,7 +26,9 @@ Arguments:
 
 import argparse
 import json
+import math
 import os
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -47,6 +49,23 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 class AnalysisServicesDetector:
     """Detects local Power BI Desktop Analysis Services workspace"""
+
+    @staticmethod
+    def _resolve_port_file(workspace_dir: Path) -> Optional[Path]:
+        """Resolve the Power BI Desktop port file for a workspace."""
+        direct_port_file = workspace_dir / 'msmdsrv.port.txt'
+        if direct_port_file.exists():
+            return direct_port_file
+
+        data_port_file = workspace_dir / 'Data' / 'msmdsrv.port.txt'
+        if data_port_file.exists():
+            return data_port_file
+
+        nested_matches = sorted(workspace_dir.rglob('msmdsrv.port.txt'))
+        if nested_matches:
+            return nested_matches[0]
+
+        return None
 
     @staticmethod
     def find_workspace_port() -> Optional[int]:
@@ -70,9 +89,9 @@ class AnalysisServicesDetector:
         # Sort by modification time, get most recent
         most_recent = max(workspaces, key=lambda d: d.stat().st_mtime)
 
-        # Read port from msmdsrv.port.txt
-        port_file = most_recent / 'msmdsrv.port.txt'
-        if not port_file.exists():
+        # Power BI Desktop commonly stores the port file under the workspace Data folder.
+        port_file = AnalysisServicesDetector._resolve_port_file(most_recent)
+        if not port_file or not port_file.exists():
             return None
 
         try:
@@ -272,6 +291,262 @@ class CSVValidator:
         return df[column].sum()
 
 
+class TestAssertionEvaluator:
+    """Evaluates test results against explicit or legacy test-plan assertions."""
+
+    @staticmethod
+    def _normalize_value(value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return value
+
+        text = str(value).strip()
+        if text == '':
+            return None
+
+        lowered = text.lower()
+        if lowered == 'true':
+            return True
+        if lowered == 'false':
+            return False
+
+        try:
+            numeric_value = float(text)
+            if math.isfinite(numeric_value):
+                return numeric_value
+        except ValueError:
+            pass
+
+        return text
+
+    @staticmethod
+    def _extract_scalar(data: Optional[List[Dict[str, Any]]]) -> Any:
+        if not data or len(data) != 1:
+            return None
+
+        row = data[0]
+        if len(row) != 1:
+            return None
+
+        return TestAssertionEvaluator._normalize_value(next(iter(row.values())))
+
+    @staticmethod
+    def _extract_row(data: Optional[List[Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
+        if not data or len(data) != 1:
+            return None
+
+        return {
+            key.strip('[]'): TestAssertionEvaluator._normalize_value(value)
+            for key, value in data[0].items()
+        }
+
+    @staticmethod
+    def _parse_tolerance(pass_threshold: str) -> Optional[float]:
+        match = re.search(r'Absolute delta <\s*([0-9.]+)', pass_threshold or '')
+        if not match:
+            return None
+        return float(match.group(1))
+
+    @staticmethod
+    def _safe_float(text: str) -> float:
+        return float(text.rstrip('.,;: '))
+
+    @staticmethod
+    def _parse_expected_scalar(test: Dict[str, Any]) -> Any:
+        if 'expectedValue' in test:
+            return test.get('expectedValue')
+
+        expected_behavior = test.get('expectedBehavior', '')
+        pass_threshold = test.get('passThreshold', '')
+
+        if pass_threshold == 'Result is BLANK':
+            return None
+
+        if pass_threshold == 'Exact boolean match':
+            if 'TRUE' in expected_behavior.upper():
+                return True
+            if 'FALSE' in expected_behavior.upper():
+                return False
+
+        if pass_threshold == 'Exact string match':
+            label_match = re.search(r'Returns\s+([^\.]+?)(?:\s+because|\.|$)', expected_behavior)
+            if label_match:
+                return label_match.group(1).strip()
+
+        numeric_match = re.search(r'Expected value:\s*([-0-9.]+)', expected_behavior)
+        if numeric_match:
+            return TestAssertionEvaluator._safe_float(numeric_match.group(1))
+
+        returns_match = re.search(r'returns\s+([-0-9.]+)', expected_behavior, flags=re.IGNORECASE)
+        if returns_match:
+            return TestAssertionEvaluator._safe_float(returns_match.group(1))
+
+        if 'no prior-year rows' in expected_behavior.lower():
+            return None
+
+        return None
+
+    @staticmethod
+    def _parse_expected_row(test: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        if 'expectedRow' in test:
+            return test.get('expectedRow')
+
+        expected_behavior = test.get('expectedBehavior', '')
+        if 'SalesActual' in expected_behavior and 'BudgetActual' in expected_behavior:
+            sales_match = re.search(r'SalesActual\s*=\s*([-0-9.]+)', expected_behavior)
+            budget_match = re.search(r'BudgetActual\s*=\s*([-0-9.]+)', expected_behavior)
+            if sales_match and budget_match:
+                return {
+                    'SalesActual': TestAssertionEvaluator._safe_float(sales_match.group(1)),
+                    'BudgetActual': TestAssertionEvaluator._safe_float(budget_match.group(1))
+                }
+
+        return None
+
+    @staticmethod
+    def _resolve_assertion_type(test: Dict[str, Any]) -> str:
+        if 'assertionType' in test:
+            return test['assertionType']
+
+        pass_threshold = test.get('passThreshold', '')
+        expected_behavior = test.get('expectedBehavior', '')
+
+        if pass_threshold == 'Result is BLANK':
+            return 'blank'
+        if pass_threshold == 'Exact string match':
+            return 'exact'
+        if pass_threshold == 'Exact boolean match':
+            return 'exact'
+        if pass_threshold == 'Exact match':
+            return 'exact'
+        if 'for both values' in pass_threshold:
+            return 'row_numeric_tolerance'
+        if pass_threshold.startswith('Absolute delta <'):
+            return 'numeric_tolerance'
+        if 'no prior-year rows' in expected_behavior.lower():
+            return 'blank'
+
+        return 'execution_only'
+
+    @staticmethod
+    def evaluate(test: Dict[str, Any], query_result: Dict[str, Any]) -> Dict[str, Any]:
+        if not query_result['success']:
+            return {
+                'status': 'FAIL',
+                'actualValue': None,
+                'expectedValue': None,
+                'delta': None,
+                'assertionType': 'query_error',
+                'assertionMessage': query_result.get('error') or 'Query execution failed.',
+                'recommendation': 'Fix the DAX query or required model objects before re-running the test.'
+            }
+
+        assertion_type = TestAssertionEvaluator._resolve_assertion_type(test)
+        tolerance = test.get('tolerance', TestAssertionEvaluator._parse_tolerance(test.get('passThreshold', '')))
+        actual_scalar = TestAssertionEvaluator._extract_scalar(query_result.get('data'))
+        actual_row = TestAssertionEvaluator._extract_row(query_result.get('data'))
+        expected_scalar = TestAssertionEvaluator._normalize_value(TestAssertionEvaluator._parse_expected_scalar(test))
+        expected_row = TestAssertionEvaluator._parse_expected_row(test)
+
+        if assertion_type == 'blank':
+            passed = actual_scalar is None
+            return {
+                'status': 'PASS' if passed else 'FAIL',
+                'actualValue': actual_scalar,
+                'expectedValue': None,
+                'delta': None,
+                'assertionType': assertion_type,
+                'assertionMessage': 'Expected BLANK result.' if passed else f'Expected BLANK but got {actual_scalar!r}.',
+                'recommendation': None if passed else 'Re-check the filter context and DIVIDE/BLANK propagation for this measure.'
+            }
+
+        if assertion_type == 'numeric_tolerance':
+            if actual_scalar is None or expected_scalar is None:
+                return {
+                    'status': 'FAIL',
+                    'actualValue': actual_scalar,
+                    'expectedValue': expected_scalar,
+                    'delta': None,
+                    'assertionType': assertion_type,
+                    'assertionMessage': 'Numeric tolerance assertion requires scalar actual and expected values.',
+                    'recommendation': 'Define an explicit expectedValue or adjust the DAX query to return a single scalar.'
+                }
+
+            delta = abs(float(actual_scalar) - float(expected_scalar))
+            passed = delta < float(tolerance)
+            return {
+                'status': 'PASS' if passed else 'FAIL',
+                'actualValue': actual_scalar,
+                'expectedValue': expected_scalar,
+                'delta': delta,
+                'assertionType': assertion_type,
+                'assertionMessage': f'Delta {delta:.6f} with tolerance {float(tolerance):.6f}.',
+                'recommendation': None if passed else 'Investigate measure logic, filter context, or CSV expectation derivation.'
+            }
+
+        if assertion_type == 'row_numeric_tolerance':
+            if not actual_row or not expected_row:
+                return {
+                    'status': 'FAIL',
+                    'actualValue': actual_row,
+                    'expectedValue': expected_row,
+                    'delta': None,
+                    'assertionType': assertion_type,
+                    'assertionMessage': 'Row tolerance assertion requires a one-row result and expectedRow metadata.',
+                    'recommendation': 'Return a single row from DAX and define expectedRow in the test definition.'
+                }
+
+            deltas = {}
+            passed = True
+            for key, expected_value in expected_row.items():
+                actual_value = TestAssertionEvaluator._normalize_value(actual_row.get(key))
+                if actual_value is None:
+                    passed = False
+                    deltas[key] = None
+                    continue
+                delta = abs(float(actual_value) - float(expected_value))
+                deltas[key] = delta
+                if delta >= float(tolerance):
+                    passed = False
+
+            return {
+                'status': 'PASS' if passed else 'FAIL',
+                'actualValue': actual_row,
+                'expectedValue': expected_row,
+                'delta': deltas,
+                'assertionType': assertion_type,
+                'assertionMessage': f'Per-column deltas validated with tolerance {float(tolerance):.6f}.',
+                'recommendation': None if passed else 'Investigate dimensional filter propagation or the row-level expected values.'
+            }
+
+        if assertion_type == 'exact':
+            passed = actual_scalar == expected_scalar
+            return {
+                'status': 'PASS' if passed else 'FAIL',
+                'actualValue': actual_scalar,
+                'expectedValue': expected_scalar,
+                'delta': None,
+                'assertionType': assertion_type,
+                'assertionMessage': 'Exact match confirmed.' if passed else f'Expected {expected_scalar!r} but got {actual_scalar!r}.',
+                'recommendation': None if passed else 'Check the DAX expression and the expected output encoded in the test definition.'
+            }
+
+        execution_time = float(query_result.get('execution_time', 0))
+        status = 'WARNING' if execution_time > 5.0 else 'PASS'
+        return {
+            'status': status,
+            'actualValue': actual_scalar if actual_scalar is not None else actual_row,
+            'expectedValue': None,
+            'delta': None,
+            'assertionType': assertion_type,
+            'assertionMessage': 'Legacy execution-only test definition. Query executed successfully but no machine-readable assertion was supplied.',
+            'recommendation': 'Add assertionType and expectedValue/expectedRow to avoid execution-only passes.' if status == 'PASS' else 'Optimize the query and add a machine-readable assertion.'
+        }
+
+
 class TestReportGenerator:
     """Generates markdown test execution report"""
 
@@ -323,13 +598,22 @@ class TestReportGenerator:
             suite_id = suite['suiteId']
             suite_name = suite['suiteName']
             priority = suite.get('priority', 'MEDIUM')
+            suite_test_ids = {test['testId'] for test in suite.get('tests', [])}
+            suite_results = [r for r in test_results if r['testId'] in suite_test_ids]
+
+            suite_total = len(suite_results)
+            suite_passed = sum(1 for r in suite_results if r['status'] == 'PASS')
+            suite_warnings = sum(1 for r in suite_results if r['status'] == 'WARNING')
+            suite_failed = sum(1 for r in suite_results if r['status'] == 'FAIL')
 
             report_lines.extend([
                 f"### {suite_id}: {suite_name} (Priority: {priority})",
+                "",
+                "| Total | PASS | WARNING | FAIL |",
+                "|---:|---:|---:|---:|",
+                f"| {suite_total} | {suite_passed} | {suite_warnings} | {suite_failed} |",
                 ""
             ])
-
-            suite_results = [r for r in test_results if r['testId'].startswith(suite_id)]
 
             for result in suite_results:
                 status_emoji = {'PASS': '✅', 'WARNING': '⚠️', 'FAIL': '❌'}.get(result['status'], '❓')
@@ -338,7 +622,12 @@ class TestReportGenerator:
                     f"#### {status_emoji} {result['testId']} — {result['testName']}",
                     f"- **Measure**: `{result.get('measureName', 'N/A')}`",
                     f"- **Status**: {status_emoji} **{result['status']}**",
+                    f"- **Assertion Type**: `{result.get('assertionType', 'N/A')}`",
+                    f"- **Expected**: `{result.get('expectedValue')}`",
+                    f"- **Actual**: `{result.get('actualValue')}`",
+                    f"- **Delta**: `{result.get('delta')}`",
                     f"- **Query Time**: {result.get('executionTime', 0):.2f} sec",
+                    f"- **Assertion Note**: {result.get('assertionMessage', 'N/A')}",
                     ""
                 ])
 
@@ -439,15 +728,14 @@ def main():
             print(f"  🧪 {test_id}: {test_name}...", end=' ')
 
             query_result = executor.execute_query(test['daxQuery'])
+            assertion_result = TestAssertionEvaluator.evaluate(test, query_result)
+            status = assertion_result['status']
 
-            if not query_result['success']:
-                status = 'FAIL'
+            if status == 'FAIL':
                 print("❌ FAIL")
-            elif query_result['execution_time'] > 5.0:
-                status = 'WARNING'
-                print("⚠️  WARNING (slow query)")
+            elif status == 'WARNING':
+                print("⚠️  WARNING")
             else:
-                status = 'PASS'
                 print("✅ PASS")
 
             test_results.append({
@@ -458,7 +746,12 @@ def main():
                 'executionTime': query_result['execution_time'],
                 'data': query_result.get('data'),
                 'error': query_result.get('error'),
-                'recommendation': test.get('recommendation') if status == 'WARNING' else None
+                'assertionType': assertion_result.get('assertionType'),
+                'assertionMessage': assertion_result.get('assertionMessage'),
+                'expectedValue': assertion_result.get('expectedValue'),
+                'actualValue': assertion_result.get('actualValue'),
+                'delta': assertion_result.get('delta'),
+                'recommendation': assertion_result.get('recommendation') or (test.get('recommendation') if status == 'WARNING' else None)
             })
 
         print()

@@ -18,6 +18,29 @@ This document provides validated starter templates for Power BI Report (PBIR) `v
 7. Write PBIR JSON files as UTF-8 **without BOM**. BOM-prefixed `visual.json` files are a known corruption risk for externally generated reports.
 8. The physical PBIR object id used in folder names and `name` properties must be runtime-safe and consistent across the artifact set.
 9. `definition/pages/pages.json` is part of the canonical PBIR report surface and MUST be updated together with page folder creation/removal.
+10. When a new PBIR rule is learned from Desktop output or Microsoft schema inspection and it is not report-specific, record it in this reference or the PBIP structure reference before finishing the task.
+
+---
+
+## Schema Inspection Workflow
+
+Use this sequence when authoring or reviewing handcrafted PBIR:
+
+1. Start from Microsoft Learn page-level documentation for PBIR folder structure and file responsibilities.
+2. Validate the outer file schema first:
+  - `definition/pages/<page>/page.json` against `page/2.0.0`
+  - `definition/pages/pages.json` against `pagesMetadata/1.0.0`
+  - `visual.json` against `visualContainer/2.5.0`
+3. For visuals, follow the schema chain rather than stopping at the container:
+  - `visualContainer/2.5.0` validates the outer container
+  - `visualConfiguration/2.2.0` validates `visual.visualType`, `query`, `objects`, `visualContainerObjects`, `syncGroup`, `drillFilterOtherVisuals`
+4. Treat the schema as a structural validator, not as proof that a visual family is semantically correct in Desktop.
+5. If a payload is structurally valid but the visual family, role naming, or formatting block is still uncertain, require a Desktop-generated reference and then add the generalized rule here.
+
+Guardrails:
+- Do not rely on a plain JSON parse as a substitute for schema conformance.
+- Do not conclude that a `visualType` is safe just because the outer `visualContainer` accepts a `visual` object.
+- Do not leave schema findings only in temporary local files or in chat.
 
 ---
 
@@ -77,6 +100,10 @@ Slicer example from the observed report:
 - `visualContainerObjects.title.properties.text = 'Slicer - FiscalYear'`
 
 This means the metadata title is useful even when the end-user visible title is hidden.
+
+Additional guardrail:
+- `visualContainer/2.5.0` requires `name` and `position`, and then exactly one of `visual` or `visualGroup`.
+- Hand-authored report visuals should normally use `visual`; `visualGroup` requires separate group-specific handling and should not be emitted unless explicitly designed.
 
 ### 4. Runtime-Safe Encoding and JSON Hygiene
 
@@ -171,6 +198,11 @@ Guardrails:
 
 ### 6. Current Visual Query Patterns
 
+Important distinction:
+- `visualConfiguration/2.2.0` allows arbitrary `queryState` role names structurally.
+- The fact that a role name is structurally accepted does **not** prove that the target Power BI visual family will honor it correctly.
+- Role names and payload patterns must therefore be grounded either in Microsoft documentation, in this reference, or in Desktop-generated PBIR examples.
+
 #### Slicer
 - use `visualType: "slicer"`
 - use `queryState.Values.projections`
@@ -193,6 +225,9 @@ Guardrail:
 - use `queryState.Values.projections`
 - include `sortDefinition` whenever the blueprint defines ranking intent
 
+Guardrail:
+- If the requirement is a matrix and this reference does not yet contain a validated matrix template for the current PBIR baseline, do not infer the visual family from memory alone. Capture a Desktop-generated reference first, then extend this file.
+
 #### Clustered Bar Chart
 - use `queryState.Category` for the categorical axis
 - use `queryState.Y` for one or more measures
@@ -203,8 +238,14 @@ Guardrail:
 - use `queryState.Y2` for line values
 
 #### Scatter Chart
-- use `queryState.Series`, `Size`, `X`, `Y`
+- use `queryState.X` and `queryState.Y` for the numerical axes
+- use `queryState.Size` when the visual is a bubble chart
+- when the chart groups or identifies points by a categorical field, use a point-grouping role such as `queryState.Values`
+- do not rely on `queryState.Series` alone as the handcrafted grouping mechanism for scatter points
 - mark the primary analytical axis as `active: true` when observed in the Desktop reference pattern
+
+Guardrail:
+- Microsoft scatter-chart guidance explicitly calls out the **Values** well as the grouping field that tells Power BI how to create distinct points. If a handcrafted PBIR scatter chart contains categorical breakdown but omits a point-grouping role, treat that payload as unstable and fix it before closing Step 09 or Step 10.
 
 #### Gauge
 - use `visualType: "gauge"`
@@ -239,6 +280,10 @@ Guardrails:
 - For tables and ranking visuals, do not rely on implicit Power BI default sorting.
 - Use the measure or column declared as primary sort field in the blueprint.
 
+Structural rule:
+- `query.sortDefinition.sort[]` items use a semantic query expression container in `field` plus a string `direction` of `Ascending` or `Descending`.
+- Sorting rules should be treated as part of the safe handcrafted baseline whenever visual ordering matters to business interpretation.
+
 ### 8. Report Baseline Guardrails
 
 Observed report-level baseline:
@@ -250,6 +295,10 @@ Observed report-level baseline:
 Guardrails:
 - Do not rewrite `report.json`, `version.json`, or theme resources unless required by the blueprint and verified against Desktop output.
 - Keep report baseline files stable while generating pages and visuals.
+
+Advanced-payload guardrail:
+- Features such as report-level measure filters, Top N definitions, sparkline payloads, matrix-specific formatting, and complex conditional formatting should not be hand-authored unless the repository already contains a validated template or a Desktop-generated reference for the same PBIR baseline.
+- When these features are omitted intentionally for stability, document that decision in the step output instead of implying full parity with Desktop-authored visuals.
 
 ---
 
@@ -1116,7 +1165,7 @@ Guardrails:
 6. Observed slicer projections include `active: true`.
 7. Top-row dropdown slicers are materially more usable at about `65 px` height than at `60 px` in the current baseline.
 7. Combo chart uses `queryState.Category`, `Y`, and `Y2` sections.
-8. Scatter chart uses `queryState.Series`, `Size`, `X`, and `Y` sections.
+8. Scatter chart uses `queryState.X` and `queryState.Y`, may use `queryState.Size`, and requires a point-grouping role such as `queryState.Values` when the visual breaks down by category.
 9. Tables and ranking visuals use `query.sortDefinition` when ordering matters.
 10. `filterConfig` was not required in the current manually authored sample and should remain optional unless a Desktop-generated baseline demonstrates a need.
 11. Metadata titles inside `visualContainerObjects.title` are valuable for selection-pane readability even when the visible title is hidden.

@@ -67,12 +67,39 @@ def parse_tmdl_name(line: str, keyword: str) -> Optional[str]:
     return match.group(1) or match.group(2)
 
 
+def resolve_pbip_base_name(project_path: Path) -> str:
+    pbip_root = project_path / "PBIP"
+    pbip_files = sorted(pbip_root.glob("*.pbip"))
+    if len(pbip_files) == 1:
+        pbip_file = pbip_files[0]
+        try:
+            pbip_data = json.loads(pbip_file.read_text(encoding="utf-8-sig"))
+            artifacts = pbip_data.get("artifacts", [])
+            if artifacts:
+                report_entry = artifacts[0].get("report", {})
+                report_path = report_entry.get("path")
+                if isinstance(report_path, str) and report_path.endswith(".Report"):
+                    return report_path[:-7]
+        except Exception:
+            pass
+        return pbip_file.stem
+
+    report_dirs = sorted(directory.name for directory in pbip_root.iterdir() if directory.is_dir() and directory.name.endswith(".Report"))
+    if len(report_dirs) == 1:
+        return report_dirs[0][:-7]
+
+    raise FileNotFoundError(
+        f"Unable to resolve PBIP base name under '{pbip_root}'. Expected exactly one .pbip file or one *.Report directory."
+    )
+
+
 class ModelRegistry:
     def __init__(self) -> None:
         self.tables: Set[str] = set()
         self.columns_by_table: Dict[str, Set[str]] = defaultdict(set)
         self.measures: Set[str] = set()
         self.relationship_graph: Dict[str, Set[str]] = defaultdict(set)
+        self.field_parameter_tables: Set[str] = set()
 
     @classmethod
     def build(cls, semantic_model_path: Path) -> "ModelRegistry":
@@ -83,6 +110,8 @@ class ModelRegistry:
             text = tmdl_file.read_text(encoding="utf-8-sig")
             if table_name != "_Measures":
                 registry.tables.add(table_name)
+                if "groupByColumn:" in text and "ParameterMetadata" in text:
+                    registry.field_parameter_tables.add(table_name)
             for line in text.splitlines():
                 column_name = parse_tmdl_name(line, "column")
                 if column_name and table_name != "_Measures":
@@ -108,7 +137,7 @@ class ModelRegistry:
         return registry
 
     def is_reachable(self, tables: Iterable[str]) -> bool:
-        relevant = [table for table in tables if table != "_Measures"]
+        relevant = [table for table in tables if table != "_Measures" and table not in self.field_parameter_tables]
         if len(relevant) <= 1:
             return True
         start = relevant[0]
@@ -163,6 +192,9 @@ def logical_type_to_pbir(visual_type: str) -> str:
         "card": "cardVisual",
         "multiRowCard": "cardVisual",
         "table": "tableEx",
+        "barChart": "clusteredBarChart",
+        "comboChart": "lineClusteredColumnComboChart",
+        "matrix": "pivotTable",
         "slicer": "slicer",
         "clusteredBarChart": "clusteredBarChart",
         "clusteredColumnChart": "clusteredColumnChart",
@@ -180,10 +212,11 @@ class PbirValidator:
         self.project_name = project_name
         self.verbose = verbose
         self.project_path = REPO_ROOT / project_name
+        self.pbip_base_name = resolve_pbip_base_name(self.project_path)
         self.blueprint_path = self.project_path / "spec" / "report_blueprint.json"
-        self.report_path = self.project_path / "PBIP" / f"{project_name}.Report" / "definition"
+        self.report_path = self.project_path / "PBIP" / f"{self.pbip_base_name}.Report" / "definition"
         self.pages_path = self.report_path / "pages"
-        self.semantic_model_path = self.project_path / "PBIP" / f"{project_name}.SemanticModel" / "definition"
+        self.semantic_model_path = self.project_path / "PBIP" / f"{self.pbip_base_name}.SemanticModel" / "definition"
         self.tests_path = self.project_path / "tests"
         self.report_output_path = self.tests_path / "report_validation_execution.md"
         self.summary_output_path = self.tests_path / "report_validation_execution.json"
@@ -320,8 +353,32 @@ class PbirValidator:
                             if font_size_expr:
                                 font_size = font_size_expr
                                 break
+                        if font_size is None:
+                            for item in visual.get("visualContainerObjects", {}).get("value", []):
+                                properties = item.get("properties", {})
+                                font_size_expr = properties.get("fontSize", {}).get("expr", {}).get("Literal", {}).get("Value")
+                                if font_size_expr:
+                                    font_size = font_size_expr
+                                    break
                         status = "PASS" if font_size == "20D" else "WARNING"
                         self.add_issue("Accessibility & Best Practices", "Grouped KPI callout size", status, page=page_runtime_id, visual=visual_dir.name, details=f"fontSize={font_size}")
+
+                if visual_type == "scatterChart":
+                    query_state = visual.get("query", {}).get("queryState", {})
+                    required_roles = {"X", "Y"}
+                    status = "PASS" if required_roles.issubset(set(query_state.keys())) else "FAIL"
+                    self.add_issue("Structural", "Scatter required buckets", status, page=page_runtime_id, visual=visual_dir.name, details=f"Present roles: {sorted(query_state.keys())}")
+
+                    point_grouping_keys = {"Values", "Details", "Category"}
+                    grouping_status = "PASS" if point_grouping_keys.intersection(set(query_state.keys())) else "FAIL"
+                    self.add_issue(
+                        "Structural",
+                        "Scatter point grouping",
+                        grouping_status,
+                        page=page_runtime_id,
+                        visual=visual_dir.name,
+                        details="Scatter visuals with categorical breakdown must include a point-grouping role such as Values/Details/Category; Series alone is not sufficient as a safe handcrafted baseline.",
+                    )
 
                 if visual_type == "gauge":
                     query_state = visual.get("query", {}).get("queryState", {})
@@ -387,7 +444,7 @@ class PbirValidator:
             "",
             f"**Generated**: {summary.get('generatedAt', utc_now())}",
             f"**Blueprint**: {self.project_name}/spec/report_blueprint.json",
-            f"**Report Path**: {self.project_name}/PBIP/{self.project_name}.Report/definition/",
+            f"**Report Path**: {self.project_name}/PBIP/{self.pbip_base_name}.Report/definition/",
             "",
             f"## Overall Status: {summary.get('overallStatus', 'FAIL')}",
             "",

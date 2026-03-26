@@ -6,7 +6,7 @@ description: Produce realistic CSV mock datasets and align partitions for local 
 # Skill: Mock Data Generation
 
 ## Purpose
-Generate realistic mock data as CSV files using SDV probabilistic synthesis to validate the PBIP semantic model locally in Power BI Desktop.
+Generate realistic mock data as CSV files to validate the PBIP semantic model locally in Power BI Desktop. Use SDV probabilistic synthesis when the runtime supports it; otherwise fall back to deterministic generation.
 
 ## Step Contract
 
@@ -35,19 +35,29 @@ python -m venv .venv
 # Activate virtual environment (Windows PowerShell)
 .\.venv\Scripts\Activate.ps1
 
-# Install required packages (all steps)
+# Install required packages (default cross-step baseline)
 pip install -r requirements.txt
+
+# Optional: install SDV core package only if you explicitly want probabilistic synthesis
+# and you accept that some environments may still be unable to load the full SDV stack.
+python -m pip install sdv==1.34.3 --no-deps
 ```
 
 ### Verify Installation
 ```powershell
-python -c "import pandas; import sdv; import faker; print('OK')"
+python -c "import pandas; import faker; print('OK')"
+```
+
+Optional SDV verification:
+```powershell
+python -c "import sdv; print('SDV core package available')"
 ```
 
 ## Script Generation Rules
 
 ### Technology
-- Use **Python** with `pandas` and `sdv` libraries.
+- Use **Python** with `pandas` and `faker` libraries.
+- Use `sdv` only when the local runtime can import it successfully; otherwise the generator must continue with deterministic fallback logic.
 - Use `faker` only to bootstrap compact seed datasets when no source extracts are available.
 - Generate ONE script file: `<ProjectName>/scripts/generate_mock_data.py`
 - Output CSV files to `<ProjectName>/data/` folder.

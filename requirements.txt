@@ -2,15 +2,19 @@
 # Install with: pip install -r requirements.txt
 #
 # These packages are required across multiple workflow steps:
-# - Step 05 (Mock Data Generation): pandas, sdv, faker
+# - Step 05 (Mock Data Generation): pandas, faker
 # - Step 07 (Functional Testing): pandas, pythonnet, python-dateutil, jsonschema
 # - Universal scripts: python stdlib only (no additional packages)
 
 # Data manipulation and analysis
 pandas>=2.0.0
 
-# Probabilistic synthetic data generation for star-schema mock datasets
-sdv>=1.0.0
+# Optional probabilistic synthesis engine for Step 05.
+# The default generator works without SDV and falls back to deterministic generation.
+# Keep SDV out of the default requirements because its full dependency chain can fail
+# on Windows environments with path-length constraints.
+# Optional manual install if explicitly needed:
+# python -m pip install sdv==1.34.3 --no-deps
 
 # Seed bootstrap generation for synthetic datasets
 faker>=18.0.0
