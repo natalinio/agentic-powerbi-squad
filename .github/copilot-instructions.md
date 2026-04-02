@@ -11,7 +11,44 @@ Goals:
 
 ---
 
-# 1. Global Response Rules
+# 1. Repository Architecture — Multi-Agent System
+
+This repository uses a **multi-agent architecture** for Power BI development. Agents are domain-specific experts that can operate independently or be coordinated by an orchestrator.
+
+## Agents
+
+| Agent | Domain | When to Use |
+|---|---|---|
+| `delivery-lead` | E2E workflow orchestration | User requests a full project build from spec |
+| `business-data-analyst` | Requirements analysis | Analyze specs, extract KPIs, dimensions, constraints |
+| `pbi-semantic-model` | Semantic model (TMDL/DAX) | Design models, write TMDL, develop DAX measures |
+| `data-generator` | Mock data generation | Generate CSV datasets from model schema |
+| `pbi-qa` | Quality assurance | Validate models, run tests, review report quality |
+| `pbi-report` | Report design & PBIR | Design layouts, generate PBIR visuals |
+
+Agent definitions: `.github/agents/<agent-name>.agent.md`
+
+## Skills
+
+Skills are domain knowledge packages consumed by agents. Each skill is a self-contained folder:
+
+```
+.github/skills/<skill-name>/
+├── SKILL.md              # Procedural knowledge with YAML frontmatter
+├── references/           # Domain-specific reference documents
+└── scripts/              # Domain-specific utility scripts
+```
+
+## Shared References
+
+Cross-cutting references used by multiple agents live in `.github/references/`:
+- `naming-conventions.md` — naming standards for all objects
+- `pbip-folder-structure.md` — PBIP workspace folder layout
+- `security-rls-best-practices.md` — Row-level security patterns
+
+---
+
+# 2. Global Response Rules
 
 ## Language
 All generated code comments and docstrings must be in English.
@@ -76,9 +113,11 @@ Recommended request template:
 
 - Hardcoding credentials, secrets, or environment values
 - Bypassing metadata-driven configuration
-- Adding logic to deprecated Function App V1 endpoints
-- Using unversioned or duplicated Databricks logic
 - Producing large chat code dumps instead of patch-focused guidance
+- Invoking the `delivery-lead` orchestrator for standalone domain tasks
+- Writing TMDL, DAX, PBIR code without first reading the relevant skill and references
+- Guessing PBIR JSON structures instead of using templates from `.github/skills/report-implementation/references/`
+- Inventing column/measure names without reading TMDL files from disk
 
 ---
 

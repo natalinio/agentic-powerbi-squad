@@ -1,534 +1,238 @@
-# Power BI AI Developer
+# Agentic Power BI Squad
 
-> **Build complete Power BI projects — semantic models (PBIP/TMDL) and report visuals (PBIR) — from functional specifications using a GitHub Copilot Custom Agent**
+> **Build complete Power BI projects — semantic models (TMDL) and reports (PBIR) — from functional specifications using a multi-agent system powered by GitHub Copilot.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Power BI](https://img.shields.io/badge/Power%20BI-December%202025+-yellow)](https://powerbi.microsoft.com)
+[![Power BI](https://img.shields.io/badge/Power%20BI-PBIP%20Format-yellow)](https://powerbi.microsoft.com)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
 
 ---
 
-## 🎯 What is Power BI AI Developer?
+## What Is This?
 
-**Power BI AI Developer** is a **GitHub Copilot Custom Agent** (`@powerbi-AI-developer`) that automates the creation of Power BI semantic models in **PBIP format with TMDL** (Tabular Model Definition Language) and report visuals in **PBIR format** from natural language functional specifications.
+**Agentic Power BI Squad** is a **multi-agent system** for Power BI development that runs inside VS Code with GitHub Copilot. Instead of a single monolithic agent, it uses a team of **6 domain-specific agents** coordinated by an orchestrator, each backed by **15 modular skills** containing procedural knowledge, reference materials, and examples.
 
-Instead of manually building data models, writing DAX measures, and configuring relationships in Power BI Desktop, you provide a specification document (in Markdown), and the agent generates:
+You provide a functional specification in Markdown. The squad produces:
 
-- ✅ **Dimensional data model** (Kimball Star Schema)
-- ✅ **TMDL files** (tables, relationships, measures)
-- ✅ **Optimized DAX measures** (time intelligence, KPIs, aggregations)
-- ✅ **Mock data** (Python/Faker-based CSV generation)
-- ✅ **Automated functional tests** (DAX validation with pass/fail reports)
-- ✅ **Quality assurance** (BPA rules compliance, syntax validation)
-- ✅ **Report implementation** (PBIR visual generation from blueprint)
-- ✅ **End-to-end validation** (cross-reference PBIR ↔ TMDL ↔ blueprint)
+- **Dimensional data model** (Kimball Star Schema) with TMDL files
+- **Optimized DAX measures** (time intelligence, KPIs, variances)
+- **Mock CSV datasets** for local development
+- **Automated functional tests** with pass/fail reports
+- **Report blueprint** (design system, page layouts, visual specs)
+- **PBIR report files** (pages, visuals, slicers) ready for Power BI Desktop
+- **Custom visuals** via SVG inline graphics and Deneb (Vega/Vega-Lite)
+- **Report themes** with full formatting hierarchy
+- **Quality validation** at every step
 
-### Key Features
-
-- 🤖 **Agentic Workflow**: 10-step methodology (plus Step 00 bootstrap) with mandatory approval gates, disk-based state management, and explicit decision-point tracking
-- 🧭 **Deterministic State**: Canonical `workflow_state.json` shape, decision ledger, and resumability-safe transitions
-- 🚦 **Contract Gates**: Input/Output artifact validation before starting or completing each step
-- 🪟 **Scoped Context Loading**: The agent loads only the current step skill and required references/artifacts (no future-step preloading unless strictly needed)
-- 🛡️ **Anti-Hallucination**: MCP tools verify TMDL/DAX syntax against Microsoft official documentation
-- 📐 **Best Practices Enforced**: Kimball methodology, naming conventions, DAX optimization framework, BPA rules (27+)
-- 🔄 **Iterative & Auditable**: Each step requires user validation before proceeding
-- 🌍 **Multilingual**: Communicate in your language (Italian, English), code always in English
-- 🧪 **Test-Driven**: Automated DAX test execution via Python scripts
+The output is a complete **PBIP project** that opens directly in Power BI Desktop.
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## Architecture
 
-This section is intentionally explicit and copy/paste friendly.
+### Agents
 
-### 0) Prerequisites (check once)
+| Agent | Domain | Description |
+|---|---|---|
+| `delivery-lead` | Orchestration | End-to-end workflow management, phase transitions, user approvals |
+| `business-data-analyst` | Requirements | Analyzes specs, extracts KPIs, dimensions, grain, constraints |
+| `pbi-semantic-model` | Semantic Model | Designs logical models, writes TMDL, develops DAX measures |
+| `data-generator` | Mock Data | Generates realistic CSV datasets from model schema |
+| `pbi-report` | Report Design & Implementation | Designs layouts, generates PBIR visuals, SVG graphics, Deneb charts, themes |
+| `pbi-qa` | Quality Assurance | Validates models (BPA), runs tests, reviews reports, checks SVG/Deneb/design quality |
 
-1. **Power BI Desktop** (December 2025 or later)
-        - Enable preview features:
-          - ✅ Power BI Project (.pbip) save option
-          - ✅ Store semantic model using TMDL format
-2. **Python 3.10+**
-3. **VS Code + GitHub Copilot Chat** (Custom Agent enabled)
+### Skills (15)
 
-Quick checks:
+Skills are self-contained knowledge packages consumed by agents. Each skill has procedural instructions (`SKILL.md`), reference files, and examples.
 
-```powershell
-python --version
-code --version
-```
+| Skill | Agent(s) | Purpose |
+|---|---|---|
+| `requirements-analysis` | business-data-analyst | Extract KPIs, dimensions, grain from specs |
+| `logical-model` | pbi-semantic-model | Star schema design, ER diagrams |
+| `physical-model-tmdl` | pbi-semantic-model | Generate TMDL files from logical model |
+| `dax-development` | pbi-semantic-model | DAX measure authoring with patterns and pitfalls |
+| `mock-data-generation` | data-generator | CSV dataset generation with referential integrity |
+| `report-design` | pbi-report | Layout, storytelling, chart selection, design system |
+| `report-implementation` | pbi-report | PBIR JSON generation from blueprint |
+| `svg-visuals` | pbi-report | Inline SVG graphics via DAX (sparklines, bars, KPI indicators) |
+| `deneb-visuals` | pbi-report | Vega/Vega-Lite custom charts with PBIR integration |
+| `theme-customization` | pbi-report | Theme authoring, formatting hierarchy, visual-type overrides |
+| `code-review` | pbi-qa | TMDL quality, BPA compliance, naming conventions |
+| `functional-testing` | pbi-qa | Automated DAX measure testing against expected values |
+| `report-quality-validation` | pbi-qa | PBIR validation, SVG/Deneb review, design quality checks |
+| `project-initialization` | delivery-lead | PBIP project scaffolding |
+| `workflow-orchestration` | delivery-lead | Phase management, state tracking, decision ledger |
 
-### 1) Clone repository
+### Shared References
+
+Cross-cutting references in `.github/references/`:
+- `naming-conventions.md` — naming standards for all objects
+- `pbip-folder-structure.md` — PBIP workspace folder layout
+- `security-rls-best-practices.md` — Row-level security patterns
+
+---
+
+## How to Use
+
+### Prerequisites
+
+- **VS Code** with **GitHub Copilot** (Chat + Agents enabled)
+- **Power BI Desktop** (December 2025+ for PBIR support)
+- **Python 3.10+** (for mock data generation and test execution)
 
 ```bash
-git clone https://github.com/natalinio/PowerBI-AI-FullStack-Developer.git
-cd PowerBI-AI-FullStack-Developer
-```
-
-### 2) Create and activate Python environment
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-Expected result: no installation errors.
+### Two Operating Modes
 
-### 3) Create your project folder
+#### 1. Workflow Mode (Full Project)
 
-Choose a project name (example: `SalesOverview`) and create at least `spec/`:
-
-```powershell
-mkdir SalesOverview
-mkdir SalesOverview\spec
-```
-
-Note: `data/`, `scripts/`, `tests/`, and PBIP scaffold are created automatically by the agent if missing.
-
-### 4) Create the functional specification
-
-Copy the template and rename it:
-
-```powershell
-Copy-Item spec\specification_template.md SalesOverview\spec\spec_sales_overview.md
-```
-
-Then fill **all sections** in `SalesOverview/spec/spec_sales_overview.md`.
-
-Reference files:
-- Template: [spec/specification_template.md](spec/specification_template.md)
-- Full example: [spec/sample_spec.md](spec/sample_spec.md)
-
-### 5) Open in VS Code and run the agent
-
-1. Open the repository folder in VS Code.
-2. Open GitHub Copilot Chat.
-3. Run one of the following:
-
-Option A (recommended):
+Use the `delivery-lead` agent to build a complete project from a specification.
 
 ```
-@powerbi-AI-developer SalesOverview/spec/spec_sales_overview.md
+@delivery-lead Build a Power BI project from spec/sample_spec.md
 ```
 
-Option B (`/build` prompt):
+The orchestrator coordinates all agents through a 10-step workflow:
 
-1. Type `/` in Copilot Chat
-2. Select `build`
-3. Provide spec path: `SalesOverview/spec/spec_sales_overview.md`
+| Step | Agent | Action |
+|---|---|---|
+| 00 | delivery-lead | Bootstrap PBIP project structure |
+| 01 | business-data-analyst | Analyze specification, extract requirements |
+| 02 | pbi-semantic-model | Design logical model (star schema, ER diagram) |
+| 03 | pbi-semantic-model | Generate TMDL physical model |
+| 04 | pbi-semantic-model | Develop DAX measures |
+| 05 | data-generator | Generate mock CSV datasets |
+| 06 | pbi-qa | Code review + BPA compliance |
+| 07 | pbi-qa | Run functional tests |
+| 08 | pbi-report | Design report blueprint |
+| 09 | pbi-report | Implement PBIR visuals |
+| 10 | pbi-qa | Validate report quality |
 
-### 6) Approve the workflow step by step
+Each step has **mandatory approval gates** — the orchestrator presents results and waits for your approval before proceeding.
 
-The agent executes:
+#### 2. Standalone Mode (Individual Tasks)
 
-1. Requirements Analysis
-2. Logical Data Model
-3. Physical Model & TMDL
-4. DAX Development
-5. Mock Data Generation
-6. Quality Review
-7. Functional Testing
-8. Report Design
-9. Report Implementation
-10. Report Quality Validation
+Invoke any agent directly for specific tasks:
 
-After each step, approve explicitly (for example: `Approved` / `Proceed`).
+```
+@pbi-semantic-model Add a YTD measure for Sales Amount to the SalesOverview project
 
-### 7) Open the generated PBIP in Power BI Desktop
+@pbi-report Add a clustered bar chart showing Sales by Area to Page 1
 
-```powershell
-cd SalesOverview\PBIP
+@pbi-report Create a Deneb heatmap for monthly sales by region
+
+@pbi-report Create an SVG sparkline measure for revenue trend
+
+@pbi-report Create a custom theme with blue/orange palette and enterprise formatting
+
+@pbi-qa Validate the PBIR report structure for SalesOverview
+
+@pbi-qa Review SVG measures for correctness
+
+@data-generator Generate mock data for the SalesOverview semantic model
 ```
 
-Open `SalesOverview.pbip` in Power BI Desktop and click **Refresh**.
-
-### 8) Quick troubleshooting (most common)
-
-- `gh` / tooling not found: restart terminal and verify installation paths.
-- Python import errors: re-activate `.venv` and run `pip install -r requirements.txt` again.
-- PBIP open error: ensure Desktop preview features are enabled and files are not blocked by OneDrive sync locks.
-- Invalid model objects in tests/visuals: rerun from the last approved step; workflow state is persisted in `workflow_state.json`.
+Each agent automatically discovers the project context (TMDL files, existing visuals, blueprint) before acting.
 
 ---
 
-## 📂 Repository Structure
+## Project Structure
 
 ```
-PowerBI-AI-FullStack-Developer/
-├── .github/                           # Agentic system core (universal, project-agnostic)
-│   ├── copilot-instructions.md        # Global instructions for GitHub Copilot
-│   ├── agents/
-│   │   └── powerbi-AI-developer.agent.md  # Main invocable agent
-│   ├── skills/                        # Step-by-step execution skills (11 files: Step 00 + Steps 01-10)
-│   │   ├── 00-project-initialization.md
-│   │   ├── 01-requirements-analysis.md
-│   │   ├── 02-logical-model.md
-│   │   ├── 03-physical-model-tmdl.md
-│   │   ├── 04-dax-development.md
-│   │   ├── 05-mock-data-generation.md
-│   │   ├── 06-code-review.md
-│   │   ├── 07-functional-testing.md
-│   │   ├── 08-report-design.md
-│   │   ├── 09-report-implementation.md
-│   │   └── 10-report-quality-validation.md
-│   ├── references/                    # TMDL, DAX, PBIP reference material
-│   │   ├── workflow-core.md           # Centralized per-step governance (context flushing, checkpointing, stop gate)
-│   │   ├── tmdl-syntax-reference.md
-│   │   ├── naming-conventions.md
-│   │   ├── pbip-folder-structure.md
-│   │   ├── dax-patterns.md
-│   │   ├── relationship-patterns.md
-│   │   ├── dax-optimization-framework.md
-│   │   ├── security-rls-best-practices.md
-│   │   ├── bpa-rules-reference.md
-│   │   ├── functional-testing-methodology.md  # Testing phase catalog, Python runner, anti-patterns
-│   │   ├── report-design-visualization-best-practices.md
-│   │   ├── pbir-visual-templates.md
-│   │   └── workflow-state-management.md
-│   ├── docs/                          # Interactive HTML documentation tools
-│   │   ├── architecture.html          # Workflow lane view + Agent Explorer tab
-│   │   └── agent-explorer.html        # Graph explorer: Agent → Skills → References/Scripts
-│   ├── scripts/                       # Universal tools (project-agnostic)
-│   │   ├── fix_lineage_tags.py        # GUID lineageTag regeneration
-│   │   ├── remove_tmdl_comments.py    # TMDL comment removal
-│   │   └── run_tests.py               # Automated test execution engine
-│   └── prompts/                       # Reusable prompt files
-│       └── build.prompt.md            # End-to-end project builder prompt (/build)
-│
-├── .gitignore                         # Git ignore rules
-├── .venv/                             # Python virtual environment (shared by all projects)
-├── requirements.txt                   # Python dependencies for all workflow steps
-├── CHANGELOG.md                       # Version history and release notes
-├── CODE_OF_CONDUCT.md                 # Project code of conduct
-├── CONTRIBUTING.md                    # Contribution guidelines
-├── LICENSE                            # MIT License
-├── PUBLISHING.md                      # Publishing and release guidelines
-├── README.md                          # This file
-├── SECURITY.md                        # Security policy
-├── STRUCTURE_VERIFICATION.md          # Repository structure validation
-├── spec/                              # 📋 Global specification templates/examples
-│   ├── specification_template.md       # EMPTY TEMPLATE (start here)
-│   └── sample_spec.md                  # COMPLETE EXAMPLE (Sales Overview FYTD)
-│
-├── [ProjectName]/                     # 📌 TEMPLATE FOLDER (example structure)
-│   ├── README.md                      # Template usage instructions
-│   ├── spec/                          # Project specification folder (example)
-│   ├── PBIP/                          # (empty - created by user in Power BI Desktop)
-│   ├── data/                          # (empty - populated by Step 05)
-│   ├── scripts/                       # (empty - populated by Step 05)
-│   └── tests/                         # (empty - populated by Step 07)
-│
-└── <YourProjectName>/                 # 🚀 YOUR PROJECT FOLDERS (create one per semantic model)
-        ├── spec/
-        │   └── spec_your_requirements.md  # Your functional specifications
-        ├── PBIP/
-        │   ├── <YourProjectName>.pbip
-        │   ├── <YourProjectName>.SemanticModel/
-        │   │   └── definition/            # TMDL files generated by agent
-        │   │       ├── model.tmdl
-        │   │       ├── database.tmdl
-        │   │       ├── tables/
-        │   │       │   ├── Dim_*.tmdl
-        │   │       │   ├── Fact_*.tmdl
-        │   │       │   └── _Measures.tmdl
-        │   │       ├── relationships.tmdl
-        │   │       └── expressions.tmdl
-        │   └── <YourProjectName>.Report/
-        │       └── definition/
-        │           └── pages/             # PBIR report pages (Step 09)
-        │               ├── <pageId>/
-        │               │   ├── page.json
-        │               │   └── visuals/
-        │               │       └── <visualId>/
-        │               │           └── visual.json
-        │               └── ...
-        ├── data/                          # Generated CSV mock data (Step 05)
-        │   ├── Dim_*.csv
-        │   └── Fact_*.csv
-        ├── scripts/                       # Project-specific scripts
-        │   └── generate_mock_data.py      # Faker-based data generation
-        ├── tests/                         # Functional test artifacts (Steps 07, 10)
-        │   ├── tests_definition.json      # Test case definitions
-        │   ├── tests_definition.md        # Manual test guide
-        │   ├── tests_execution.md         # Test results report
-        │   ├── tests_execution_raw.json   # Raw test results
-        │   ├── report_validation_execution.md  # Report quality validation (Step 10)
-        │   └── lessons-learned.md         # Incident log (created only for user-reported defects)
-        └── workflow_state.json            # Workflow progress tracker + decision/audit ledger
+<ProjectName>/
+├── spec/                          # Specifications and blueprints
+│   ├── spec_<name>.md             # Functional specification (input)
+│   ├── requirements_summary.md    # Extracted requirements
+│   ├── er_diagram.md              # Logical model diagram
+│   └── report_blueprint.json      # Report design blueprint
+├── data/                          # Mock CSV datasets
+├── PBIP/                          # Power BI Project (PBIP format)
+│   ├── <Name>.pbip                # Project entry point
+│   ├── <Name>.SemanticModel/
+│   │   └── definition/
+│   │       ├── model.tmdl
+│   │       ├── relationships.tmdl
+│   │       ├── expressions.tmdl
+│   │       └── tables/            # One .tmdl per table
+│   └── <Name>.Report/
+│       └── definition/
+│           ├── report.json
+│           ├── reportExtensions.json  # Extension measures
+│           ├── pages/
+│           │   ├── pages.json
+│           │   └── <pageId>/
+│           │       ├── page.json
+│           │       └── visuals/
+│           │           └── <visualId>/
+│           │               └── visual.json
+│           └── StaticResources/
+│               └── SharedResources/
+│                   └── BaseThemes/    # Report themes
+├── tests/                         # Test definitions and results
+├── scripts/                       # Data generation scripts
+└── workflow_state.json            # Orchestrator state (workflow mode)
 ```
-
-### 📌 About Project Names
-
-**`[ProjectName]`** (with square brackets) = **Template folder** in this repository
-- Located at repository root: `[ProjectName]/`
-- Contains the expected folder structure (including an example `spec/` folder) and empty implementation folders (`PBIP/`, `data/`, `scripts/`, `tests/`).
-- Purpose: Reference structure for creating new projects
-- **Do NOT use this folder for real projects**
-
-**`<YourProjectName>`** (with angle brackets) = **Your actual project folders**
-- Create at repository root with your project name (e.g., `SalesOverview/`, `FinanceReportFYTD/`)
-- Each project is independent and isolated
-
-**Examples of real project names:**
-- `SalesOverview`
-- `FinanceReportFYTD`
-- `CustomerAnalytics`
-- `InventoryDashboard`
-
-**To create a new project:**
-1. Create a folder with your project name at repository root (e.g., `SalesOverview/`)
-2. Create subfolders: `spec/` (the agent can create the others during initialization)
-3. **Copy specification template** from `spec/specification_template.md` to `SalesOverview/spec/`
-4. **Fill in the specification** with your requirements (rename to `spec_sales_overview.md`)
-5. Invoke agent: `@powerbi-AI-developer SalesOverview/spec/spec_sales_overview.md` (it will bootstrap the PBIP scaffold via Step 00 if missing)
-6. (Optional) Create PBIP manually in Power BI Desktop → File → Save As → Power BI Project
-7. Save as: `SalesOverview/PBIP/SalesOverview.pbip`
-
-**See [`[ProjectName]/README.md`]([ProjectName]/README.md) for detailed template instructions.**
 
 ---
 
-## 🏗️ Architecture
+## Getting Started
 
-### Agentic System Design
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/natalinio/agentic-powerbi-squad.git
+   cd agentic-powerbi-squad
+   ```
 
-![Power BI AI Developer Architecture](.github/docs/architecture.png)
+2. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-The system follows a **composable agentic architecture**:
+3. **Open in VS Code** with GitHub Copilot enabled.
 
-```
-User Specification (Markdown)
-        ↓
-@powerbi-AI-developer (Custom Agent)
-        ↓
-┌───────────────────────────────────────────────────┐
-│  Workflow Orchestrator (.github/agents/)          │
-│  ├─ 01-requirements-analysis.md                   │
-│  ├─ 02-logical-model.md                           │
-│  ├─ 03-physical-model-tmdl.md                     │
-│  ├─ 04-dax-development.md                         │
-│  ├─ 05-mock-data-generation.md                    │
-│  ├─ 06-code-review.md                             │
-│  ├─ 07-functional-testing.md                      │
-│  ├─ 08-report-design.md                           │
-│  ├─ 09-report-implementation.md                   │
-│  └─ 10-report-quality-validation.md               │
-└───────────────────────────────────────────────────┘
-        ↓
-┌───────────────────────────────────────────────────┐
-│  Knowledge Base (.github/references/)             │
-│  ├─ Workflow Core (governance: context, gate, checkpoint) │
-│  ├─ TMDL Syntax Reference                         │
-│  ├─ DAX Patterns & Optimization                   │
-│  ├─ Naming Conventions                            │
-│  ├─ Relationship Patterns                         │
-│  ├─ BPA Rules (27+ rules)                         │
-│  ├─ PBIR Visual Templates                         │
-│  ├─ Functional Testing Methodology                │
-│  └─ Workflow State Management                     │
-└───────────────────────────────────────────────────┘
-        ↓
-┌───────────────────────────────────────────────────┐
-│  Universal Tools (.github/scripts/)               │
-│  ├─ fix_lineage_tags.py (GUID regeneration)       │
-│  ├─ remove_tmdl_comments.py (syntax cleanup)      │
-│  └─ run_tests.py (automated DAX testing)          │
-└───────────────────────────────────────────────────┘
-        ↓
-Power BI Semantic Model (PBIP/TMDL)
-```
+4. **Start with a specification** — use `spec/sample_spec.md` as a template, or write your own.
 
-Execution model: **single orchestrator as the only workflow state owner**, with optional specialist workers invoked inside a step (for example TMDL linting, DAX checks, PBIR validation). Workers do not mutate `workflow_state.json` directly.
+5. **Choose your mode**:
+   - **Full project**: `@delivery-lead Build from spec/sample_spec.md`
+   - **Single task**: `@pbi-semantic-model Create a logical model for <requirements>`
 
-### 🎯 The Specification: Your Sacred Grail
-
-The **functional specification** is the **single most critical input** to the agentic workflow. The quality, completeness, and clarity of your specification **directly determines** the quality of the generated semantic model.
-
-**Why the specification is critical:**
-- 🎯 **Source of Truth**: All KPIs, relationships, and business logic derive from it
-- 🔍 **Anti-Hallucination**: Prevents the agent from making assumptions about undefined requirements
-- 📐 **Design Decisions**: Guides data modeling choices (star schema, granularity, hierarchies)
-- 🧪 **Test Foundation**: Automated tests validate against specification requirements
-- 📝 **Documentation**: Becomes living documentation for the semantic model
-
-**Required Structure** (use `specification_template.md`):
-1. **Report Objective & Audience** → Defines scope and use cases
-2. **KPI Definitions** (functional, not technical) → Drives DAX measure generation
-3. **Data Groupings & Segmentations** → Defines dimension hierarchies
-4. **Filter Dimensions** → Determines dimension table design
-5. **Visualization Structure** → Informs relationship optimization
-6. **Data Schema with Sample Values** → Defines physical table structure
-7. **Logical Relationships** → Ensures correct cardinality and cross-filtering
-8. **RLS Requirements** → Security architecture
-9. **Functional Requirements** → **CRITICAL**: Refresh strategy (frequency, storage mode, incremental refresh, data volumes), time intelligence, performance
-10. **Additional Constraints** → Technical limitations, business rules
-
-**⚠️ Section 9 (Refresh Strategy) is MANDATORY:**
-- Without refresh frequency → Agent cannot determine Import vs DirectQuery
-- Without data volumes → Agent cannot configure incremental refresh
-- Without audit fields → Agent cannot set up incremental refresh partitions
-- Incomplete refresh strategy = Suboptimal or incorrect physical model design
-
-**Without a complete specification, the agent CANNOT:**
-- Generate accurate DAX measures
-- Design optimal relationships
-- Create appropriate dimension hierarchies
-- Validate functional correctness
-- Ensure security requirements
-
-**📖 See the template**: [spec/specification_template.md](spec/specification_template.md)
-
-### Anti-Hallucination Strategy
-
-The agent uses **MCP tools** to verify syntax before code generation:
-
-- **`microsoft_docs_search`**: Search Microsoft documentation for TMDL/DAX syntax
-- **`microsoft_docs_fetch`**: Fetch full documentation pages when needed
-- **`microsoft_code_sample_search`**: Find DAX code examples for time intelligence
-
-This ensures **100% accuracy** in TMDL syntax (whitespace-sensitive, tab-indented, YAML-like structure).
+6. **Open the result** in Power BI Desktop: open the `.pbip` file from the `PBIP/` folder.
 
 ---
 
-## 📖 Documentation
+## Sample Project: SalesOverview
 
-- **[Agent Definition](.github/agents/powerbi-AI-developer.agent.md)**: Core agent orchestrator (10-step workflow)
-- **[Build Prompt](.github/prompts/build.prompt.md)**: Reusable prompt for end-to-end project invocation (`/build`)
-- **[Copilot Instructions](.github/copilot-instructions.md)**: Global rules for GitHub Copilot
-- **[Skills](.github/skills/)**: Step-by-step execution guides (Steps 00-10)
-- **[References](.github/references/)**: TMDL/DAX/BPA/PBIR knowledge base
-- **[Architecture Explorer](.github/docs/architecture.html)**: Interactive workflow lane view with dynamic skill descriptions + Agent Explorer tab (open locally in browser)
-- **[Agent Explorer](.github/docs/agent-explorer.html)**: Graph view of the Agent → Skills → References/Scripts hierarchy with Reload and Raw/Rendered preview
-- **[Specification Templates](spec/)**: Templates and examples for writing project specifications
-- **[Contributing](CONTRIBUTING.md)**: How to contribute to this project
+The repository includes a complete example project (`SalesOverview/`) built from a sales analytics specification. It demonstrates:
 
----
+- 7 TMDL tables (5 dimensions + 2 facts)
+- DAX measures with fiscal year time intelligence
+- Mock datasets with referential integrity
+- 3-page PBIR report with KPI cards, charts, slicers, and matrix visuals
+- Functional test definitions and execution results
+- Report validation results
 
-## 🛠️ Advanced Usage
-
-### Custom Project Initialization
-
-```
-@powerbi-AI-developer <YourProjectName>/spec/spec_custom_project.md
-```
-
-**Example:**
-```
-@powerbi-AI-developer FinanceReportFYTD/spec/spec_finance_report.md
-```
-
-### Manual Script Execution
-
-#### Fix LineageTags (After TMDL Generation)
-```powershell
-python .github/scripts/fix_lineage_tags.py <YourProjectName>
-```
-
-**Example:**
-```powershell
-python .github/scripts/fix_lineage_tags.py SalesOverview
-```
-
-#### Remove TMDL Comments (If Parsing Errors)
-```powershell
-python .github/scripts/remove_tmdl_comments.py <YourProjectName>
-```
-
-**Example:**
-```powershell
-python .github/scripts/remove_tmdl_comments.py SalesOverview
-```
-
-#### Run Functional Tests
-```powershell
-python .github/scripts/run_tests.py <YourProjectName> --port 12345 --verbose
-```
-
-**Example:**
-```powershell
-python .github/scripts/run_tests.py SalesOverview --port 54321 --verbose
-```
-
-### Extending the System
-
-1. **Add new DAX patterns**: Edit `.github/references/dax-patterns.md`
-2. **Add BPA rules**: Edit `.github/references/bpa-rules-reference.md`
-3. **Add relationship patterns**: Edit `.github/references/relationship-patterns.md`
-4. **Customize agent behavior**: Edit `.github/agents/powerbi-AI-developer.agent.md`
+Use it as a reference for understanding the output format and project structure.
 
 ---
 
-## 🧪 Example Output
+## Attribution
 
-### Generated Artifacts
+This project builds upon domain knowledge from the **[Goblin Power BI Agentic Development](https://github.com/data-goblins)** project by Data Goblins. Several skills — particularly SVG visuals, Deneb visuals, theme customization, report design patterns, and PBIR reference material — were developed using Goblin's published skill resources as a knowledge source and adapted for this multi-agent architecture.
 
-| Step | Output |
-|------|--------|
-| **Step 1** | Requirements table (KPIs, dimensions, relationships) |
-| **Step 2** | Mermaid ER diagram (Star Schema) |
-| **Step 3** | TMDL files (model.tmdl, tables/, relationships.tmdl) |
-| **Step 4** | DAX measures in `_Measures` table (TOTALYTD, DIVIDE, etc.) |
-| **Step 5** | CSV mock data (referential integrity preserved) |
-| **Step 6** | BPA compliance report (27+ rules validated) |
-| **Step 7** | Automated test results (✅ PASS / ❌ FAIL for each measure) |
-| **Step 8** | Report design blueprint (`report_blueprint.json`) |
-| **Step 9** | PBIR report files (page.json, visual.json per page/visual) |
-| **Step 10** | Report quality validation report (field cross-reference, compliance) |
+Per the Goblin project's license terms:
+
+> *Use or re-use of these skills: These skills are intended for free community use. You do not have the license to copy and incorporate them into your own products, trainings, courses, or tools. If you copy these skills — manually or by using an agent to rewrite them — you must include attribution and a link to this original project.*
+
+**Original project**: [https://github.com/data-goblins](https://github.com/data-goblins)
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- How to set up development environment
-- Coding standards and best practices
-- Pull request process
-- Issue templates (bug reports, feature requests)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
----
+## License
 
-## 📜 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-**Copyright © 2026 Andrea Natali**
-
-You are free to use, modify, and distribute this software, provided you include the copyright notice and license terms.
-
----
-
-## 🙏 Acknowledgments
-
-- **Microsoft Power BI Team**: For PBIP/TMDL format specification
-- **Kimball Group**: For dimensional modeling methodology
-- **GitHub Copilot Team**: For custom agent framework
-- **Open Source Community**: For Python libraries (pandas, faker, pytest)
-
----
-
-## 📧 Contact
-
-- **Author**: Andrea Natali
-- **GitHub**: [@natalinio](https://github.com/natalinio)
-- **Email**: andrea.natali@avanade.com
-
----
-
-## 🗺️ Roadmap
-
-- [ ] **v1.0** (Current): PBIP/TMDL semantic model generation + PBIR report implementation
-- [ ] **v1.1**: Advanced report features (bookmarks, drill-through, conditional formatting)
-- [ ] **v1.2**: Advanced DAX patterns (statistical functions, predictive measures)
-- [ ] **v1.3**: Azure integration (Azure SQL, Azure Data Lake)
-- [ ] **v1.4**: CI/CD pipelines (Azure DevOps, GitHub Actions)
-- [ ] **v2.0**: Multi-model support (Azure Analysis Services, SQL Server)
-
----
-
-## ⭐ Star History
-
-If you find this project useful, please consider giving it a star! ⭐
-
----
-
-**Built with ❤️ by [Andrea Natali](https://github.com/natalinio)**
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
