@@ -12,6 +12,10 @@
 
 **Agentic Power BI Squad** is a **multi-agent system** for Power BI development that runs inside VS Code with GitHub Copilot. Instead of a single monolithic agent, it uses a team of **6 domain-specific agents** coordinated by an orchestrator, each backed by **15 modular skills** containing procedural knowledge, reference materials, and examples.
 
+<p align="center">
+  <img src=".github/docs/Architecture.png" alt="Power BI Agent Squad" width="100%">
+</p>
+
 You provide a functional specification in Markdown. The squad produces:
 
 - **Dimensional data model** (Kimball Star Schema) with TMDL files
@@ -30,7 +34,7 @@ The output is a complete **PBIP project** that opens directly in Power BI Deskto
 
 ## Architecture
 
-### Agents
+### Agents Squad
 
 | Agent | Domain | Description |
 |---|---|---|
