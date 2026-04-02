@@ -12,9 +12,7 @@
 
 **Agentic Power BI Squad** is a **multi-agent system** for Power BI development that runs inside VS Code with GitHub Copilot. Instead of a single monolithic agent, it uses a team of **6 domain-specific agents** coordinated by an orchestrator, each backed by **15 modular skills** containing procedural knowledge, reference materials, and examples.
 
-<p align="center">
-  <img src=".github/docs/Architecture.png" alt="Power BI Agent Squad" width="100%">
-</p>
+![Agent squad Power BI Architecture](.github/docs/architecture.png)
 
 You provide a functional specification in Markdown. The squad produces:
 
@@ -29,6 +27,17 @@ You provide a functional specification in Markdown. The squad produces:
 - **Quality validation** at every step
 
 The output is a complete **PBIP project** that opens directly in Power BI Desktop.
+
+### Two Ways to Work
+
+The squad supports **two operating modes**:
+
+| Mode | How it works | When to use |
+|---|---|---|
+| **Workflow Mode** | The `delivery-lead` orchestrator coordinates all 6 agents through a structured 10-step pipeline with approval gates at each phase | Building a complete project from a specification end-to-end |
+| **Standalone Mode** | Invoke any agent directly (e.g., `@pbi-semantic-model`, `@pbi-report`, `@pbi-qa`) for a specific task | Adding a measure, creating a visual, running tests, or any targeted change |
+
+Both modes share the same agents, skills, and project structure — the difference is whether you want full orchestration or direct control.
 
 ---
 
