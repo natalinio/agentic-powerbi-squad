@@ -13,6 +13,8 @@ user-invocable: true
 ## Purpose
 Generate the physical Power BI Report (PBIR) files from the report design blueprint (`report_blueprint.json`) produced in Step 8. This step creates the actual page folders, `page.json` files, visual folders, and `visual.json` files inside the PBIP Report definition.
 
+This step must implement the strategy already decided in the blueprint. It must not silently redesign mockup translation decisions or feasibility constraints.
+
 ## Prerequisites — MANDATORY
 Before starting report implementation:
 1. ✅ Step 8 completed and approved — `<ProjectName>/spec/report_blueprint.json` exists on disk.
@@ -80,6 +82,12 @@ Before generating ANY PBIR JSON:
    - All column names per table (PascalCase)
    - All measure names from `_Measures.tmdl` (natural language with spaces)
 3. **CROSS-VALIDATE**: Verify that every field referenced in `report_blueprint.json` exists in the Model Object Registry. If any field is missing, **STOP** and report the discrepancy.
+4. **READ strategy metadata**: If a visual declares `implementationStrategy`, honor the selected mode (`native`, `composite-native`, `svg`, `deneb`, `approximation`, `not-feasible`) during generation.
+5. **LOAD custom-visual skills on demand**:
+   - If `implementationStrategy.mode = svg`, load the `svg-visuals` skill before implementation.
+   - If `implementationStrategy.mode = deneb`, load the `deneb-visuals` skill before implementation.
+   - If `implementationStrategy.mode = approximation`, implement only the documented approximation. Do not invent a new strategy.
+   - If `implementationStrategy.mode = not-feasible`, STOP and report the blueprint conflict instead of generating a fake equivalent.
 
 ### 9.2 Clean Up Existing Report Pages
 
@@ -221,6 +229,7 @@ Where `<visualRuntimeId>` is the generated PBIR runtime id for the visual.
 9. **Validate reference coverage**: If the chosen visual family or payload pattern is not already represented in the PBIR references, add the generalized rule or stop and capture a Desktop-generated reference before continuing.
 10. **Validate scatter grouping**: A scatter visual must have at least one categorical field in `queryState.Series` (Legend — colored bubbles) or `queryState.Details` (Values — point identity). Use `Series` when the design requires color-coded bubbles per category. If neither role contains a categorical field, the visual collapses to a single point.
 11. **Validate unique nativeQueryRef**: When the same measure is placed in multiple query-state roles within the same visual, each projection must have a distinct `nativeQueryRef`. Duplicate values cause a Desktop runtime error. Append a disambiguating suffix such as `(Size)` or `(Tooltip)` to the secondary occurrence.
+12. **Validate strategy alignment**: The generated PBIR payload must remain compatible with the blueprint's `implementationStrategy`. If the implementation requires a different mode than the one declared in the blueprint, STOP and send the issue back to report design rather than silently switching strategy.
 
 9. **Selection/Layer Metadata Naming (CONDITIONAL)**:
     - When the visual family uses `visualContainerObjects.title`, set `text.expr.Literal.Value` using this pattern:
@@ -333,6 +342,10 @@ For basic reports, the existing `report.json` from Step 00 is sufficient.
    - **Cause**: Gauge, treemap, or map placed into a tile too small for legible rendering.
    - **Action**: Expand the visual to the minimum analytical surface implied by tokens or repository defaults; if page space is insufficient, stop and request a layout revision instead of forcing a crowded render.
 
+9. **Strategy Mismatch**:
+   - **Cause**: Blueprint declares `native` or `composite-native`, but implementation would require `svg` or `deneb` to preserve the intended behavior.
+   - **Action**: STOP. Report the mismatch and require a blueprint update instead of silently changing the implementation mode.
+
 ---
 
 ## Validation Gate — MANDATORY
@@ -358,6 +371,7 @@ Before presenting results to the user, verify:
 - [ ] All JSON files reference the correct Microsoft `$schema` URLs
 - [ ] All JSON files are encoded as UTF-8 without BOM
 - [ ] Every visual requiring explicit ranking or ordering has `query.sortDefinition`
+- [ ] Every visual with `implementationStrategy` is implemented with the declared strategy mode or an explicitly approved equivalent
 - [ ] Top-row dropdown slicers respect the minimum usable height baseline (`>= 64 px`)
 - [ ] Grouped KPI bands use an explicit value font size baseline (`20D`) unless a validated design override exists
 - [ ] Gauge visuals use canonical `Y` / `TargetValue` query buckets

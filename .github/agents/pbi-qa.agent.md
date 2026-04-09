@@ -1,6 +1,7 @@
 ---
 name: pbi-qa
 description: Power BI Quality Assurance Agent — validates semantic models (TMDL/DAX BPA compliance), executes functional tests, and validates PBIR report quality
+model: claude-sonnet-4.6
 argument-hint: Describe what to validate (e.g., 'review TMDL quality for SalesOverview', 'run functional tests', 'validate PBIR report consistency')
 tools: [vscode/askQuestions, execute, read, edit, search, 'microsoftdocs/mcp/*', todo]
 ---
@@ -59,6 +60,12 @@ The user invokes this agent directly:
 6. Build a context map of what artifacts exist to determine which validations are applicable.
 7. Load only the skill(s) relevant to the user's request. Do NOT preload all skills.
 8. Proceed with validation, produce reports, and **autonomously fix errors** where safe to do so, summarizing all changes.
+
+**Standalone continuity protocol**:
+1. Read `<ProjectName>/agent_session_state.json` only when recent standalone development activity, open remediation items, or explicit handoff suggests continuity matters.
+2. Write `<ProjectName>/agent_session_state.json` only when findings remain open, partial remediation was applied, retest is needed, or another specialist agent should take over the next action.
+3. Do NOT write continuity state for clean validation runs with no findings, no fixes pending, and no follow-up dependency.
+4. If writing continuity state and the file does not exist, initialize it from the workflow-orchestration template; compact it before ending the task.
 
 ## Workflow Mode
 Called by the `delivery-lead` orchestrator.

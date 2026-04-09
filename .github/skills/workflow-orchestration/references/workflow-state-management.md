@@ -180,6 +180,200 @@ Mandatory behavior:
 
 ---
 
+## 1.2 Standalone Continuity State (`agent_session_state.json`)
+
+This file is used only for direct, on-demand invocations of specialist agents outside the `delivery-lead` orchestrated workflow.
+
+**Location**: `<ProjectName>/agent_session_state.json`
+
+Purpose:
+
+1. preserve unresolved standalone-task context that may need to survive context compaction, session restart, or cross-agent handoff;
+2. let a later standalone agent quickly identify open items and recent relevant artifacts;
+3. avoid reconstructing meaning from audit logs or raw tool history.
+
+Non-purpose:
+
+1. not an audit trail;
+2. not a full conversation log;
+3. not a replacement for project artifacts on disk;
+4. not a second `workflow_state.json`.
+
+### Recommended Shape
+
+```json
+{
+  "$schema": "agent_session_state_schema",
+  "project": "<ProjectName>",
+  "workspaceRoot": ".",
+  "activeSessionId": "2026-04-08T10-15-33Z_7f3c2a",
+  "lastUpdatedAt": "2026-04-08T10:42:11Z",
+  "summary": {
+    "lastAgent": "pbi-semantic-model",
+    "lastTaskType": "dax-development",
+    "lastOutcome": "completed-with-warnings",
+    "openHandOffRequired": true
+  },
+  "openItems": [
+    {
+      "id": "item-001",
+      "type": "decision",
+      "title": "Confirm fiscal year start month",
+      "status": "pending-user",
+      "createdAt": "2026-04-08T10:20:00Z",
+      "ownerAgent": "pbi-semantic-model",
+      "recommendedNextAgent": "business-data-analyst",
+      "notes": "YTD measures blocked until fiscal calendar semantics are confirmed."
+    }
+  ],
+  "recentTasks": [
+    {
+      "taskId": "task-2026-04-08-001",
+      "sessionId": "2026-04-08T10-15-33Z_7f3c2a",
+      "timestamp": "2026-04-08T10:40:12Z",
+      "agent": "pbi-semantic-model",
+      "invocationMode": "direct",
+      "taskType": "dax-development",
+      "userIntent": "Add YTD and variance measures",
+      "status": "completed-with-warnings",
+      "persisted": true,
+      "whyPersisted": [
+        "created-artifacts",
+        "open-decision",
+        "cross-agent-handoff"
+      ],
+      "artifactsRead": [
+        "<ProjectName>/spec/requirements_summary.md",
+        "<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/tables/FactSales.tmdl"
+      ],
+      "artifactsWritten": [
+        "<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/tables/_Measures.tmdl"
+      ],
+      "decisionsMade": [
+        {
+          "kind": "assumption",
+          "text": "Used Date[Date] as primary calendar until fiscal calendar is confirmed",
+          "approvedByUser": false
+        }
+      ],
+      "issuesFound": [
+        {
+          "severity": "medium",
+          "code": "missing-fiscal-calendar",
+          "message": "Fiscal YTD measure not implemented due to unresolved fiscal semantics"
+        }
+      ],
+      "handoff": {
+        "required": true,
+        "targetAgent": "business-data-analyst",
+        "reason": "Need business clarification before completing fiscal measures"
+      },
+      "resumeHints": [
+        "Read requirements summary first",
+        "Check unresolved openItems before editing DAX"
+      ]
+    }
+  ]
+}
+```
+
+### Initialization Rule (MANDATORY)
+
+If a standalone specialist task meets the write threshold and `<ProjectName>/agent_session_state.json` does not exist yet:
+
+1. create it from `.github/skills/workflow-orchestration/references/agent_session_state.template.json`;
+2. replace template placeholders with the real project and session values;
+3. write only the minimal state required for the current task;
+4. avoid inventing historical entries.
+
+### Retention Model (MANDATORY)
+
+Use a bounded snapshot model, not append-only logging.
+
+1. Keep `openItems` until they are resolved or explicitly closed.
+2. Keep at most the last 10 persisted records in `recentTasks`.
+3. Update `summary` on every persisted standalone task.
+4. Remove or compact stale entries once their context is fully reflected in project artifacts and no handoff remains open.
+
+### Finalization Rule (MANDATORY)
+
+Whenever a standalone specialist agent writes `agent_session_state.json`, it must compact the file before ending the task.
+
+Preferred command:
+
+```text
+python .github/skills/workflow-orchestration/scripts/compact_agent_session_state.py <ProjectName>
+```
+
+The task should not finish with an untrimmed continuity file containing stale or redundant entries.
+
+### Why Not Append-Only JSONL
+
+Append-only JSONL is NOT the default for standalone continuity.
+
+Reasons:
+
+1. it grows indefinitely without improving resumability;
+2. it pushes later agents to infer semantics from raw history;
+3. it consumes context budget when re-read;
+4. it behaves like audit logging, not working memory.
+
+If a technical audit trail is needed, keep it in a separate log. Do not overload standalone continuity state with that responsibility.
+
+### Write Threshold (MANDATORY)
+
+A standalone specialist agent should write `agent_session_state.json` only if at least one of the following is true:
+
+1. it created or modified relevant project artifacts;
+2. it introduced an unresolved assumption or business clarification need;
+3. it found an unresolved defect, warning cluster, or remediation need;
+4. it completed only part of the requested work and resumability matters;
+5. it recommends an explicit handoff to another specialist agent;
+6. the task is clearly part of a short multi-step chain outside `delivery-lead`.
+
+The agent should NOT write state when all of the following are true:
+
+1. the task is self-contained and fully complete;
+2. final artifacts already make the outcome obvious;
+3. there are no unresolved decisions, open issues, or handoffs;
+4. the task was purely exploratory, informational, or one-shot review.
+
+### Read Threshold (MANDATORY)
+
+A standalone specialist agent should read `agent_session_state.json` only if continuity is likely to matter.
+
+Read it when at least one of the following is true:
+
+1. the user asks to continue, resume, complete, fix, or follow up prior work;
+2. `openItems` is non-empty;
+3. `summary.openHandOffRequired` is `true`;
+4. the task targets the same artifact area recently modified by another specialist agent;
+5. the previous task explicitly recommended handoff to the current agent.
+
+Do NOT read it by default for every standalone task. First prefer:
+
+1. the user's current request;
+2. explicitly referenced project artifacts;
+3. current files on disk.
+
+The continuity state is a navigation aid, not the final source of truth.
+
+### Per-Agent Read / Write Matrix
+
+| Agent | Read `agent_session_state.json` When | Write `agent_session_state.json` When |
+|---|---|---|
+| `business-data-analyst` | A prior standalone task left unresolved business clarifications or requested semantics confirmation | Clarifications remain open, assumptions were proposed, or a downstream agent depends on requirement resolution |
+| `pbi-semantic-model` | A prior task left open model decisions, unresolved DAX/TMDL assumptions, or a handoff from QA/analyst exists | Model artifacts changed, assumptions remain unresolved, work is partial, or another agent must pick up validation/business clarification |
+| `pbi-report` | A prior task left blueprint/binding decisions open, or QA/model work recommends report remediation | PBIR/blueprint artifacts changed, field-binding warnings remain, layout/design work is partial, or QA handoff is needed |
+| `pbi-qa` | A prior task indicates recent model/report changes or open remediation items that should be validated | Findings remain open, fixes were partially applied, retest/remediation is required, or explicit handoff to model/report agent is needed |
+| `data-generator` | A prior task changed the semantic model in ways that affect generated data, partitions, or referential integrity expectations | Data generation produced artifacts that require follow-up, assumptions about grain/domain remain open, or QA/model handoff is needed |
+
+### Accuracy Rule
+
+When `agent_session_state.json` disagrees with current project artifacts, the artifacts on disk win. The agent must treat continuity state as a compact summary only.
+
+---
+
 ## 2. Intermediate Artifact Checkpointing
 
 Every step MUST persist its primary output to disk. No significant output should remain only in chat.

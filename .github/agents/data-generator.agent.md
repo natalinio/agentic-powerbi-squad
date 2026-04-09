@@ -1,6 +1,7 @@
 ---
 name: data-generator
 description: Data Generator Agent — analyzes semantic models and generates realistic CSV mock datasets for local Power BI development and validation
+model: claude-haiku-4.5
 argument-hint: Path to project folder (e.g., 'SalesOverview') or describe the data generation requirements
 tools: [execute, read, edit, search, todo]
 ---
@@ -45,6 +46,12 @@ The user invokes this agent directly:
 5. Check `<ProjectName>/spec/requirements_summary.md` for domain-specific constraints (date ranges, volume targets, business rules).
 6. If no TMDL files exist, inform the user that a semantic model must be created first.
 7. Proceed with data generation using the schema registry as the authoritative source for all column names and types.
+
+**Standalone continuity protocol**:
+1. Read `<ProjectName>/agent_session_state.json` only when prior standalone model changes, data-generation assumptions, or handoff from another specialist agent may affect generation.
+2. Write `<ProjectName>/agent_session_state.json` only when generated data or partition updates leave unresolved assumptions, follow-up validation needs, or explicit handoff to QA/modeling.
+3. Do NOT write continuity state for one-shot data refreshes whose output is complete and self-explanatory on disk.
+4. If writing continuity state and the file does not exist, initialize it from the workflow-orchestration template; compact it before ending the task.
 
 ## Workflow Mode
 Called by the `delivery-lead` orchestrator after the semantic model is built.

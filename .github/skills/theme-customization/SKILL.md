@@ -16,6 +16,8 @@ user-invocable: true
 ## Purpose
 Create, modify, validate, and enforce Power BI report themes. A well-designed theme ensures visual consistency across the report by pushing formatting into a centralized JSON file rather than scattering overrides across individual visuals.
 
+When a report is driven by a UI mockup, screenshot, Figma file, or React prototype, this skill should be used early to extract and encode the visual design system before heavy PBIR implementation begins.
+
 ## Prerequisites
 1. ✅ A PBIP project exists with `<ProjectName>/PBIP/<ProjectName>.Report/` folder.
 2. ✅ The theme file lives at `StaticResources/SharedResources/BaseThemes/<ThemeName>.json` or `StaticResources/RegisteredResources/<ThemeName>.json`.
@@ -65,6 +67,18 @@ Level 4  Visual instance:    visual.json objects             → overrides every
 2. **Identify the change scope**: colors, typography, wildcard, visual-type overrides.
 3. **Apply changes** following the structure from `references/theme-json-structure.md`.
 4. **Validate** with `references/theme-validation-checklist.md`.
+
+### B.1) Theme-First Workflow for Mockup-Driven Reports
+
+When a visual mockup is available, prefer a theme-first approach before detailed PBIR layout work.
+
+1. Extract design tokens from the mockup: page background, card surfaces, accent colors, sentiment colors, typography hierarchy, spacing rhythm, and container treatment.
+2. Encode reusable tokens in the theme JSON first instead of scattering them across visuals.
+3. Reserve visual-level overrides for true one-offs, SVG content, Deneb specifics, or conditional formatting.
+4. Align `good`, `bad`, and `neutral` with the mockup's semantic cues when possible.
+5. Document any mockup styling that cannot be expressed in the theme and must remain a visual-level approximation.
+
+This reduces drift between design intent and implementation and improves consistency when a mockup must be translated into a Power BI-feasible visual language.
 
 ### C) Promote Visual Overrides to Theme
 

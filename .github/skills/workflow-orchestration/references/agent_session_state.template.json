@@ -1,0 +1,14 @@
+{
+  "project": "<ProjectName>",
+  "workspaceRoot": ".",
+  "activeSessionId": "<SESSION_ID>",
+  "lastUpdatedAt": "<ISO_8601_UTC>",
+  "summary": {
+    "lastAgent": null,
+    "lastTaskType": null,
+    "lastOutcome": "not-started",
+    "openHandOffRequired": false
+  },
+  "openItems": [],
+  "recentTasks": []
+}

@@ -1,6 +1,7 @@
 ---
 name: business-data-analyst
 description: Business & Data Analyst — analyzes functional requirements, extracts KPIs, dimensions, grain, constraints, and produces structured requirement summaries for Power BI development
+model: claude-sonnet-4.6
 argument-hint: Path to specification file or paste requirements text directly
 tools: [vscode/askQuestions, read, edit, search, todo]
 ---
@@ -42,6 +43,12 @@ The user invokes this agent directly to analyze a specification or discuss requi
 2. Check if `<ProjectName>/spec/` already contains specifications or a `requirements_summary.md`.
 3. If an existing summary exists, read it to understand prior analysis before proposing changes.
 4. If no project context exists, ask the user to provide or paste the functional specification.
+
+**Standalone continuity protocol**:
+1. Read `<ProjectName>/agent_session_state.json` only if the user is resuming prior work, unresolved clarifications are likely, or a prior handoff points to this agent.
+2. Write `<ProjectName>/agent_session_state.json` only if unresolved clarifications, assumptions, or downstream handoffs remain after the task.
+3. Do NOT write continuity state for one-shot analysis with no open decisions.
+4. If writing continuity state and the file does not exist, initialize it from the workflow-orchestration template; compact it before ending the task.
 
 The agent produces or updates `requirements_summary.md` and presents it to the user.
 

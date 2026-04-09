@@ -15,8 +15,11 @@ Design the Power BI report experience (pages, layout, visuals, interactions, nav
 - the functional specification (`<ProjectName>/spec/*.md`), and
 - the finalized semantic model (`<ProjectName>/PBIP/<ProjectName>.SemanticModel/definition/`).
 - any user-validated visual baseline, such as screenshots, manually refined report pages, or design feedback captured during the workflow.
+- optional UI mockups or prototypes from Figma, React, screenshots, or other design tools.
 
 This step produces a **design blueprint** only. It does NOT implement PBIP report artifacts.
+
+When visual mockups are provided, this step must first translate them into Power BI-feasible implementation strategies before finalizing the layout.
 
 This step must convert requirements into a report that is:
 - analytically clear,
@@ -31,6 +34,7 @@ This step must convert requirements into a report that is:
 - Use `references/cards-and-kpis.md` for KPI card design, target sourcing, display units, gap formatting.
 - Use `references/tables-and-matrices.md` for table/matrix formatting, conditional formatting, sparklines.
 - Use `references/visual-colors.md` for color strategy, semantic colors, contrast, accessibility.
+- Use `references/mockup-to-powerbi-patterns.md` when visual evidence such as Figma, screenshots, or React prototypes is provided.
 - Use `references/page-titles.md` for title textbox implementation, paragraph structure.
 - NEVER invent measure/field names: always read them from TMDL.
 - If the user has manually refined one or more pages in Power BI Desktop, treat that validated visual grammar as authoritative unless it conflicts with the specification.
@@ -66,6 +70,9 @@ Before starting report design:
   - screenshots
   - manual page reconstructions in Power BI Desktop
   - explicit UX feedback captured in chat or state
+5. Theme baseline, if visual evidence exists:
+  - current report theme JSON if already present
+  - brand palette, typography, spacing, container treatment, and semantic color cues extracted from the mockup
 
 ### 8.2 Build a Visual Design Field Registry (MANDATORY)
 Create an internal registry of report-usable objects by reading TMDL (same anti-hallucination principle as Step 7):
@@ -78,6 +85,49 @@ Create an internal registry of report-usable objects by reading TMDL (same anti-
 **CRITICAL RULES**:
 - NEVER guess object names.
 - If the spec uses business labels that don't map 1:1 to model objects, ask clarifying questions and STOP.
+
+### 8.2A Mockup-to-PowerBI Translation Pass (MANDATORY when visual evidence exists)
+
+If the user or orchestrator provides a mockup, screenshot, Figma export, or React-based visual prototype, perform a translation and feasibility pass before finalizing the storyboard or page layout.
+
+For every relevant mockup component, classify implementation using this decision order:
+
+1. `native` — realizable with a single native Power BI visual.
+2. `composite-native` — realizable with multiple coordinated native visuals.
+3. `svg` — realizable with inline SVG via DAX or extension measures.
+4. `deneb` — realizable with Deneb custom visual.
+5. `approximation` — not exactly reproducible, but can be redesigned credibly within Power BI constraints.
+6. `not-feasible` — should be declared explicitly, not faked.
+
+For each component, capture:
+
+1. intended UX purpose;
+2. chosen implementation mode;
+3. Power BI constraints that affect fidelity;
+4. workaround strategy if exact parity is impossible;
+5. fidelity risk (`low`, `medium`, `high`).
+
+Power BI constraint reminders:
+
+1. Power BI is not a generic web layout engine.
+2. Pixel-perfect replication of React/Figma components is not always realistic.
+3. Interactions may need reinterpretation via slicers, bookmarks, tooltips, drillthrough, or page navigation.
+4. Typography, spacing, and container composition should prioritize perceptual fidelity, not literal HTML/CSS parity.
+
+### 8.2B Theme-First Translation Rule (MANDATORY when mockup exists)
+
+If visual evidence exists, extract the visual design system before final page composition.
+
+At minimum capture:
+
+1. background and surface colors;
+2. primary accent colors;
+3. positive/negative/neutral sentiment colors;
+4. typography hierarchy;
+5. container styling (border, shadow, corner treatment, padding);
+6. spacing rhythm for header, KPI zones, chart zones, and navigation.
+
+These tokens must be reflected in the blueprint `sourceDesign` and `designSystem` sections and should be treated as the preferred input for `theme-customization` before large-scale PBIR implementation.
 
 ### 8.3 Build the Storyboard Before the Layout (MANDATORY)
 Before placing any visual on a page, define the narrative skeleton for each page:
@@ -171,6 +221,12 @@ The agent MUST generate and save the report design blueprint as a **physical JSO
     "audienceNotes": [],
     "globalDesignConstraints": []
   },
+  "sourceDesign": {
+    "hasMockup": false,
+    "mockupType": null,
+    "fidelityGoal": "medium",
+    "notes": []
+  },
   "designSystem": {
     "gridUnit": 8,
     "pagePadding": 16,
@@ -228,6 +284,18 @@ The agent MUST generate and save the report design blueprint as a **physical JSO
         {
           "visualId": "visual_01",
           "visualType": "multiRowCard",
+          "mockupComponentName": null,
+          "mockupIntent": null,
+          "implementationStrategy": {
+            "mode": "native",
+            "primaryVisualType": "multiRowCard",
+            "secondaryVisualTypes": [],
+            "fallbackMode": null,
+            "fidelityRisk": "low",
+            "constraints": [],
+            "workarounds": [],
+            "notFeasibleAspects": []
+          },
           "title": "Total Sales FYTD",
           "measures": ["Sales Amount FYTD"],
           "axisFields": [],
@@ -287,6 +355,8 @@ The agent MUST follow these rules when generating the JSON:
 10. **Container treatment**: Every slicer, KPI band, and analysis visual must declare a container style or explicitly opt out with a reason.
 11. **Sorting metadata**: Every sortable chart or table must define `sortBy`, including field and direction.
 12. **KPI grouping rationale**: If a page shows multiple KPIs in one zone, choose between `card` and `multiRowCard` explicitly and record the reason.
+13. **Mockup translation metadata**: If visual evidence exists, each mockup-driven visual must declare `implementationStrategy` and any relevant Power BI constraints or approximations.
+14. **No silent feasibility downgrade**: If the chosen strategy is `approximation` or `not-feasible`, record it explicitly in the blueprint instead of hiding the limitation in narrative text only.
 
 Recommended blueprint extension for field parameters:
 
@@ -337,6 +407,7 @@ Present a summary of the saved blueprint and await confirmation before proceedin
 | `references/report-design-visualization-best-practices.md` | Chart selection, storytelling, spacing, sorting, accessibility |
 | `references/layout-guidelines.md` | Page dimensions, margins, grid system, visual zones, sample layouts |
 | `references/cards-and-kpis.md` | KPI design, target sourcing, display units, gap formatting, icons |
+| `references/mockup-to-powerbi-patterns.md` | Feasibility mapping patterns, theme extraction, and concrete mockup translation examples |
 | `references/tables-and-matrices.md` | Table vs matrix, column selection, formatting, conditional formatting, sparklines |
 | `references/visual-colors.md` | Theme colors, semantic colors, contrast, conditional formatting colors, accessibility |
 | `references/page-titles.md` | Textbox implementation, paragraph structure, dynamic titles, theme integration |

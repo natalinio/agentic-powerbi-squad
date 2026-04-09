@@ -1,6 +1,7 @@
 ---
 name: pbi-semantic-model
 description: Power BI Semantic Model Expert — designs logical models, authors TMDL physical models, develops DAX measures, manages relationships and semantic model modifications
+model: claude-sonnet-4.6
 argument-hint: Describe the model task (e.g., 'create logical model from requirements_summary.md', 'add DAX measure for YTD sales', 'fix relationship in Fact_Sales')
 tools: [vscode/askQuestions, execute, read, edit, search, 'powerbi-modeling-mcp/*', 'microsoftdocs/mcp/*', todo]
 ---
@@ -84,6 +85,12 @@ The user invokes this agent directly for any semantic model task:
 4. If the task involves a new model (no TMDL exists), check `<ProjectName>/spec/` for requirements summary or ER diagram.
 5. Load only the skill(s) relevant to the task. Do NOT preload all skills.
 6. Proceed with the requested action using the registry as source of truth for all object names.
+
+**Standalone continuity protocol**:
+1. Read `<ProjectName>/agent_session_state.json` only when the user is continuing prior work, unresolved model decisions may matter, or another specialist agent handed off to this agent.
+2. Write `<ProjectName>/agent_session_state.json` only when model artifacts changed and unresolved assumptions, open issues, partial work, or cross-agent handoff remain.
+3. Do NOT write continuity state for fully completed, self-contained fixes whose outcome is already obvious from final model artifacts.
+4. If writing continuity state and the file does not exist, initialize it from the workflow-orchestration template; compact it before ending the task.
 
 ## Workflow Mode
 Called by the `delivery-lead` orchestrator. 

@@ -25,11 +25,22 @@ This skill is NOT invocable by users directly. It is consumed exclusively by the
 - `.github/skills/workflow-orchestration/references/workflow-core.md` — governance rules (context flushing, checkpointing, stop gate)
 - `.github/skills/workflow-orchestration/references/workflow-state-management.md` — `workflow_state.json` schema, lifecycle rules, decision point tracking
 
+## State Ownership Model
+
+Two different persistence models exist and MUST NOT be conflated:
+
+1. `workflow_state.json` — owned exclusively by `delivery-lead` during end-to-end orchestrated workflows.
+2. `agent_session_state.json` — optional compact continuity state for standalone, on-demand specialist agent tasks.
+
+`workflow_state.json` is never written by specialist agents. `agent_session_state.json` is never used as the source of truth for end-to-end phase progression.
+
 ## Workflow State File
 
 **Location**: `<ProjectName>/workflow_state.json`
 
 The orchestrator MUST maintain this file throughout the entire workflow. It is the single source of truth for workflow progress.
+
+Specialist workers MAY read this file when invoked by `delivery-lead`, but MUST NOT write it directly.
 
 ### State Lifecycle Rules
 
@@ -85,6 +96,21 @@ When transitioning between phases:
 3. **WRITE** outputs to disk before presenting results.
 4. **UPDATE** `workflow_state.json` after user approval.
 
+## Specialist Handoff Rule
+
+When `delivery-lead` delegates a workflow phase to a specialist agent, the handoff must be explicit and artifact-based.
+
+The minimum handoff payload is:
+
+1. `projectName`
+2. current phase name
+3. exact task objective
+4. required input artifact paths
+5. relevant `decisionLedger` entries
+6. unresolved blocking clarifications, if any
+
+Specialist agents must treat this payload plus project artifacts on disk as their source of task context. They must not assume full conversational history is available or authoritative.
+
 ## Decision Point Tracking
 
 Critical clarifications that are blocking for the workflow:
@@ -102,3 +128,44 @@ Create/update `<ProjectName>/lessons-learned.md` **only** when:
 3. The user asks for diagnosis/fix.
 
 Never create it during normal phase progression.
+
+## Standalone Agent Continuity State
+
+For direct specialist-agent invocations outside `delivery-lead`, use a separate compact state file only when cross-task continuity is actually needed.
+
+**Location**: `<ProjectName>/agent_session_state.json`
+
+This file is optional and exists only to preserve relevant context across standalone invocations without relying on chat history.
+
+Use it for:
+
+1. unresolved decisions or assumptions;
+2. open remediation items;
+3. partial work likely to be resumed;
+4. explicit handoff from one specialist agent to another;
+5. recent artifact-level activity that is not yet obvious from final project outputs alone.
+
+Do NOT use it for:
+
+1. full audit logging;
+2. tool-by-tool execution history;
+3. complete prompt history;
+4. end-to-end workflow ownership;
+5. long retention of stale task history.
+
+Retention policy:
+
+1. Keep `openItems` until resolved.
+2. Keep only the most recent 10 persisted standalone tasks in `recentTasks`.
+3. Summarize aggressively; never store verbose command output.
+4. Prefer accuracy and resumability over exhaustiveness.
+
+Maintenance helper:
+
+- `.github/skills/workflow-orchestration/scripts/compact_agent_session_state.py` — trims `recentTasks`, removes closed `openItems`, and refreshes the summary block for `agent_session_state.json`.
+- `.github/skills/workflow-orchestration/references/agent_session_state.template.json` — initial template to create the file when standalone continuity state is needed for the first time.
+
+Design choice:
+
+- Default to bounded snapshot JSON (`agent_session_state.json`).
+- Do NOT use append-only JSONL for standalone continuity by default. Append-only logs grow without improving decision quality, consume context budget, and force later agents to reconstruct semantics from noise.

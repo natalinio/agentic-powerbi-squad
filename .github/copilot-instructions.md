@@ -46,6 +46,46 @@ Cross-cutting references used by multiple agents live in `.github/references/`:
 - `pbip-folder-structure.md` — PBIP workspace folder layout
 - `security-rls-best-practices.md` — Row-level security patterns
 
+## Persistence Model
+
+This repository uses two distinct persistence models:
+
+- `workflow_state.json` — used only for end-to-end workflows orchestrated by `delivery-lead`
+- `agent_session_state.json` — optional compact continuity state for direct standalone specialist-agent tasks
+
+Rules:
+
+- `delivery-lead` is the only owner allowed to update `workflow_state.json`
+- specialist agents must not write `workflow_state.json` directly
+- specialist agents may read or write `agent_session_state.json` only in standalone mode and only when continuity materially improves correctness or resumability
+- `agent_session_state.json` must remain compact: open items plus the last 10 relevant persisted standalone tasks
+- append-only logs are not the default working-memory format for standalone continuity
+
+## Agent Model Assignment
+
+This repository assigns AI models per agent instead of relying on one shared default model.
+
+Rules:
+
+- agent-level `model` in `.github/agents/*.agent.md` is the preferred control point for model routing
+- use only model identifiers supported by the active client and enabled by the organization or enterprise policy
+- if a configured model is no longer available in the tenant, replace it with the nearest model in the same family rather than removing the `model` property
+
+Current assignments:
+
+- `delivery-lead` -> `claude-sonnet-4.6`
+- `business-data-analyst` -> `claude-sonnet-4.6`
+- `pbi-semantic-model` -> `claude-sonnet-4.6`
+- `pbi-report` -> `claude-sonnet-4.6`
+- `pbi-qa` -> `claude-sonnet-4.6`
+- `data-generator` -> `claude-haiku-4.5`
+
+Fallback guidance:
+
+- orchestration and deep analysis agents should use `claude-sonnet-4.6` by default in this repository; if a future client release recognizes `claude-opus-*`, prefer that family for `delivery-lead`
+- code-centric implementation or review agents should fall back first to `claude-sonnet-4.6`; if the client later recognizes OpenAI coding models, prefer the latest enabled `*-codex` model
+- lightweight executor agents should fall back first to `claude-haiku-4.5`
+
 ---
 
 # 2. Global Response Rules
