@@ -299,7 +299,7 @@ Examples:
 
 ## Submission Checklist
 
-Before submitting this specification to the `@powerbi-AI-developer` agent, ensure:
+Before submitting this specification to the `@delivery-lead` orchestrator, ensure:
 
 ### Core Requirements
 - [ ] All sections are filled with project-specific information
@@ -333,5 +333,5 @@ Save this file as:
 
 Then invoke the agent:
 ```
-@powerbi-AI-developer <YourProjectName>/spec/spec_<your_project_name>.md
+@delivery-lead Build a Power BI project from <YourProjectName>/spec/spec_<your_project_name>.md
 ```

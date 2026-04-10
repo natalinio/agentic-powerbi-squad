@@ -35,6 +35,34 @@ Before starting report quality validation:
 
 > **Performance Rule**: Load the full PBIR payload into context only when strictly necessary. Run `.github/scripts/validate_pbir_report.py <ProjectName>` for bulk validation first; inspect raw PBIR files individually only for targeted remediation.
 
+> **CLI Rule**: If the local `pbir` CLI is available, it may be used for a fast local pre-check (`pbir validate`, `pbir tree -v`, `pbir fields list`, `pbir filters list`) but it does **NOT** replace the repository validator or the final report produced by this skill. Never run `pbir setup` here.
+
+### Canonical `pbir` Pre-Check Patterns
+
+Use these only as supplemental local validation helpers:
+
+1. Structural overview before deep validation:
+
+```powershell
+pbir tree "Sales.Report" -v
+```
+
+2. Fast validation sweep:
+
+```powershell
+pbir validate "Sales.Report"
+pbir validate "Sales.Report" --all
+```
+
+3. Inspect bindings and report behavior quickly:
+
+```powershell
+pbir fields list "Sales.Report"
+pbir filters list "Sales.Report"
+```
+
+4. If the CLI is unavailable or its output is incomplete, continue directly with the repository validator and targeted PBIR inspection.
+
 **In scope**: PBIR syntax and structural validation, visual binding cross-check, blueprint coherence, SVG measure review, Deneb visual review, design quality assessment, validation report with PASS/WARNING/FAIL outcomes.
 **Out of scope**: redesigning report UX, adding visuals/pages, changing business requirements, broad model redesign.
 
@@ -55,6 +83,7 @@ Apply validation in this exact order to reduce false positives and speed root-ca
 0. **Automated Bulk Validation Layer**
    - Run the shared validator script first to generate deterministic summary artifacts on disk.
    - Use the generated Markdown and JSON summaries as the primary inspection surface.
+   - If useful for fast local triage, run `pbir validate "<Report.Report>"` or `pbir validate "<Report.Report>" --all` before deep inspection, but treat it only as supplemental evidence.
    - Fall back to direct PBIR file reads only for targeted diagnosis.
 
 1. **Structural & Syntax Layer**

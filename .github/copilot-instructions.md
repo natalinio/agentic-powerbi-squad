@@ -158,6 +158,7 @@ Recommended request template:
 - Writing TMDL, DAX, PBIR code without first reading the relevant skill and references
 - Guessing PBIR JSON structures instead of using templates from `.github/skills/report-implementation/references/`
 - Inventing column/measure names without reading TMDL files from disk
+- Running `pbir setup` or installing external PBIR agent plugins into this repository; use `pbir` only as an optional command backend, never as a source of agent/skill definitions
 
 ---
 

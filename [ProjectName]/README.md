@@ -2,7 +2,7 @@
 
 This folder (`[ProjectName]`) is a **template/example** that demonstrates the expected structure for Power BI projects.
 
-> ℹ️ It is **not** a real project folder: it only shows what will be created/populated in a real `<YourProjectName>/` folder when you run `@powerbi-AI-developer` (Step 00 bootstrap + subsequent workflow steps).
+> It is **not** a real project folder: it only shows what will be created or populated in a real `<YourProjectName>/` folder when you run `@delivery-lead` or a specialist agent against an actual project.
 
 ## 📂 Purpose
 
@@ -20,9 +20,9 @@ When creating a new Power BI project:
 2. **Copy this structure** to your new project folder
 3. **Invoke the agent** with your project name:
    ```
-   @powerbi-AI-developer YourProjectName/spec/spec_your_project.md
+   @delivery-lead Build a Power BI project from YourProjectName/spec/spec_your_project.md
    ```
-   Or use the prompt shortcut: type `/build` in Copilot Chat and provide the spec path.
+   Or invoke a specialist agent directly for a targeted task.
 
 ## 📋 Expected Structure
 
@@ -102,7 +102,7 @@ Use the global templates under `spec/` (repository root), then copy your filled 
 
 **Option A** — Direct agent invocation:
 ```
-@powerbi-AI-developer YourProjectName/spec/spec_your_project.md
+@delivery-lead Build a Power BI project from YourProjectName/spec/spec_your_project.md
 ```
 
 **Option B** — Prompt-based invocation (type `/build` in Copilot Chat and provide spec path).
@@ -129,10 +129,10 @@ The agent will execute a 10-step end-to-end workflow: semantic model (TMDL) + DA
 ## 🔗 Documentation
 
 For detailed workflow documentation:
-- [Quick Start](../README.md#-quick-start-5-minutes)
+- [Getting Started](../README.md#getting-started)
 - [Agent Skills](../.github/skills/)
-- [TMDL Reference](../.github/references/tmdl-syntax-reference.md)
-- [DAX Patterns](../.github/references/dax-patterns.md)
+- [TMDL Reference](../.github/skills/physical-model-tmdl/references/tmdl-syntax-reference.md)
+- [DAX Patterns](../.github/skills/dax-development/references/dax-patterns.md)
 
 ---
 

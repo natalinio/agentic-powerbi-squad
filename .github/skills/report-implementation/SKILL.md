@@ -38,6 +38,7 @@ Before starting report implementation:
 Before generating ANY PBIR JSON:
 1. **READ** `.github/skills/report-implementation/references/pbir-visual-templates.md` for validated visual JSON templates.
 2. **READ** `.github/references/pbip-folder-structure.md` for correct folder hierarchy.
+3. **READ** `.github/references/pbir-cli-integration.md` before using the local `pbir` CLI for any packaged report operation.
 3. **READ on demand** (load only when needed for the specific task):
    - `references/fields-and-bindings.md` — Field types (Column/Measure/Extension), data roles by visual type, queryState structure
    - `references/filters.md` — Filter types (Categorical, TopN, Advanced, RelativeDate), scope, JSON structure
@@ -53,6 +54,72 @@ Before generating ANY PBIR JSON:
    - `"Power BI report definition JSON format"`
 5. Use `microsoft_docs_fetch` for full documentation pages when search results are insufficient.
 6. If the step uncovers a **new reusable PBIR rule** about schema, folder structure, serialization, payload stability, or visual-role mapping, **update the relevant reference file** before ending the step. Do not leave recurring guidance only in chat output.
+
+## Optional PBIR CLI Backend
+
+When the local `pbir` CLI is available, this skill may use it as a packaged command backend for local PBIR work.
+
+Use it for:
+- report inspection: `pbir ls`, `pbir tree`, `pbir model`, `pbir get`, `pbir cat`
+- schema/property discovery: `pbir schema types`, `pbir schema containers`, `pbir schema describe`
+- targeted local edits: `pbir add`, `pbir pages`, `pbir visuals`, `pbir set`, `pbir fields`, `pbir filters`, `pbir dax`, `pbir theme`
+- local safety loop: `pbir backup`, `pbir validate`, `pbir open`
+
+Rules:
+1. Do **NOT** run `pbir setup` from this skill.
+2. Do **NOT** let CLI behavior replace blueprint-driven design or repository templates.
+3. Use the CLI only for local PBIR operations that map cleanly to the requested change.
+4. Before bulk or structurally risky commands, run `pbir backup`.
+5. After every CLI mutation, run `pbir validate`, then still satisfy the repository validation gate below.
+6. If the CLI is unavailable, unsupported, or would broaden scope, fall back to the existing file/template workflow without blocking the task.
+7. Do not use `pbir download` or `pbir publish` in Step 9 unless the user explicitly requests Fabric-edge operations.
+
+### Canonical `pbir` Command Patterns
+
+Use these examples only when they match the requested local report task.
+
+1. Inspect an existing report before edits:
+
+```powershell
+pbir tree "Sales.Report" -v
+pbir model "Sales.Report" -d
+```
+
+2. Create a backup before risky local changes:
+
+```powershell
+pbir backup "Sales.Report" -m "Before report implementation changes"
+```
+
+3. Add a native visual with explicit binding:
+
+```powershell
+pbir add visual card "Sales.Report/Overview.Page" --title "Revenue" -d "Values:Sales.Revenue"
+```
+
+4. Apply a narrow formatting or layout change:
+
+```powershell
+pbir visuals title "Sales.Report/Overview.Page/Revenue.Visual" --text "Net Revenue" --bold
+pbir visuals position "Sales.Report/Overview.Page/Revenue.Visual" --x 40 --y 32 --width 260 --height 120
+```
+
+5. Apply a safe theme-first formatting change:
+
+```powershell
+pbir theme set-colors "Sales.Report" --primary "#2B579A" --secondary "#217346"
+pbir theme set-formatting "Sales.Report" "card.*.border.show" --value true
+```
+
+6. Validate after mutation:
+
+```powershell
+pbir validate "Sales.Report"
+```
+
+Fallback:
+- if any of these commands cannot express the blueprint requirement cleanly, return to the repository templates and direct file generation flow
+- if a command requires broader destructive scope than requested, stop and keep the change in the repository-managed workflow instead
 
 > **CRITICAL**: NEVER invent or guess PBIR JSON structures. Always validate against Microsoft official documentation or the template reference file. In the current baseline, `drillFilterOtherVisuals` belongs to `visual`, cards use `visualType: cardVisual` with `queryState.Data`, page navigation is governed by `definition/pages/pages.json`, and PBIR JSON must be written as UTF-8 without BOM.
 

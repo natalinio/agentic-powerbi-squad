@@ -103,6 +103,18 @@ If the user provides visual evidence such as a dashboard mockup, screenshot, Fig
    - Next phase preview
 7. **State Boundary**: Do not use `agent_session_state.json` as the source of truth for end-to-end workflow progression. It may exist for prior standalone tasks, but `workflow_state.json` remains the only authoritative workflow state.
 
+## PBIR CLI Scope Check
+
+If a specialist proposes using the local `pbir` CLI, apply this checklist:
+
+1. The task is inside the report branch only (`pbi-report`, report implementation, report validation, or theme customization).
+2. The target is a local PBIR report artifact, not the global workflow system.
+3. The repository skill and reference flow remains authoritative.
+4. `pbir setup` is not invoked.
+5. The CLI is not treated as a mandatory prerequisite for the overall workflow.
+
+If any check fails, keep the workflow on the repository-native agent/skill path.
+
 # Lessons Learned
 
 Create/update `<ProjectName>/lessons-learned.md` **only** when the user reports a concrete defect found in Power BI Desktop and asks for diagnosis/fix. Never during normal phase progression.

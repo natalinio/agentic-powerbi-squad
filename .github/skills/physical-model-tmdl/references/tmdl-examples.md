@@ -159,7 +159,7 @@ role 'Account Managers'
 ## 6. Shared M Expression Parameter
 
 ```tmdl
-expression DataPath = "C:\Users\user\data" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+expression DataPath = "C:\Data\PowerBI" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
 	lineageTag: <guid>
 	queryGroup: Parameters
 ```

@@ -30,6 +30,7 @@ You are a **hands-on builder**: you write PBIR JSON, design page layouts, define
 # Shared References
 
 - `.github/references/pbip-folder-structure.md` — PBIP workspace folder layout
+- `.github/references/pbir-cli-integration.md` — optional local `pbir` backend policy, allowed commands, and fallback rules
 
 # Source Hierarchy
 
@@ -115,6 +116,18 @@ Within this single agent, keep two strictly separated internal phases:
 2. **Implementation Phase** — generate PBIR strictly from the approved blueprint.
 
 The implementation phase must not silently redesign the report. If feasibility concerns are discovered late, they must be written back into the blueprint constraints instead of being hidden inside PBIR generation.
+
+# PBIR CLI Integration Policy
+
+For local PBIR work, `pbir` may be used as an **optional execution backend** for packaged commands such as inspection, layout updates, theme operations, field/filter changes, and local validation.
+
+Rules:
+1. Repository skills, references, blueprint rules, and validators remain the authoritative source of behavior.
+2. Do **NOT** run `pbir setup` in this repository and do **NOT** install external agent plugins or hooks that could modify `.github/` assets.
+3. Prefer `pbir` for narrow local PBIR commands only when it cleanly matches the requested task.
+4. Before risky bulk or structural mutations, create a backup; after every mutation, run validation.
+5. If `pbir` is unavailable, unsupported for the operation, or conflicts with repository guidance, fall back to the existing template-driven/manual PBIR workflow.
+6. Treat `download`, `publish`, `convert`, `merge`, `split`, and destructive removals as explicit-scope operations, not default implementation behavior.
 
 # Anti-Hallucination Protocol
 

@@ -8,7 +8,7 @@ Place your project functional specifications here.
 - Save your filled specification as:
   - `YourProjectName/spec/spec_<your_project_name>.md`
 - Invoke the agent with the spec file path:
-  - `@powerbi-AI-developer YourProjectName/spec/spec_<your_project_name>.md`
+  - `@delivery-lead Build a Power BI project from YourProjectName/spec/spec_<your_project_name>.md`
 
 ## Notes
 

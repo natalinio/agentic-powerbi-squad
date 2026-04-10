@@ -1,5 +1,8 @@
 # Python virtual environment
 .venv/
+.env
+.env.*
+*.local
 
 # Power BI local settings
 **/.pbi/localSettings.json
@@ -35,3 +38,13 @@ SalesAnalyticsPerformance/
 # Test execution outputs (regenerated on each run)
 **/tests/tests_execution.md
 **/tests/tests_execution_raw.json
+**/tests/report_validation_execution.md
+**/tests/report_validation_execution_raw.json
+
+# Workflow and local session state
+**/workflow_state.json
+**/agent_session_state.json
+
+# Local backups
+*.bak
+*.backup

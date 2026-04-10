@@ -31,6 +31,25 @@ When a report is driven by a UI mockup, screenshot, Figma file, or React prototy
 | Visual Type Overrides | `references/visual-type-overrides.md` | Adding type-specific overrides |
 | Theme Validation Checklist | `references/theme-validation-checklist.md` | Validating or auditing a theme |
 
+## Optional PBIR CLI Backend
+
+When the local `pbir` CLI is available, it may be used as an execution helper for theme inspection and theme application.
+
+Good fits:
+- `pbir theme colors`
+- `pbir theme text-classes`
+- `pbir theme fonts`
+- `pbir theme set-colors`
+- `pbir theme set-text-classes`
+- `pbir theme set-formatting`
+- `pbir theme validate`
+
+Rules:
+1. The theme JSON in the repository remains the source of truth.
+2. Do **NOT** run `pbir setup`.
+3. Prefer theme-level changes over visual-level overrides even when the CLI can change both.
+4. If the CLI is unavailable or cannot express the required change cleanly, fall back to direct theme JSON edits guided by repository references.
+
 ## The Formatting Hierarchy
 
 Power BI applies formatting through a four-level cascade:

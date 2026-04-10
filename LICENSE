@@ -1,0 +1,34 @@
+Agentic Power BI Squad Repository Use Terms
+
+Copyright (c) 2025 Andrea Natali and contributors.
+
+This repository is published for public reference, evaluation, forking on GitHub, and contribution back through pull requests.
+
+1. Permitted use
+
+- You may view, clone, and fork this repository.
+- You may modify your fork for internal evaluation, experimentation, and contribution back to this repository.
+- You may submit pull requests to the upstream repository.
+
+2. Conditions
+
+- Preserve this LICENSE file and THIRD_PARTY_NOTICES.md in your fork.
+- Preserve attribution notices included in repository files and documentation.
+- Clearly identify substantial modifications you make in your fork or pull request.
+- Do not present your fork as the canonical upstream repository.
+
+3. Restrictions
+
+- Do not copy repository content wholesale into another product, training, course, or tool outside a fork-based workflow without separate permission from the repository owner and compliance with any applicable third-party terms.
+- Do not use external setup or bootstrap tools to overwrite or replace the repository's `.github/agents`, `.github/skills`, `.github/prompts`, `.github/references`, or `.github/copilot-instructions.md` in the upstream project.
+- Do not use the names of the repository owner or contributors to endorse derived works without prior written permission.
+
+4. Third-party material
+
+- Some repository content is adapted from or influenced by third-party material documented in THIRD_PARTY_NOTICES.md.
+- Additional upstream attribution or reuse terms may apply to those portions.
+- If there is any conflict between these terms and an applicable third-party notice for adapted material, the third-party notice controls for that material.
+
+5. No warranty
+
+THE REPOSITORY IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE REPOSITORY OR THE USE OR OTHER DEALINGS IN THE REPOSITORY.

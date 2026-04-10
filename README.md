@@ -2,7 +2,6 @@
 
 > **Build complete Power BI projects — semantic models (TMDL) and reports (PBIR) — from functional specifications using a multi-agent system powered by GitHub Copilot.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Power BI](https://img.shields.io/badge/Power%20BI-PBIP%20Format-yellow)](https://powerbi.microsoft.com)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
 
@@ -38,6 +37,15 @@ The squad supports **two operating modes**:
 | **Standalone Mode** | Invoke any agent directly (e.g., `@pbi-semantic-model`, `@pbi-report`, `@pbi-qa`) for a specific task | Adding a measure, creating a visual, running tests, or any targeted change |
 
 Both modes share the same agents, skills, and project structure — the difference is whether you want full orchestration or direct control.
+
+### Public Repository Model
+
+This repository is published as a **public reference implementation** with a **fork-first collaboration model**:
+
+- use a **fork** for experimentation, adaptation, and contributions
+- submit changes back through **pull requests**
+- do **not** use external setup tools or generated scaffolds to overwrite the repository-native `.github/agents`, `.github/skills`, `.github/prompts`, or instruction files
+- review [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before reusing adapted material outside your fork
 
 ---
 
@@ -192,51 +200,48 @@ Each agent automatically discovers the project context (TMDL files, existing vis
 
 ## Getting Started
 
-1. **Clone the repository**:
+1. **Fork the repository** on GitHub.
+
+2. **Clone your fork**:
    ```bash
-   git clone https://github.com/natalinio/agentic-powerbi-squad.git
-   cd agentic-powerbi-squad
+   git clone <your-fork-url>
+   cd agentic-powerbi-development
    ```
 
-2. **Install Python dependencies**:
+3. **Install Python dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Open in VS Code** with GitHub Copilot enabled.
+4. **Open in VS Code** with GitHub Copilot enabled.
 
-4. **Start with a specification** — use `spec/sample_spec.md` as a template, or write your own.
+5. **Start with a specification** — use `spec/specification_template.md` as the template and `spec/sample_spec.md` as a worked example.
 
-5. **Choose your mode**:
+6. **Choose your mode**:
    - **Full project**: `@delivery-lead Build from spec/sample_spec.md`
    - **Single task**: `@pbi-semantic-model Create a logical model for <requirements>`
 
-6. **Open the result** in Power BI Desktop: open the `.pbip` file from the `PBIP/` folder.
+7. **Open the result** in Power BI Desktop: open the `.pbip` file from the `PBIP/` folder.
 
 ---
 
-## Sample Project: SalesOverview
+## Reference Assets
 
-The repository includes a complete example project (`SalesOverview/`) built from a sales analytics specification. It demonstrates:
+The repository includes a reusable template project structure and a sample specification. It does **not** ship a committed full PBIP sample project with generated outputs. Use these assets as the starting point:
 
-- 7 TMDL tables (5 dimensions + 2 facts)
-- DAX measures with fiscal year time intelligence
-- Mock datasets with referential integrity
-- 3-page PBIR report with KPI cards, charts, slicers, and matrix visuals
-- Functional test definitions and execution results
-- Report validation results
+- `[ProjectName]/` for expected project folder layout
+- `spec/specification_template.md` for the empty specification template
+- `spec/sample_spec.md` for a completed example specification
 
-Use it as a reference for understanding the output format and project structure.
+Generated semantic model, report, data, and test artifacts are created when you run the workflow or the specialist agents against your own project folder.
 
 ---
 
 ## Attribution
 
-This project builds upon domain knowledge from the **[Goblin Power BI Agentic Development](https://github.com/data-goblins)** project by Data Goblins. Several skills — particularly SVG visuals, Deneb visuals, theme customization, report design patterns, and PBIR reference material — were developed using Goblin's published skill resources as a knowledge source and adapted for this multi-agent architecture.
+This repository includes original material plus adapted domain knowledge derived from the **[Goblin Power BI Agentic Development](https://github.com/data-goblins)** project by Data Goblins. The most relevant adapted areas are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Per the Goblin project's license terms:
-
-> *Use or re-use of these skills: These skills are intended for free community use. You do not have the license to copy and incorporate them into your own products, trainings, courses, or tools. If you copy these skills — manually or by using an agent to rewrite them — you must include attribution and a link to this original project.*
+If you reuse or adapt material influenced by that project, preserve attribution and review the upstream reuse terms before distributing it outside a fork-based workflow.
 
 **Original project**: [https://github.com/data-goblins](https://github.com/data-goblins)
 
@@ -244,8 +249,16 @@ Per the Goblin project's license terms:
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+This repository accepts changes through a **fork + pull request** flow only. See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution model and non-overwrite rules.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting and secret-handling guidance.
+
+## Code of Conduct
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for participation expectations.
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+Repository use is governed by the fork-first terms in [LICENSE](LICENSE). Third-party attribution and additional reuse notes are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

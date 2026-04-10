@@ -1,6 +1,6 @@
 # Specifications (Input)
 
-This folder contains **specification documents** (functional requirements) used as the **main input** for the `@powerbi-AI-developer` agent.
+This folder contains **specification documents** (functional requirements) used as the **main input** for the `@delivery-lead` orchestrator or the specialist agents.
 
 ## What to do
 
