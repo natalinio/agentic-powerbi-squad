@@ -3,7 +3,7 @@
 ## 1. Report Objective & Target Audience
 
 **Report Objective:**
-Fornire una soluzione di monitoraggio delle performance di vendita per **Yoda Networks LLC**, che permetta di analizzare i ricavi (Sales), il raggiungimento dei target (Budget) e la marginalità (Profit) attraverso una dashboard di sintesi e una tabella analitica granulare.
+Fornire una soluzione di monitoraggio delle performance di vendita per **Yoda Networks LLC**, che permetta di analizzare i ricavi (Sales), il raggiungimento dei target (Budget) e la marginalita (Profit) attraverso una dashboard di sintesi e una tabella analitica granulare.
 
 **Target Audience:**
 - Executive Management (Monitoraggio KPI macro)
@@ -12,7 +12,7 @@ Fornire una soluzione di monitoraggio delle performance di vendita per **Yoda Ne
 
 **Key Business Questions:**
 - Stiamo raggiungendo i target di vendita stabiliti per l'anno fiscale?
-- Qual è il trend mensile delle vendite rispetto al budget e all'anno precedente?
+- Qual e il trend mensile delle vendite rispetto al budget e all'anno precedente?
 - Quali aree e industrie presentano i migliori margini di profitto?
 
 ---
@@ -135,7 +135,7 @@ Livello transazionale (singola riga di vendita).
 
 ## 8. Row-Level Security (RLS)
 
-- **No RLS Required:** Tutti gli utenti hanno accesso alla totalità dei dati.
+- **No RLS Required:** Tutti gli utenti hanno accesso alla totalita dei dati.
 
 ---
 
@@ -155,8 +155,8 @@ Livello transazionale (singola riga di vendita).
       ("Industry", NAMEOF('Dim_Customer'[IndustryName]), 1),
       ("Salesperson", NAMEOF('Dim_Staff'[SalespersonName]), 2)
   }
+  ```
 - Time Intelligence: Utilizzare un calendario fiscale con inizio Luglio per i calcoli YTD e PY.
-
 
 ## 10. Additional Notes
 Conditional Formatting: Utilizzare icone SVG o set di icone native per Flags (Budget) e Circles (Profit).

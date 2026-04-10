@@ -30,16 +30,16 @@
 - **Time Intelligence:** <Current Period, YTD, Prior Year, % Growth, etc.>
 
 ### KPI 2: <KPI Name>
-- **Description:** 
-- **Business Logic:** 
-- **Format:** 
-- **Time Intelligence:** 
+- **Description:**
+- **Business Logic:**
+- **Format:**
+- **Time Intelligence:**
 
 ### KPI 3: <KPI Name>
-- **Description:** 
-- **Business Logic:** 
-- **Format:** 
-- **Time Intelligence:** 
+- **Description:**
+- **Business Logic:**
+- **Format:**
+- **Time Intelligence:**
 
 *(Add more KPIs as needed)*
 
@@ -51,10 +51,10 @@
 <Describe how data should be grouped or segmented for analysis>
 
 Examples:
-- By **Geography**: Region → Country → City
-- By **Customer**: Industry → Customer Segment → Individual Customer
-- By **Product**: Category → Subcategory → Product
-- By **Time**: Year → Quarter → Month → Day
+- By **Geography**: Region -> Country -> City
+- By **Customer**: Industry -> Customer Segment -> Individual Customer
+- By **Product**: Category -> Subcategory -> Product
+- By **Time**: Year -> Quarter -> Month -> Day
 
 **Expected Granularity:**
 <What is the lowest level of detail needed? (e.g., "Individual transaction level", "Daily aggregates", "Monthly summaries")>
@@ -88,21 +88,21 @@ Examples:
 - **Purpose:** <What business insight does this chart provide?>
 - **Dimensions:** <What fields go on rows/columns/axis?>
 - **Measures:** <What KPIs/metrics are displayed?>
-- **Drill Path:** <What drill-down paths are needed? (e.g., Area → Country → Customer)>
+- **Drill Path:** <What drill-down paths are needed? (e.g., Area -> Country -> Customer)>
 
 ### Chart 2: <Chart Name>
-- **Type:** 
-- **Purpose:** 
-- **Dimensions:** 
-- **Measures:** 
-- **Drill Path:** 
+- **Type:**
+- **Purpose:**
+- **Dimensions:**
+- **Measures:**
+- **Drill Path:**
 
 ### Chart 3: <Chart Name>
-- **Type:** 
-- **Purpose:** 
-- **Dimensions:** 
-- **Measures:** 
-- **Drill Path:** 
+- **Type:**
+- **Purpose:**
+- **Dimensions:**
+- **Measures:**
+- **Drill Path:**
 
 *(Add more charts as needed)*
 
@@ -156,13 +156,13 @@ Examples:
 - **From:** `<FactTable>[<ForeignKey>]`
 - **To:** `<DimensionTable>[<PrimaryKey>]`
 - **Cardinality:** Many-to-One (N:1)
-- **Business Logic:** 
+- **Business Logic:**
 
 **Relationship 3:**
-- **From:** 
-- **To:** 
-- **Cardinality:** 
-- **Business Logic:** 
+- **From:**
+- **To:**
+- **Cardinality:**
+- **Business Logic:**
 
 *(Add more relationships as needed)*
 
@@ -188,10 +188,10 @@ Examples:
 - **DAX Concept:** <Optional: provide filter expression if known, e.g., `[Region] = "North"`>
 
 ### Filter 2: <Security Role Name>
-- **Affected Table:** 
-- **Logic:** 
-- **Example:** 
-- **DAX Concept:** 
+- **Affected Table:**
+- **Logic:**
+- **Example:**
+- **DAX Concept:**
 
 **Dynamic RLS:**
 <If RLS depends on user identity (USERNAME() or USERPRINCIPALNAME()), describe the mapping table structure>
@@ -257,81 +257,3 @@ Examples:
 
 **Historical Data Retention:**
 <How much historical data is needed? (e.g., "Last 3 years", "All historical data", "Rolling 12 months")>
-
-**Performance Expectations:**
-<Any specific performance requirements? (e.g., "Report must load in under 5 seconds", "Support 10,000+ customers")>
-
-**Data Quality Rules:**
-<Any data validation or quality checks needed? (e.g., "Sales Amount cannot be negative", "All orders must have a CustomerID")>
-
-**Calculation Dependencies:**
-<Are there calculations that depend on others? (e.g., "Profit % depends on Sales and Cost measures")>
-
-**Time Intelligence Requirements:**
-<Fiscal vs. Calendar Year, Week Start Day (Monday/Sunday), Fiscal Year End Month>
-
-**Multi-Currency Support:**
-<Required? If yes, describe exchange rate logic and reporting currency>
-
----
-
-## 10. Additional Notes & Constraints
-
-**Technical Constraints:**
-<Any known limitations? (e.g., "Source system has daily aggregates only", "Customer table has 1M+ rows")>
-
-**Business Rules:**
-<Any special business logic or exceptions? (e.g., "Exclude returns from sales metrics", "Bundle products counted as single unit")>
-
-**Future Extensibility:**
-<Anticipated future requirements? (e.g., "May add product dimension later", "Plan to integrate with CRM data")>
-
-**Data Sources:**
-<Where does the data come from? (e.g., "SQL Server database", "CSV exports", "Azure Data Lake", "API")>
-
-**Known Issues or Limitations:**
-<Any data quality issues or missing data to be aware of?>
-
-**References:**
-<Links to existing reports, documentation, or related systems>
-
----
-
-## Submission Checklist
-
-Before submitting this specification to the `@delivery-lead` orchestrator, ensure:
-
-### Core Requirements
-- [ ] All sections are filled with project-specific information
-- [ ] KPIs are described functionally (business logic, not DAX code)
-- [ ] Sample data values are provided for all tables
-- [ ] Relationships are clearly defined with cardinality
-- [ ] Placeholder text in `<angle brackets>` has been replaced
-- [ ] Document is in English (for code generation consistency)
-
-### Refresh Strategy (Section 9.1) — CRITICAL
-- [ ] **Refresh frequency** specified (Real-time, Hourly, Daily, etc.)
-- [ ] **Storage mode preference** selected (Import, DirectQuery, Composite, or Undecided)
-- [ ] **Expected data volumes** provided (current and projected row counts for fact tables)
-- [ ] **Incremental refresh requirements** clarified:
-  - [ ] If applicable: Audit field name specified (e.g., `LastModifiedDate`)
-  - [ ] If not needed: Explicitly marked as "Not needed"
-- [ ] **Source system update pattern** described (Append-only, Updates in place, etc.)
-- [ ] **Data latency tolerance** specified
-
-### Security Requirements (Section 8)
-- [ ] RLS requirements are specified (or explicitly marked as "Not Required")
-
----
-
-**Ready to generate your semantic model?**
-
-Save this file as:
-```
-<YourProjectName>/spec/spec_<your_project_name>.md
-```
-
-Then invoke the agent:
-```
-@delivery-lead Build a Power BI project from <YourProjectName>/spec/spec_<your_project_name>.md
-```
