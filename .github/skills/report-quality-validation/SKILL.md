@@ -35,7 +35,7 @@ Before starting report quality validation:
 
 > **Performance Rule**: Load the full PBIR payload into context only when strictly necessary. Run `.github/scripts/validate_pbir_report.py <ProjectName>` for bulk validation first; inspect raw PBIR files individually only for targeted remediation.
 
-> **CLI Rule**: If the local `pbir` CLI is available, it may be used for a fast local pre-check (`pbir validate`, `pbir tree -v`, `pbir fields list`, `pbir filters list`) but it does **NOT** replace the repository validator or the final report produced by this skill. Never run `pbir setup` here.
+> **CLI Rule**: If the local `pbir` CLI is available, it may be used for a fast local pre-check (`pbir validate`, `pbir tree -v`, `pbir fields list`, `pbir filters list`) but it does **NOT** replace the repository validator or the final report produced by this skill. Never run `pbir setup` here. Always clear or replace the active `pbir` connection first so commands target the current project report instead of a stale session.
 
 ### Canonical `pbir` Pre-Check Patterns
 
@@ -44,12 +44,16 @@ Use these only as supplemental local validation helpers:
 1. Structural overview before deep validation:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir tree "Sales.Report" -v
 ```
 
 2. Fast validation sweep:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir validate "Sales.Report"
 pbir validate "Sales.Report" --all
 ```
@@ -57,6 +61,8 @@ pbir validate "Sales.Report" --all
 3. Inspect bindings and report behavior quickly:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir fields list "Sales.Report"
 pbir filters list "Sales.Report"
 ```

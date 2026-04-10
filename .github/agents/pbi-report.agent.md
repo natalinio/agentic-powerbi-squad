@@ -72,15 +72,17 @@ The user invokes this agent directly:
 - "Implement PBIR visuals from the blueprint"
 
 **Discovery protocol (MANDATORY before any action)**:
-1. Identify the target project folder (`<ProjectName>/`) in the repository.
-2. Scan `<ProjectName>/PBIP/<PbipBaseName>.Report/definition/` for existing PBIR files (pages, visuals, report.json).
-3. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/tables/*.tmdl` to build a **Field Registry** of all available tables, columns, and measures.
-4. Check `<ProjectName>/spec/report_blueprint.json` for an existing blueprint (design decisions, page layouts, visual specs).
-5. Check `<ProjectName>/spec/requirements_summary.md` for KPIs, dimensions, and reporting constraints.
-6. If the user provides visual evidence (screenshots, Figma exports, React UI screenshots/specs), inspect it before design work and treat it as a visual baseline subject to Power BI feasibility constraints.
-7. If modifying an existing report, read current PBIR files to understand page structure, visual IDs, and existing bindings.
-8. If the task starts from a mockup or visual baseline, run a `mockup-to-powerbi translation` pass before final layout or PBIR implementation.
-9. Proceed with the requested action using the field registry as the authoritative source for all `Entity`/`Property` bindings.
+1. Identify the target real project folder (`<ProjectName>/`) in the repository.
+2. Ignore the literal placeholder folder `[ProjectName]/`; it is an example scaffold and never the active project.
+3. Scan `<ProjectName>/PBIP/<PbipBaseName>.Report/definition/` for existing PBIR files (pages, visuals, report.json).
+4. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/tables/*.tmdl` to build a **Field Registry** of all available tables, columns, and measures.
+5. Check `<ProjectName>/spec/report_blueprint.json` for an existing blueprint (design decisions, page layouts, visual specs).
+6. Check `<ProjectName>/spec/requirements_summary.md` for KPIs, dimensions, and reporting constraints.
+7. Check `<ProjectName>/spec/` for archived visual evidence and supporting artifacts such as screenshots, mockups, PDFs, or exported design files.
+8. If the user provides visual evidence (screenshots, Figma exports, React UI screenshots/specs), inspect the archived copy under `<ProjectName>/spec/` before design work and treat it as a visual baseline subject to Power BI feasibility constraints.
+9. If modifying an existing report, read current PBIR files to understand page structure, visual IDs, and existing bindings.
+10. If the task starts from a mockup or visual baseline, run a `mockup-to-powerbi translation` pass before final layout or PBIR implementation.
+11. Proceed with the requested action using the field registry as the authoritative source for all `Entity`/`Property` bindings.
 
 **Standalone continuity protocol**:
 1. Read `<ProjectName>/agent_session_state.json` only when a prior standalone task may have left open design decisions, report remediation items, or an explicit handoff to this agent.
@@ -92,7 +94,7 @@ The user invokes this agent directly:
 Called by the `delivery-lead` orchestrator.
 
 **Input from orchestrator**:
-- Project name and paths to input artifacts (specification, TMDL model, blueprint if available, optional visual evidence such as mockups or screenshots)
+- Project name and paths to input artifacts (specification, TMDL model, blueprint if available, archived visual evidence such as mockups, screenshots, PDFs, or similar files under `<ProjectName>/spec/`)
 - Current workflow state context (completed phases, relevant decisions)
 - Specific task description (e.g., "design report blueprint", "implement PBIR visuals from blueprint")
 
@@ -128,6 +130,8 @@ Rules:
 4. Before risky bulk or structural mutations, create a backup; after every mutation, run validation.
 5. If `pbir` is unavailable, unsupported for the operation, or conflicts with repository guidance, fall back to the existing template-driven/manual PBIR workflow.
 6. Treat `download`, `publish`, `convert`, `merge`, `split`, and destructive removals as explicit-scope operations, not default implementation behavior.
+7. Before any `pbir` read or write command, reset or replace the active CLI connection so it points to the current project report under `<ProjectName>/PBIP/<PbipBaseName>.Report`.
+8. Never rely on a previously active `pbir` session from another repository or project.
 
 # Anti-Hallucination Protocol
 

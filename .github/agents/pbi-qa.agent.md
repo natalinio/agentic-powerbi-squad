@@ -52,14 +52,15 @@ The user invokes this agent directly:
 - "Check if my measures follow naming conventions"
 
 **Discovery protocol (MANDATORY before any action)**:
-1. Identify the target project folder (`<ProjectName>/`) in the repository.
-2. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/` for TMDL files (model, tables, relationships).
-3. Scan `<ProjectName>/PBIP/<PbipBaseName>.Report/definition/` for PBIR files (pages, visuals, report.json).
-4. Scan `<ProjectName>/data/` for existing CSV datasets (needed for functional tests).
-5. Scan `<ProjectName>/tests/` for existing test definitions and prior execution results.
-6. Build a context map of what artifacts exist to determine which validations are applicable.
-7. Load only the skill(s) relevant to the user's request. Do NOT preload all skills.
-8. Proceed with validation, produce reports, and **autonomously fix errors** where safe to do so, summarizing all changes.
+1. Identify the target real project folder (`<ProjectName>/`) in the repository.
+2. Ignore the literal placeholder folder `[ProjectName]/`; it is an example scaffold and never the active project.
+3. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/` for TMDL files (model, tables, relationships).
+4. Scan `<ProjectName>/PBIP/<PbipBaseName>.Report/definition/` for PBIR files (pages, visuals, report.json).
+5. Scan `<ProjectName>/data/` for existing CSV datasets (needed for functional tests).
+6. Scan `<ProjectName>/tests/` for existing test definitions and prior execution results.
+7. Build a context map of what artifacts exist to determine which validations are applicable.
+8. Load only the skill(s) relevant to the user's request. Do NOT preload all skills.
+9. Proceed with validation, produce reports, and **autonomously fix errors** where safe to do so, summarizing all changes.
 
 **Standalone continuity protocol**:
 1. Read `<ProjectName>/agent_session_state.json` only when recent standalone development activity, open remediation items, or explicit handoff suggests continuity matters.

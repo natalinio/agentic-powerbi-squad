@@ -8,6 +8,8 @@ This document defines the mandatory state tracking protocol for the agentic work
 > **ANTI-PATTERN**: Relying on chat history for state across multi-step workflows.
 > **PATTERN**: Persist ALL state and intermediate outputs to disk. Read from disk at the start of each step.
 
+Chat-provided supporting artifacts are part of this rule. If the user shares screenshots, mockups, PDFs, or similar reference material during the workflow, archive them under `<ProjectName>/spec/` and use those on-disk copies as the canonical source in subsequent steps.
+
 ---
 
 ## 1. Workflow State File (`workflow_state.json`)

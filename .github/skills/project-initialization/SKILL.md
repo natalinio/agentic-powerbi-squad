@@ -15,6 +15,14 @@ Bootstrap a new project folder so Power BI Desktop can open it as a PBIP project
 
 This skill creates the minimal **PBIP + Report (PBIR) + SemanticModel (TMDL)** scaffolding and the project subfolders used by later steps.
 
+## Placeholder Guardrail (MANDATORY)
+
+- The literal repository folder `[ProjectName]/` is a documentation placeholder and example scaffold only.
+- NEVER initialize, overwrite, repair, or adopt `[ProjectName]/` as the active project.
+- ALWAYS create or target a real project folder with a business-specific name at repository root.
+- If the only matching folder is `[ProjectName]/`, STOP and create a new sibling project folder instead of modifying the placeholder.
+- Treat `<ProjectName>` in this skill as a variable token, not as the literal bracketed folder name.
+
 ## Input / Output
 
 | | |
@@ -26,9 +34,11 @@ This skill creates the minimal **PBIP + Report (PBIR) + SemanticModel (TMDL)** s
 
 Run this skill whenever:
 
-- The user points to a `<ProjectName>/` at repository root, AND
+- The user points to a real project folder `<ProjectName>/` at repository root, AND
 - `<ProjectName>/PBIP/` or the chosen PBIP entry file is missing, OR
 - the chosen `.Report/` or `.SemanticModel/` folders are missing.
+
+Do NOT run this skill against the literal placeholder folder `[ProjectName]/`.
 
 ## Non-Negotiable Constraints
 
@@ -36,6 +46,7 @@ Run this skill whenever:
 - Paths inside PBIP/PBIR definitions MUST be **relative** and MUST use `/` as separator.
 - Files should be encoded as **UTF-8 without BOM**.
 - This repo standard keeps PBIP artifacts under `<ProjectName>/PBIP/` (not at project root).
+- The initialization target MUST be a newly created or explicitly user-approved real project folder, never the placeholder `[ProjectName]/`.
 
 ## PBIP Naming And Path Budget (MANDATORY)
 

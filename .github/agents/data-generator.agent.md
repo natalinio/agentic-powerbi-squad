@@ -39,13 +39,14 @@ The user invokes this agent directly:
 - "Update TMDL partitions to point to new CSV files"
 
 **Discovery protocol (MANDATORY before any action)**:
-1. Identify the target project folder (`<ProjectName>/`) in the repository.
-2. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/tables/*.tmdl` for table definitions.
-3. Build a **Schema Registry**: for each table extract column names, data types, keys, and foreign key relationships from `relationships.tmdl`.
-4. Scan `<ProjectName>/data/` for existing CSV files — determine if this is a fresh generation or an incremental update.
-5. Check `<ProjectName>/spec/requirements_summary.md` for domain-specific constraints (date ranges, volume targets, business rules).
-6. If no TMDL files exist, inform the user that a semantic model must be created first.
-7. Proceed with data generation using the schema registry as the authoritative source for all column names and types.
+1. Identify the target real project folder (`<ProjectName>/`) in the repository.
+2. Ignore the literal placeholder folder `[ProjectName]/`; it is an example scaffold and never the active project.
+3. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/tables/*.tmdl` for table definitions.
+4. Build a **Schema Registry**: for each table extract column names, data types, keys, and foreign key relationships from `relationships.tmdl`.
+5. Scan `<ProjectName>/data/` for existing CSV files — determine if this is a fresh generation or an incremental update.
+6. Check `<ProjectName>/spec/requirements_summary.md` for domain-specific constraints (date ranges, volume targets, business rules).
+7. If no TMDL files exist, inform the user that a semantic model must be created first.
+8. Proceed with data generation using the schema registry as the authoritative source for all column names and types.
 
 **Standalone continuity protocol**:
 1. Read `<ProjectName>/agent_session_state.json` only when prior standalone model changes, data-generation assumptions, or handoff from another specialist agent may affect generation.

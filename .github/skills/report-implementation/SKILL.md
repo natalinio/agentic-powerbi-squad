@@ -69,10 +69,12 @@ Rules:
 1. Do **NOT** run `pbir setup` from this skill.
 2. Do **NOT** let CLI behavior replace blueprint-driven design or repository templates.
 3. Use the CLI only for local PBIR operations that map cleanly to the requested change.
-4. Before bulk or structurally risky commands, run `pbir backup`.
-5. After every CLI mutation, run `pbir validate`, then still satisfy the repository validation gate below.
-6. If the CLI is unavailable, unsupported, or would broaden scope, fall back to the existing file/template workflow without blocking the task.
-7. Do not use `pbir download` or `pbir publish` in Step 9 unless the user explicitly requests Fabric-edge operations.
+4. Before any CLI read or write command, clear or replace any existing active `pbir` connection and reconnect it to the current project report under `<ProjectName>/PBIP/<PbipBaseName>.Report`.
+5. Never assume the active `pbir` session already points to the current project; verify with `pbir connect` or reconnect explicitly.
+6. Before bulk or structurally risky commands, run `pbir backup`.
+7. After every CLI mutation, run `pbir validate`, then still satisfy the repository validation gate below.
+8. If the CLI is unavailable, unsupported, or would broaden scope, fall back to the existing file/template workflow without blocking the task.
+9. Do not use `pbir download` or `pbir publish` in Step 9 unless the user explicitly requests Fabric-edge operations.
 
 ### Canonical `pbir` Command Patterns
 
@@ -81,6 +83,8 @@ Use these examples only when they match the requested local report task.
 1. Inspect an existing report before edits:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir tree "Sales.Report" -v
 pbir model "Sales.Report" -d
 ```
@@ -88,18 +92,24 @@ pbir model "Sales.Report" -d
 2. Create a backup before risky local changes:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir backup "Sales.Report" -m "Before report implementation changes"
 ```
 
 3. Add a native visual with explicit binding:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir add visual card "Sales.Report/Overview.Page" --title "Revenue" -d "Values:Sales.Revenue"
 ```
 
 4. Apply a narrow formatting or layout change:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir visuals title "Sales.Report/Overview.Page/Revenue.Visual" --text "Net Revenue" --bold
 pbir visuals position "Sales.Report/Overview.Page/Revenue.Visual" --x 40 --y 32 --width 260 --height 120
 ```
@@ -107,6 +117,8 @@ pbir visuals position "Sales.Report/Overview.Page/Revenue.Visual" --x 40 --y 32 
 5. Apply a safe theme-first formatting change:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir theme set-colors "Sales.Report" --primary "#2B579A" --secondary "#217346"
 pbir theme set-formatting "Sales.Report" "card.*.border.show" --value true
 ```
@@ -114,12 +126,15 @@ pbir theme set-formatting "Sales.Report" "card.*.border.show" --value true
 6. Validate after mutation:
 
 ```powershell
+pbir connect --clear
+pbir connect "Sales.Report"
 pbir validate "Sales.Report"
 ```
 
 Fallback:
 - if any of these commands cannot express the blueprint requirement cleanly, return to the repository templates and direct file generation flow
 - if a command requires broader destructive scope than requested, stop and keep the change in the repository-managed workflow instead
+- if `pbir cat` fails with a packaged runtime error but `pbir ls` or `pbir get` still work, treat `cat` as unavailable for the current environment and continue with repository-managed file inspection instead of blocking Step 9
 
 > **CRITICAL**: NEVER invent or guess PBIR JSON structures. Always validate against Microsoft official documentation or the template reference file. In the current baseline, `drillFilterOtherVisuals` belongs to `visual`, cards use `visualType: cardVisual` with `queryState.Data`, page navigation is governed by `definition/pages/pages.json`, and PBIR JSON must be written as UTF-8 without BOM.
 

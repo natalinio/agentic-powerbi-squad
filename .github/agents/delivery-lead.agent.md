@@ -29,6 +29,11 @@ For standalone domain tasks (e.g., "add a DAX measure", "review my TMDL", "desig
 
 Load `.github/skills/workflow-orchestration/SKILL.md` for state management, decision tracking, and phase coordination rules.
 
+Initialization guardrail:
+- The literal repository folder `[ProjectName]/` is a placeholder example and must never be initialized or reused as the active project.
+- For every new workflow, create or confirm a real project folder name at repository root and run initialization there.
+- Treat `<ProjectName>` in instructions as a variable placeholder, never as the literal bracketed folder.
+
 The workflow-orchestration skill defines:
 - `workflow_state.json` schema and lifecycle
 - `agent_session_state.json` boundaries for standalone specialist tasks
@@ -89,19 +94,21 @@ If the user provides visual evidence such as a dashboard mockup, screenshot, Fig
 1. **Stop Gate**: After each phase, present results to the user and STOP. Await explicit approval before the next phase.
 2. **Clarification Relay**: If a sub-agent needs user input, relay the question to the user. Do not fabricate answers.
 3. **State Persistence**: Update `workflow_state.json` at every phase transition. Use the workflow-orchestration skill.
-4. **Context Handoff**: When delegating to a sub-agent, provide:
+4. **Artifact Archival Rule**: If the user provides artifacts in chat such as mockup images, screenshots, PDFs, Figma exports, design notes, or similar evidence, archive them under `<ProjectName>/spec/` in the initialized real project folder before delegating work that depends on them.
+5. **Context Handoff**: When delegating to a sub-agent, provide:
    - The project name
    - The current workflow phase and exact task objective
    - The path to input artifacts from previous phases
+   - Archived paths under `<ProjectName>/spec/` for any chat-provided mockups, screenshots, PDFs, or other evidence
    - Any relevant decisions from the `decisionLedger`
    - Any unresolved blocking clarifications that materially affect the task
-5. **Error Handling**: If a sub-agent reports a blocking error, diagnose the issue, propose resolution, and seek user approval before retrying.
-6. **Summary Reports**: After each phase, provide the user with a concise summary:
+6. **Error Handling**: If a sub-agent reports a blocking error, diagnose the issue, propose resolution, and seek user approval before retrying.
+7. **Summary Reports**: After each phase, provide the user with a concise summary:
    - What was produced
    - Key decisions made
    - Any warnings or open items
    - Next phase preview
-7. **State Boundary**: Do not use `agent_session_state.json` as the source of truth for end-to-end workflow progression. It may exist for prior standalone tasks, but `workflow_state.json` remains the only authoritative workflow state.
+8. **State Boundary**: Do not use `agent_session_state.json` as the source of truth for end-to-end workflow progression. It may exist for prior standalone tasks, but `workflow_state.json` remains the only authoritative workflow state.
 
 ## PBIR CLI Scope Check
 
@@ -112,6 +119,7 @@ If a specialist proposes using the local `pbir` CLI, apply this checklist:
 3. The repository skill and reference flow remains authoritative.
 4. `pbir setup` is not invoked.
 5. The CLI is not treated as a mandatory prerequisite for the overall workflow.
+6. Any existing `pbir` active connection is cleared or replaced so commands point to the current workflow project report, not a prior repo or session.
 
 If any check fails, keep the workflow on the repository-native agent/skill path.
 

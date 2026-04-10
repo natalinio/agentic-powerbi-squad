@@ -20,6 +20,8 @@ This skill is NOT invocable by users directly. It is consumed exclusively by the
 > **ANTI-PATTERN**: Relying on chat history for state across multi-agent workflows.
 > **PATTERN**: Persist ALL state and intermediate outputs to disk. Read from disk at the start of each phase.
 
+This includes user-provided external artifacts passed through chat, such as screenshots, mockups, PDFs, Figma exports, and similar reference material. When such artifacts are relevant to the workflow, they must be archived under `<ProjectName>/spec/` and referenced from disk in later phases.
+
 ## References
 
 - `.github/skills/workflow-orchestration/references/workflow-core.md` — governance rules (context flushing, checkpointing, stop gate)
@@ -39,6 +41,11 @@ Two different persistence models exist and MUST NOT be conflated:
 **Location**: `<ProjectName>/workflow_state.json`
 
 The orchestrator MUST maintain this file throughout the entire workflow. It is the single source of truth for workflow progress.
+
+Placeholder guardrail:
+- The literal repository folder `[ProjectName]/` is an example only and MUST NOT be treated as the workflow target.
+- Workflow start requires a real project folder created at repository root.
+- If only `[ProjectName]/` exists, the orchestrator must create a new project folder and initialize that folder instead of reusing the placeholder.
 
 Specialist workers MAY read this file when invoked by `delivery-lead`, but MUST NOT write it directly.
 
@@ -96,6 +103,11 @@ When transitioning between phases:
 3. **WRITE** outputs to disk before presenting results.
 4. **UPDATE** `workflow_state.json` after user approval.
 
+If the user shared supporting evidence in chat rather than as existing project files:
+1. archive that evidence under `<ProjectName>/spec/` first;
+2. hand off the archived file paths, not a chat-only description;
+3. treat the archived copy as the canonical workflow input.
+
 ## Specialist Handoff Rule
 
 When `delivery-lead` delegates a workflow phase to a specialist agent, the handoff must be explicit and artifact-based.
@@ -108,6 +120,8 @@ The minimum handoff payload is:
 4. required input artifact paths
 5. relevant `decisionLedger` entries
 6. unresolved blocking clarifications, if any
+
+If chat-provided supporting artifacts exist, the handoff must include the archived `<ProjectName>/spec/` paths for those files.
 
 Specialist agents must treat this payload plus project artifacts on disk as their source of task context. They must not assume full conversational history is available or authoritative.
 

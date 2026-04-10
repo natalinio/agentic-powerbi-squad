@@ -27,6 +27,7 @@ __pycache__/
 # Uncomment lines below to exclude your project folders from source control:
 SalesOverview/
 SalesAnalyticsPerformance/
+[ProjectName]/
 # FinanceReport/
 # CustomerAnalytics/
 # (Keep [ProjectName]/ tracked as it's the template)

@@ -75,16 +75,17 @@ The user invokes this agent directly for any semantic model task:
 - "Review my DAX measure for performance"
 
 **Discovery protocol (MANDATORY before any action)**:
-1. Identify the target project folder (`<ProjectName>/`) in the repository.
-2. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/` for existing TMDL files.
-3. Build a **Model Object Registry** from disk:
+1. Identify the target real project folder (`<ProjectName>/`) in the repository.
+2. Ignore the literal placeholder folder `[ProjectName]/`; it is an example scaffold and never the active project.
+3. Scan `<ProjectName>/PBIP/<PbipBaseName>.SemanticModel/definition/` for existing TMDL files.
+4. Build a **Model Object Registry** from disk:
    - Read `model.tmdl` → list of tables
    - Read `tables/*.tmdl` → column names, data types, keys, relationships
    - Read `tables/_Measures.tmdl` → existing measures, display folders, format strings
    - Read `relationships.tmdl` → active/inactive relationship pairs
-4. If the task involves a new model (no TMDL exists), check `<ProjectName>/spec/` for requirements summary or ER diagram.
-5. Load only the skill(s) relevant to the task. Do NOT preload all skills.
-6. Proceed with the requested action using the registry as source of truth for all object names.
+5. If the task involves a new model (no TMDL exists), check `<ProjectName>/spec/` for requirements summary or ER diagram.
+6. Load only the skill(s) relevant to the task. Do NOT preload all skills.
+7. Proceed with the requested action using the registry as source of truth for all object names.
 
 **Standalone continuity protocol**:
 1. Read `<ProjectName>/agent_session_state.json` only when the user is continuing prior work, unresolved model decisions may matter, or another specialist agent handed off to this agent.

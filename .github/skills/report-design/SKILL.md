@@ -17,6 +17,8 @@ Design the Power BI report experience (pages, layout, visuals, interactions, nav
 - any user-validated visual baseline, such as screenshots, manually refined report pages, or design feedback captured during the workflow.
 - optional UI mockups or prototypes from Figma, React, screenshots, or other design tools.
 
+All user-provided mockups, screenshots, PDFs, exports, and similar external design artifacts must be archived under `<ProjectName>/spec/` before this skill uses them as input.
+
 This step produces a **design blueprint** only. It does NOT implement PBIP report artifacts.
 
 When visual mockups are provided, this step must first translate them into Power BI-feasible implementation strategies before finalizing the layout.
@@ -67,9 +69,10 @@ Before starting report design:
   - `<ProjectName>/workflow_state.json`
   - Step 07 test outputs
 4. User-provided design evidence, if available:
-  - screenshots
+  - archived screenshots in `<ProjectName>/spec/`
+  - archived mockups, PDFs, or exports in `<ProjectName>/spec/`
   - manual page reconstructions in Power BI Desktop
-  - explicit UX feedback captured in chat or state
+  - explicit UX feedback captured in workflow state or project artifacts
 5. Theme baseline, if visual evidence exists:
   - current report theme JSON if already present
   - brand palette, typography, spacing, container treatment, and semantic color cues extracted from the mockup
