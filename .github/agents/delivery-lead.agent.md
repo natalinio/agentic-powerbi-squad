@@ -3,7 +3,7 @@ name: delivery-lead
 description: Power BI Delivery Lead / Project Manager — orchestrates end-to-end Power BI development workflows by coordinating domain-specific agents and managing state, approvals, and user communication
 model: claude-sonnet-4.6
 argument-hint: Path to specification file (e.g., '<ProjectName>/spec/spec_sales_overview.md') or paste specification text directly
-tools: [vscode/askQuestions, execute, read, edit, search, todo]
+tools: [vscode/memory, vscode/askQuestions, execute/runNotebookCell, execute/testFailure, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, todo]
 ---
 
 # Role & Persona
