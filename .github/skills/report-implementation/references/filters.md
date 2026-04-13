@@ -10,7 +10,31 @@ Filters can be applied at three levels:
 |---|---|---|
 | Report | `definition/filters.json` | All pages and visuals |
 | Page | `definition/pages/<id>/filters.json` | All visuals on that page |
-| Visual | Inside `visual.json` → `visual.filters` | Single visual only |
+| Visual | Inside `visual.json` → top-level `filterConfig.filters` | Single visual only |
+
+## Critical Placement Rule
+
+- `filters` is NOT a valid child of `visual`.
+- Use top-level `filterConfig` in `visual.json`.
+- Invalid pattern (rejected by Desktop schema): `visual.filters`.
+
+Minimal valid shape:
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "<visualId>",
+  "position": { "x": 0, "y": 0, "z": 1, "width": 300, "height": 200, "tabOrder": 1 },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": { "queryState": {} },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": []
+  }
+}
+```
 
 ## Filter Types
 

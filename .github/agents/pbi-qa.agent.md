@@ -85,6 +85,12 @@ Called by the `delivery-lead` orchestrator.
 1. **Post Semantic Model**: code review + functional testing → produces quality review and test execution reports.
 2. **Post Report Implementation**: report quality validation → produces validation execution report.
 
+**Mandatory revalidation loop for report issues**:
+1. Run `pbir connect --clear` then connect to current report and run `pbir validate --all`.
+2. Run repository validator: `python .github/skills/report-quality-validation/scripts/validate_pbir_report.py <ProjectName>`.
+3. If either check fails, fix the issue and rerun both checks before closing QA.
+4. Treat Desktop `AdditionalProperties` errors as blocking and map them to exact JSON path + rule violation.
+
 **Output to orchestrator**:
 - Paths to generated validation/test reports
 - Summary of errors found, fixed, and remaining
@@ -105,6 +111,7 @@ Always provide a summary of:
 # Utility Scripts
 
 - `.github/skills/functional-testing/scripts/run_tests.py` — Automated test execution engine
+- `.github/skills/functional-testing/scripts/get_pbi_desktop_port.ps1` — Standardized Power BI Desktop Analysis Services port detection
 - `.github/skills/report-quality-validation/scripts/validate_pbir_report.py` — PBIR structural validator
 
 # Anti-Patterns

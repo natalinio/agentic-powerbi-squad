@@ -55,9 +55,9 @@ Before generating ANY PBIR JSON:
 5. Use `microsoft_docs_fetch` for full documentation pages when search results are insufficient.
 6. If the step uncovers a **new reusable PBIR rule** about schema, folder structure, serialization, payload stability, or visual-role mapping, **update the relevant reference file** before ending the step. Do not leave recurring guidance only in chat output.
 
-## Optional PBIR CLI Backend
+## PBIR CLI Mutation Policy (Mandatory for Existing Artifacts)
 
-When the local `pbir` CLI is available, this skill may use it as a packaged command backend for local PBIR work.
+When the local `pbir` CLI is available, this skill must use it as the mutation backend for existing local PBIR report artifacts.
 
 Use it for:
 - report inspection: `pbir ls`, `pbir tree`, `pbir model`, `pbir get`, `pbir cat`
@@ -68,13 +68,40 @@ Use it for:
 Rules:
 1. Do **NOT** run `pbir setup` from this skill.
 2. Do **NOT** let CLI behavior replace blueprint-driven design or repository templates.
-3. Use the CLI only for local PBIR operations that map cleanly to the requested change.
+3. Use the CLI for existing-report mutations that map cleanly to the requested change.
 4. Before any CLI read or write command, clear or replace any existing active `pbir` connection and reconnect it to the current project report under `<ProjectName>/PBIP/<PbipBaseName>.Report`.
 5. Never assume the active `pbir` session already points to the current project; verify with `pbir connect` or reconnect explicitly.
 6. Before bulk or structurally risky commands, run `pbir backup`.
-7. After every CLI mutation, run `pbir validate`, then still satisfy the repository validation gate below.
-8. If the CLI is unavailable, unsupported, or would broaden scope, fall back to the existing file/template workflow without blocking the task.
+7. After every CLI mutation, run `pbir validate` (prefer `--all` when available), then still satisfy the repository validation gate below.
+8. If the CLI is unavailable or unsupported for a requested mutation, stop and request explicit approval before falling back to direct JSON edits.
 9. Do not use `pbir download` or `pbir publish` in Step 9 unless the user explicitly requests Fabric-edge operations.
+
+Direct JSON edit prohibition (existing artifacts):
+- Do not hand-edit `visual.json`, `page.json`, `pages.json`, or theme JSON for routine report mutations.
+- Use CLI commands (`pbir set`, `pbir visuals`, `pbir fields`, `pbir filters`, `pbir theme`) as the default path.
+- If fallback is approved, record rationale and run dual validation before completion.
+
+### Mandatory Implementation Safety Gate
+
+Before marking implementation complete, run this exact sequence:
+
+```powershell
+pbir connect --clear
+pbir connect "<PbipBaseName>.Report"
+pbir validate "<PbipBaseName>.Report" --all
+python .github/skills/report-quality-validation/scripts/validate_pbir_report.py <ProjectName>
+```
+
+Gate rules:
+- If either validation fails, implementation is NOT complete.
+- Fix errors first, rerun both commands, then update workflow state.
+- Treat Desktop `AdditionalProperties` failures as schema-blocking defects.
+
+Schema red flags to check explicitly:
+- `visualContainerObjects` must be inside `visual`.
+- `drillFilterOtherVisuals` must be inside `visual`.
+- Visual filters must be in top-level `filterConfig.filters`, never in `visual.filters`.
+- Top-level keys in `visual.json` must stay within the schema surface (`$schema`, `name`, `position`, `visual|visualGroup`, optional `filterConfig`).
 
 ### Canonical `pbir` Command Patterns
 

@@ -44,7 +44,9 @@ except ImportError as e:
 
 
 # Resolve repository root
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+# Script is at: .github/skills/functional-testing/scripts/run_tests.py
+# So we need to go up 5 levels: scripts -> functional-testing -> skills -> .github -> root
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 
 
 class AnalysisServicesDetector:

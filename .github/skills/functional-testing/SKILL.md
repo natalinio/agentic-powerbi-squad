@@ -90,6 +90,11 @@ Save to `<ProjectName>/tests/tests_definition.json`.
 
 **CRITICAL**: Every test definition MUST include a machine-readable assertion payload. Narrative text in `expectedBehavior` is not enough.
 
+**CRITICAL expected-value calibration rule**:
+- Do NOT use mockup card labels or single-slice visual values as expected totals.
+- Derive expected values from reproducible calculations on source CSV data (same filter granularity as the DAX query).
+- In `expectedBehavior`, document the exact aggregation scope used for expected-value computation.
+
 **Required assertion fields per test**:
 - `assertionType`: one of `numeric_tolerance`, `exact`, `blank`, `row_numeric_tolerance`
 - `expectedValue` for scalar assertions, or `expectedRow` for one-row multi-column assertions
@@ -167,7 +172,12 @@ For detailed test case examples per suite, see `.github/skills/functional-testin
 
 Detect Analysis Services port:
 ```powershell
-Get-ChildItem "$env:LOCALAPPDATA\Microsoft\Power BI Desktop\AnalysisServicesWorkspaces" -Recurse -Filter "msmdsrv.port.txt" | Get-Content
+powershell -ExecutionPolicy Bypass -File .github/skills/functional-testing/scripts/get_pbi_desktop_port.ps1
+```
+
+Machine-readable output (for automation):
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/functional-testing/scripts/get_pbi_desktop_port.ps1 -AsJson
 ```
 
 Invoke the universal test runner:

@@ -123,6 +123,14 @@ If a specialist proposes using the local `pbir` CLI, apply this checklist:
 
 If any check fails, keep the workflow on the repository-native agent/skill path.
 
+### Report Mutation Guardrail (Mandatory)
+
+When delegating any task that modifies existing report visuals/pages/themes:
+1. Require the specialist to use `pbir` CLI commands as the mutation path.
+2. Forbid direct hand-edit of `visual.json`, `page.json`, `pages.json`, and theme JSON during routine report mutations.
+3. Allow direct JSON edits only for documented CLI capability gaps, and only with explicit rationale + post-change dual validation (`pbir validate --all` + repository validator).
+4. Reject task closure if mutation evidence does not include CLI operations and validation outputs.
+
 # Lessons Learned
 
 Create/update `<ProjectName>/lessons-learned.md` **only** when the user reports a concrete defect found in Power BI Desktop and asks for diagnosis/fix. Never during normal phase progression.

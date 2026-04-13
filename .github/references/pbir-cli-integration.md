@@ -22,6 +22,7 @@ The CLI is an implementation aid, not a replacement for repository knowledge.
 3. Do **NOT** treat CLI-generated conventions as authoritative if they conflict with repository references or validated Microsoft documentation.
 4. Do **NOT** make `pbir` a mandatory prerequisite for the overall multi-agent system.
 5. Do **NOT** rely on a previously active `pbir` connection from another repository, project, or terminal session.
+6. Do **NOT** hand-edit PBIR report JSON files (`visual.json`, `page.json`, `pages.json`, theme JSON) for routine report mutations when `pbir` can express the change.
 
 ## Active Connection Rule
 
@@ -106,6 +107,7 @@ If `pbir` is unavailable, unsupported for the operation, or produces ambiguous o
 1. fall back to the repository's existing skill-guided file/template workflow
 2. preserve blueprint-first and reference-first behavior
 3. continue using repository validators and Microsoft documentation as the final authority
+4. when fallback implies direct JSON edits on existing report artifacts, require explicit approval and include rationale in the task summary
 
 If `pbir` fails with a missing Python dependency inside the uv-managed tool environment:
 1. verify the tool path with `Get-Command pbir`
@@ -131,4 +133,13 @@ For local report edits, prefer this sequence:
 2. back up with `pbir backup` before risky edits
 3. mutate with the narrowest command possible
 4. run `pbir validate`
-5. still complete repository-specific validation when the skill requires it
+5. run repository validator when the skill requires it (for report QA: `python .github/skills/report-quality-validation/scripts/validate_pbir_report.py <ProjectName>`)
+
+## Schema Placement Guardrails (Desktop-Critical)
+
+Always enforce these before Desktop open:
+- `visualContainerObjects` inside `visual`.
+- `drillFilterOtherVisuals` inside `visual`.
+- visual filters in top-level `filterConfig.filters`, never `visual.filters`.
+
+If any of these are violated, treat as blocking defect and fix before continuing.

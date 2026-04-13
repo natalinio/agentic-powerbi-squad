@@ -19,6 +19,7 @@ This document provides validated starter templates for Power BI Report (PBIR) `v
 8. The physical PBIR object id used in folder names and `name` properties must be runtime-safe and consistent across the artifact set.
 9. `definition/pages/pages.json` is part of the canonical PBIR report surface and MUST be updated together with page folder creation/removal.
 10. When a new PBIR rule is learned from Desktop output or Microsoft schema inspection and it is not report-specific, record it in this reference or the PBIP structure reference before finishing the task.
+11. Visual-level filtering MUST use top-level `filterConfig.filters`; `visual.filters` is schema-invalid and rejected by Desktop.
 
 ---
 

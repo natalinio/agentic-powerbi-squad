@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 UTF8_BOM = b"\xef\xbb\xbf"
 
 
@@ -309,9 +309,42 @@ class PbirValidator:
                 else:
                     self.add_issue("Structural", "Visual folder/name contract", "FAIL", page=page_runtime_id, visual=visual_dir.name, details=f"Folder={visual_dir.name}, visual.json.name={visual_name}")
 
+                allowed_container_keys = {"$schema", "name", "position", "visual", "visualGroup", "filterConfig"}
+                extra_container_keys = sorted([key for key in visual_data.keys() if key not in allowed_container_keys])
+                self.add_issue(
+                    "Structural",
+                    "Visual container allowed properties",
+                    "FAIL" if extra_container_keys else "PASS",
+                    page=page_runtime_id,
+                    visual=visual_dir.name,
+                    details=f"Unexpected keys: {extra_container_keys}" if extra_container_keys else "",
+                )
+
                 visual = visual_data.get("visual", {})
                 visual_type = visual.get("visualType", "")
                 visual_type_counter[visual_type] += 1
+
+                visual_filters = visual.get("filters")
+                self.add_issue(
+                    "Structural",
+                    "Visual filters placement",
+                    "FAIL" if visual_filters is not None else "PASS",
+                    page=page_runtime_id,
+                    visual=visual_dir.name,
+                    details="Use top-level filterConfig.filters instead of visual.filters" if visual_filters is not None else "",
+                )
+
+                filter_config = visual_data.get("filterConfig")
+                if filter_config is not None:
+                    has_filters_array = isinstance(filter_config, dict) and isinstance(filter_config.get("filters"), list)
+                    self.add_issue(
+                        "Structural",
+                        "filterConfig shape",
+                        "PASS" if has_filters_array else "FAIL",
+                        page=page_runtime_id,
+                        visual=visual_dir.name,
+                        details="filterConfig must be an object with filters array" if not has_filters_array else "",
+                    )
 
                 refs: List[Tuple[str, str, str]] = []
                 extract_refs(visual_data, refs)
@@ -418,7 +451,19 @@ class PbirValidator:
                     first_name, first_pos, _ = visual_positions[first_index]
                     second_name, second_pos, _ = visual_positions[second_index]
                     if rects_overlap(first_pos, second_pos):
-                        self.add_issue("Accessibility & Best Practices", "Visual overlap", "FAIL", page=page_runtime_id, visual=f"{first_name} <> {second_name}")
+                        first_type = visual_positions[first_index][2]
+                        second_type = visual_positions[second_index][2]
+                        if "shape" in {first_type, second_type}:
+                            self.add_issue(
+                                "Accessibility & Best Practices",
+                                "Visual overlap",
+                                "WARNING",
+                                page=page_runtime_id,
+                                visual=f"{first_name} <> {second_name}",
+                                details="Overlap includes shape visual; validate intentional background layering",
+                            )
+                        else:
+                            self.add_issue("Accessibility & Best Practices", "Visual overlap", "FAIL", page=page_runtime_id, visual=f"{first_name} <> {second_name}")
 
         for index, blueprint_page in enumerate(blueprint.get("pages", [])):
             expected_count = len(blueprint_page.get("slicers", [])) + len(blueprint_page.get("visuals", []))

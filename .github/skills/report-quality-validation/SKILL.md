@@ -94,6 +94,11 @@ Apply validation in this exact order to reduce false positives and speed root-ca
 
 1. **Structural & Syntax Layer**
    - Validate file presence, JSON parseability, required schema properties, and folder hierarchy.
+   - Enforce property-placement rules:
+     - `visualContainerObjects` must be inside `visual`.
+     - `drillFilterOtherVisuals` must be inside `visual`.
+     - visual-level filters must use top-level `filterConfig.filters`, never `visual.filters`.
+   - Reject schema-foreign additional properties before semantic checks.
    - Stop early on blocking syntax errors before semantic checks.
 
 2. **Semantic Binding Layer**
@@ -106,6 +111,7 @@ Apply validation in this exact order to reduce false positives and speed root-ca
 
 4. **Readiness Layer**
    - Consolidate issues with severity and actionable remediation order.
+   - Classify overlaps involving decorative `shape` visuals as WARNING unless they obscure interaction targets; keep non-decorative overlaps as FAIL.
    - Output deterministic report so results are reproducible across runs.
 
 ---

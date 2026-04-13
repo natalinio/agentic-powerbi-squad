@@ -121,17 +121,20 @@ The implementation phase must not silently redesign the report. If feasibility c
 
 # PBIR CLI Integration Policy
 
-For local PBIR work, `pbir` may be used as an **optional execution backend** for packaged commands such as inspection, layout updates, theme operations, field/filter changes, and local validation.
+For local PBIR work, `pbir` is the **primary execution backend** for packaged commands such as inspection, layout updates, theme operations, field/filter changes, and local validation.
 
 Rules:
 1. Repository skills, references, blueprint rules, and validators remain the authoritative source of behavior.
 2. Do **NOT** run `pbir setup` in this repository and do **NOT** install external agent plugins or hooks that could modify `.github/` assets.
-3. Prefer `pbir` for narrow local PBIR commands only when it cleanly matches the requested task.
+3. Prefer `pbir` for all report mutations when it cleanly matches the requested task.
 4. Before risky bulk or structural mutations, create a backup; after every mutation, run validation.
 5. If `pbir` is unavailable, unsupported for the operation, or conflicts with repository guidance, fall back to the existing template-driven/manual PBIR workflow.
 6. Treat `download`, `publish`, `convert`, `merge`, `split`, and destructive removals as explicit-scope operations, not default implementation behavior.
 7. Before any `pbir` read or write command, reset or replace the active CLI connection so it points to the current project report under `<ProjectName>/PBIP/<PbipBaseName>.Report`.
 8. Never rely on a previously active `pbir` session from another repository or project.
+9. For report mutations, use `pbir` command paths; do not directly edit PBIR JSON files for existing visuals/pages/themes.
+10. Never close a report task without both: `pbir validate --all` and repository validator execution.
+11. If a CLI capability gap blocks a required change, document the gap, request explicit approval for a direct JSON fallback, then run dual validation and include the evidence in the task summary.
 
 # Anti-Hallucination Protocol
 
@@ -140,11 +143,12 @@ Rules:
 3. **No invented visuals**: Only generate visuals defined in the blueprint or explicitly requested by the user.
 4. **Schema compliance**: All JSON files MUST reference correct Microsoft `$schema` URLs.
 5. **Encoding**: Write every PBIR JSON file as UTF-8 without BOM.
-6. **SVG discipline**: Never invent SVG elements or attributes — use patterns from `svg-visuals` skill references. Always set `dataCategory: ImageUrl` on SVG measures. Test SVG strings for well-formedness before saving.
-7. **Deneb discipline**: Never guess Vega/Vega-Lite spec properties — use patterns from `deneb-visuals` skill references. Always escape field names containing spaces with `datum['Field Name']`. Use `pbiColor()` for theme integration.
-8. **DAX verification**: Never invent DAX functions — verify against https://dax.guide before using in extension measures or SVG measures.
-9. **CF discipline**: Prefer measure-driven CF with theme sentiment tokens over hardcoded hex colors. Load `references/conditional-formatting.md` before implementing any CF.
-10. **Feasibility discipline**: Never assume a web or Figma component is directly reproducible in Power BI. Classify feasibility before choosing the implementation strategy.
+6. **Property placement discipline**: `visualContainerObjects` and `drillFilterOtherVisuals` belong inside `visual`; visual filtering belongs in top-level `filterConfig.filters`, never `visual.filters`.
+7. **SVG discipline**: Never invent SVG elements or attributes — use patterns from `svg-visuals` skill references. Always set `dataCategory: ImageUrl` on SVG measures. Test SVG strings for well-formedness before saving.
+8. **Deneb discipline**: Never guess Vega/Vega-Lite spec properties — use patterns from `deneb-visuals` skill references. Always escape field names containing spaces with `datum['Field Name']`. Use `pbiColor()` for theme integration.
+9. **DAX verification**: Never invent DAX functions — verify against https://dax.guide before using in extension measures or SVG measures.
+10. **CF discipline**: Prefer measure-driven CF with theme sentiment tokens over hardcoded hex colors. Load `references/conditional-formatting.md` before implementing any CF.
+11. **Feasibility discipline**: Never assume a web or Figma component is directly reproducible in Power BI. Classify feasibility before choosing the implementation strategy.
 
 # Anti-Patterns
 - Do NOT design or modify the semantic model — that is `pbi-semantic-model`'s domain.
