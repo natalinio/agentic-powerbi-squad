@@ -33,7 +33,7 @@ The squad supports **two operating modes**:
 
 | Mode | How it works | When to use |
 |---|---|---|
-| **Workflow Mode** | The `delivery-lead` orchestrator coordinates all 6 agents through a structured 10-step pipeline with approval gates at each phase | Building a complete project from a specification end-to-end |
+| **Workflow Mode** | The `delivery-lead` orchestrator coordinates all 6 agents through a structured 7-phase workflow with approval gates at each phase | Building a complete project from a specification end-to-end |
 | **Standalone Mode** | Invoke any agent directly (e.g., `@pbi-semantic-model`, `@pbi-report`, `@pbi-qa`) for a specific task | Adding a measure, creating a visual, running tests, or any targeted change |
 
 Both modes share the same agents, skills, and project structure — the difference is whether you want full orchestration or direct control.
@@ -115,23 +115,30 @@ Use the `delivery-lead` agent to build a complete project from a specification.
 @delivery-lead Build a Power BI project from spec/sample_spec.md
 ```
 
-The orchestrator coordinates all agents through a 10-step workflow:
+The orchestrator coordinates all agents through a 7-phase workflow:
 
-| Step | Agent | Action |
+| Phase | Agent | Action |
 |---|---|---|
-| 00 | delivery-lead | Bootstrap PBIP project structure |
-| 01 | business-data-analyst | Analyze specification, extract requirements |
-| 02 | pbi-semantic-model | Design logical model (star schema, ER diagram) |
-| 03 | pbi-semantic-model | Generate TMDL physical model |
-| 04 | pbi-semantic-model | Develop DAX measures |
-| 05 | data-generator | Generate mock CSV datasets |
-| 06 | pbi-qa | Code review + BPA compliance |
-| 07 | pbi-qa | Run functional tests |
-| 08 | pbi-report | Design report blueprint |
-| 09 | pbi-report | Implement PBIR visuals |
-| 10 | pbi-qa | Validate report quality |
+| 1 | delivery-lead | Initialize the real project folder and PBIP scaffold |
+| 2 | business-data-analyst | Analyze specification, extract KPIs, grain, constraints, and clarifications |
+| 3 | pbi-semantic-model | Develop the semantic model: logical design, TMDL, and DAX measures |
+| 4 | data-generator | Generate mock CSV datasets and align local partitions |
+| 5 | pbi-qa | Run model QA: code review, BPA checks, and functional tests |
+| 6 | pbi-report | Design the report blueprint and implement PBIR artifacts |
+| 7 | pbi-qa | Validate report quality and report/render consistency |
 
 Each step has **mandatory approval gates** — the orchestrator presents results and waits for your approval before proceeding.
+
+Within a phase, the orchestrator may coordinate multiple specialist activities, but workflow progression is tracked at the phase level in `workflow_state.json`.
+
+### Report Mutation Policy
+
+For modifications to an existing PBIR report, the repository now follows a **CLI-first mutation path**:
+
+- prefer the local `pbir` CLI for visual, page, and theme mutations when the command surface supports the requested change
+- do not hand-edit `visual.json`, `page.json`, `pages.json`, or theme JSON for routine report mutations
+- allow direct JSON edits only for documented CLI capability gaps, followed by dual validation
+- close report work only after both `pbir validate --all` and the repository report validator succeed
 
 #### 2. Standalone Mode (Individual Tasks)
 
@@ -196,6 +203,34 @@ Each agent automatically discovers the project context (TMDL files, existing vis
 └── workflow_state.json            # Orchestrator state (workflow mode)
 ```
 
+The repository also contains a worked sample project:
+
+- `intesa-sustainability-dashboard/` — end-to-end example with generated semantic model, report, data, tests, and workflow state
+
+---
+
+## Workflow Observability
+
+The agentic workflow is observable through a combination of repository artifacts and local VS Code session logs.
+
+### Repository-Native Sources
+
+- `<ProjectName>/workflow_state.json` is the authoritative workflow state for orchestrated runs. It records current phase, approvals, decisions, assigned agent, and key artifacts.
+- `<ProjectName>/spec/`, `<ProjectName>/tests/`, `<ProjectName>/data/`, and `<ProjectName>/PBIP/` provide the artifact trail of what each specialist produced.
+- `agent_session_state.json`, when present, is only for standalone specialist continuity. It is not the source of truth for end-to-end workflow progression.
+
+### Local VS Code Session Sources
+
+- VS Code Copilot transcripts under the local `workspaceStorage/.../GitHub.copilot-chat/transcripts/` folder show user prompts, assistant messages, and tool execution events.
+- `chat-session-resources/` stores captured tool outputs referenced by the transcript.
+- These local files are useful for reconstructing the coordinator's execution flow during a session.
+
+### Current Limits
+
+- The current setup does not provide first-class per-sub-agent telemetry with dedicated start/stop events, token usage, or cost accounting for each delegated worker.
+- In practice, structured understanding of the workflow comes from combining `workflow_state.json`, produced artifacts, and the local session transcript.
+- If deeper observability is needed, add a repository-level execution log for delegated tasks rather than relying only on editor-local debug traces.
+
 ---
 
 ## Getting Started
@@ -227,13 +262,14 @@ Each agent automatically discovers the project context (TMDL files, existing vis
 
 ## Reference Assets
 
-The repository includes a reusable template project structure and a sample specification. It does **not** ship a committed full PBIP sample project with generated outputs. Use these assets as the starting point:
+The repository includes both reusable templates and a committed worked example. Use these assets as the starting point:
 
 - `[ProjectName]/` for expected project folder layout
 - `spec/specification_template.md` for the empty specification template
 - `spec/sample_spec.md` for a completed example specification
+- `intesa-sustainability-dashboard/` for a generated end-to-end sample project with PBIP, data, tests, and workflow state
 
-Generated semantic model, report, data, and test artifacts are created when you run the workflow or the specialist agents against your own project folder.
+Generated semantic model, report, data, and test artifacts are created when you run the workflow or the specialist agents against your own project folder. The committed sample project is provided as a concrete reference implementation, not as a substitute for your own project workspace.
 
 ---
 
