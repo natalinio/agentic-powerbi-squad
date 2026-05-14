@@ -1,0 +1,65 @@
+-- Source: html-visuals skill — full-frame HTML/SVG via htmlContent custom visual
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: KPI overview strip — 3 summary boxes (HTML visual)
+-- Renders a horizontal strip with:
+--   Box 1: Total cost (Time Intelligence) + avg per app
+--   Box 2: Variation % vs previous period (color-coded)
+--   Box 3: Portfolio health — efficient / monitor / critical counts
+-- Prerequisites:
+--   [TCO Actual TI], [TCO PP TI], [TCO Delta% TI]
+--   [SCORE COSTO INFRASTRUTTURALE]
+--   'Anagrafica Applicazioni'[Applicazione]
+--   Set visual dataCategory = ImageUrl in TMDL.
+
+HTML Monitoring Strip =
+VAR _c      = [TCO Actual TI]
+VAR _cpp    = [TCO PP TI]
+VAR _var    = [TCO Delta% TI]
+VAR _base   = SUMMARIZE(TCO, 'Anagrafica Applicazioni'[Applicazione])
+VAR _n      = COUNTROWS(_base)
+VAR _cfmt   = FORMAT(DIVIDE(_c, 1000000), "#,##0.0") & " M€"
+VAR _cppfmt = FORMAT(DIVIDE(_cpp, 1000000), "#,##0.0") & " M€"
+VAR _vpct   = FORMAT(ABS(_var), "0.0%")
+VAR _vcol   = IF(_var > 0, "#C00000", "#038C25")
+VAR _varr   = IF(_var > 0, "▲", "▼")
+VAR _apps   = ADDCOLUMNS(_base, "@s", [SCORE COSTO INFRASTRUTTURALE])
+VAR _ok     = COUNTROWS(FILTER(_apps, [@s] >= 75))
+VAR _mon    = COUNTROWS(FILTER(_apps, [@s] >= 50 && [@s] < 75))
+VAR _crit   = COUNTROWS(FILTER(_apps, [@s] < 50))
+VAR _hpct   = FORMAT(DIVIDE(_ok, _n, 0) * 100, "0") & "%"
+VAR _med_amt = AVERAGEX(_base, [TCO Actual TI])
+VAR _med    = FORMAT(DIVIDE(_med_amt, 1000000), "#,##0.0") & " M€"
+RETURN
+"<style>"
+& "*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;margin:0;padding:0}"
+& ".strip{display:flex;gap:8px;padding:6px 10px;height:100%;align-items:stretch}"
+& ".box{flex:1;background:#fff;border-radius:10px;border-top:4px solid;padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}"
+& ".lbl{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}"
+& ".val{font-size:22px;font-weight:700}"
+& ".sub{font-size:10px;color:#777;margin-top:3px}"
+& "</style>"
+& "<div class='strip'>"
+-- Box 1: Cost
+& "<div class='box' style='border-color:#014029'>"
+& "<div class='lbl'>Costo Totale · Time Int</div>"
+& "<div class='val' style='color:#014029'>" & _cfmt & "</div>"
+& "<div class='sub'>PP: " & _cppfmt & " &nbsp;|&nbsp; Media/app: " & _med & "</div>"
+& "</div>"
+-- Box 2: Variation
+& "<div class='box' style='border-color:" & _vcol & "'>"
+& "<div class='lbl'>Variazione vs Periodo Precedente</div>"
+& "<div class='val' style='color:" & _vcol & "'>" & _varr & " " & _vpct & "</div>"
+& "<div class='sub'># App: <b>" & _n & "</b> &nbsp;|&nbsp; Efficienti: <b style='color:#038C25'>" & _ok & "</b></div>"
+& "</div>"
+-- Box 3: Health
+& "<div class='box' style='border-color:#6FD904'>"
+& "<div class='lbl'>Salute Portfolio · " & _n & " Applicazioni</div>"
+& "<div class='val' style='color:#014029'>" & _hpct & " Efficienti</div>"
+& "<div class='sub'>"
+& "<span style='background:#D3E6CC;color:#014029;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700'>✔ " & _ok & "</span> "
+& "<span style='background:#FFF3CD;color:#7D4E00;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700'>~ " & _mon & "</span> "
+& "<span style='background:#FDDEDE;color:#C00000;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700'>✘ " & _crit & "</span>"
+& "</div></div></div>"

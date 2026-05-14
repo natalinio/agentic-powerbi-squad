@@ -1,0 +1,64 @@
+-- Source: html-visuals skill — full-frame HTML/SVG via htmlContent custom visual
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: Homepage navigation card panel (HTML visual)
+-- Renders a full landing page with 3 clickable navigation cards,
+-- hero header, and footer metadata bar.
+-- Prerequisites:
+--   No DAX dependencies — static HTML, customise text/icons as needed.
+--   Set visual dataCategory = ImageUrl in TMDL.
+
+HTML Index Page =
+"<style>*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;margin:0;padding:0}html,body{height:100%;overflow:hidden}"
+& ".pg{background:#014029;position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;padding:20px 28px}"
+& ".bdg{display:inline-block;background:#6FD904;color:#014029;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}"
+& ".ttl{font-size:24px;font-weight:700;color:#fff;margin-bottom:5px}"
+& ".sub{font-size:12px;color:#D3E6CC;margin-bottom:20px}"
+& ".cards{display:flex;gap:12px;margin-bottom:14px;flex:1 1 0;min-height:0;align-items:stretch}"
+& ".card{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(111,217,4,.25);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;min-width:0}"
+& ".top{height:4px;margin:-18px -20px 14px;border-radius:0}"
+& ".ico{font-size:34px;margin-bottom:10px}"
+& ".cn{font-size:19px;font-weight:700;color:#fff;margin-bottom:4px}"
+& ".ct{font-size:11px;color:#6FD904;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}"
+& ".cd{font-size:13px;color:#D3E6CC;line-height:1.7;margin-bottom:14px}"
+& ".ft{list-style:none;padding:0;flex:1}"
+& ".ft li{font-size:13px;color:#D3E6CC;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}"
+& ".ft li::before{content:'→ ';color:#6FD904;font-weight:700}"
+& ".foot{background:rgba(255,255,255,.05);border-radius:8px;padding:11px 16px;display:flex;gap:24px;flex-wrap:wrap}"
+& ".fi{font-size:10px;color:#D3E6CC}.fi b{color:#fff}</style>"
+& "<div class='pg'>"
+& "<div class='bdg'>MOOVE2CLOUD · Findomestic</div>"
+& "<div class='ttl'>Dashboard PowerBI — Total Cost of Ownership</div>"
+& "<div class='sub'>Report di monitoraggio costi applicativi e infrastrutturali · Seleziona Anno Trimestre e Modalità di calcolo per aggiornare tutte le dashboard</div>"
+& "<div class='cards'>"
+
+-- CARD 1: Executive Report
+& "<div class='card'><div class='top' style='background:#6FD904'></div><div class='ico'>📋</div>"
+& "<div class='cn'>Executive Report</div>"
+& "<div class='ct'>KPI Overview · PDF Ready</div>"
+& "<div class='cd'>Riepilogo esecutivo del portfolio. KPI principali, narrativa automatica con best/worst performer, tabella comparativa e grafico andamentale TCO anno corrente vs anno precedente.</div>"
+& "<ul class='ft'><li>Costo totale Time Int vs Periodo Precedente</li><li>4 KPI box: costo, delta, n. app, efficienti</li><li>Narrativa sintetica con evidenze chiave</li><li>Tabella Score Infra + App + Costo (K€) per tutte le app</li><li>Grafico andamentale HTML — Anno corrente vs Anno precedente</li></ul></div>"
+
+-- CARD 2: Dashboard Monitoraggio
+& "<div class='card'><div class='top' style='background:#28731D'></div><div class='ico'>📊</div>"
+& "<div class='cn'>Dashboard Monitoraggio App</div>"
+& "<div class='ct'>Operational View · Monitoring</div>"
+& "<div class='cd'>Vista operativa per il team IT. Griglia di tutte le applicazioni con classificazione a semaforo, barra score 0-100 e delta vs periodo precedente.</div>"
+& "<ul class='ft'><li>KPI strip: costo, variazione, salute portfolio</li><li>Tile per tutte le applicazioni monitorate</li><li>Traffic light: verde ≥75, giallo ≥50, rosso &lt;50</li><li>Rank posizione nel portfolio</li><li>Costo + delta% per ogni applicazione</li></ul></div>"
+
+-- CARD 3: TOP / WORST
+& "<div class='card'><div class='top' style='background:#D3E6CC'></div><div class='ico'>🏆</div>"
+& "<div class='cn'>TOP / WORST</div>"
+& "<div class='ct'>PDF Ready · Narrative Insight</div>"
+& "<div class='cd'>Dashboard narrativa: TOP 3 best performer e WORST 3 con confronto periodo corrente vs precedente. Ottimizzata per stampa mensile in PDF via PowerAutomate.</div>"
+& "<ul class='ft'><li>Sintesi portfolio in testo narrativo dinamico</li><li>Cards TOP 3 app più efficienti (verde)</li><li>Cards WORST 3 priorità di intervento (rosso)</li><li>Grafico andamentale Score Infra — Anno corrente vs Anno precedente</li><li>Best/Worst performer con delta score vs PP</li></ul></div>"
+
+& "</div>"
+& "<div class='foot'>"
+& "<div class='fi'>🔄 <b>Refresh dati:</b> giornaliero ore 8:00</div>"
+& "<div class='fi'>✉ <b>Distribuzione PDF:</b> PowerAutomate mensile</div>"
+& "<div class='fi'>📁 <b>Sorgente:</b> SharePoint Excel</div>"
+& "<div class='fi'>👥 <b>Progetto:</b> MOOVE2CLOUD · Team Avanade</div>"
+& "</div></div>"
