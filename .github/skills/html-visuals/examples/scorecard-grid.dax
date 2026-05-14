@@ -1,0 +1,57 @@
+-- Source: html-visuals skill — full-frame HTML/SVG via htmlContent custom visual
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: Application scorecard tile grid (HTML visual)
+-- Renders one tile per application with:
+--   - Traffic light border: green ≥75 / yellow ≥50 / red <50
+--   - App name, score, progress bar, cost, delta% vs PP
+--   - Rank badge top-right
+-- Prerequisites:
+--   [SCORE COSTO INFRASTRUTTURALE], [TCO Actual TI], [TCO Delta% TI]
+--   'Anagrafica Applicazioni'[Applicazione]
+--   Set visual dataCategory = ImageUrl in TMDL.
+
+HTML Monitoring Grid =
+VAR _base = ADDCOLUMNS(
+    SUMMARIZE(TCO, 'Anagrafica Applicazioni'[Applicazione]),
+    "@si", [SCORE COSTO INFRASTRUTTURALE],
+    "@co", [TCO Actual TI],
+    "@vr", [TCO Delta% TI]
+)
+VAR _rk = ADDCOLUMNS(_base, "@r", RANKX(_base, [@si], , DESC, Dense))
+VAR _tiles = CONCATENATEX(
+    _rk,
+    VAR _sc     = [@si]
+    VAR _sc_col = SWITCH(TRUE(), _sc >= 75, "#038C25", _sc >= 50, "#D4930A", "#C00000")
+    VAR _bg_col = SWITCH(TRUE(), _sc >= 75, "#F0FFF5", _sc >= 50, "#FFFBF0", "#FFF5F5")
+    VAR _brd    = SWITCH(TRUE(), _sc >= 75, "#6FD904", _sc >= 50, "#FFC000", "#C00000")
+    VAR _ico    = SWITCH(TRUE(), _sc >= 75, "✔", _sc >= 50, "⚡", "✘")
+    VAR _vr_col = IF([@vr] <= 0, "#038C25", "#C00000")
+    VAR _vr_arr = IF([@vr] <= 0, "▼", "▲")
+    VAR _bar_w  = FORMAT(MAX(0, MIN(100, _sc)), "0")
+    VAR _lbl    = SWITCH(TRUE(), _sc >= 75, "Efficiente", _sc >= 50, "Monitoraggio", "Critico")
+    RETURN
+    "<div style='background:" & _bg_col & ";border:2px solid " & _brd & ";border-radius:10px;padding:10px 12px;min-width:160px;flex:1 1 18%;max-width:22%'>"
+    & "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:5px'>"
+    & "<span style='font-size:9px;color:" & _sc_col & ";font-weight:700;text-transform:uppercase'>" & _ico & " " & _lbl & "</span>"
+    & "<span style='font-size:9px;color:#aaa'>#" & [@r] & "</span>"
+    & "</div>"
+    & "<div style='font-size:12px;font-weight:700;color:#014029;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>" & 'Anagrafica Applicazioni'[Applicazione] & "</div>"
+    & "<div style='font-size:9px;color:#777;margin-bottom:2px'>Score Infra: <b style='color:" & _sc_col & "'>" & FORMAT(_sc, "0.0") & "/100</b></div>"
+    & "<div style='background:#E0E0E0;border-radius:3px;height:5px;margin-bottom:6px'>"
+    & "<div style='background:" & _sc_col & ";width:" & _bar_w & "%;height:5px;border-radius:3px'></div></div>"
+    & "<div style='display:flex;justify-content:space-between;font-size:10px;padding-top:4px;border-top:1px solid rgba(0,0,0,.08)'>"
+    & "<span style='color:#555'>" & FORMAT([@co] / 1000000, "#,##0.0") & " M€</span>"
+    & "<span style='color:" & _vr_col & ";font-weight:700'>" & _vr_arr & FORMAT(ABS([@vr]), "0.0%") & "</span>"
+    & "</div></div>",
+    "",
+    [@r], ASC
+)
+RETURN
+"<style>*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;margin:0;padding:0}</style>"
+& "<div style='padding:10px;overflow:auto;height:100%'>"
+& "<div style='display:flex;flex-wrap:wrap;gap:8px'>"
+& _tiles
+& "</div></div>"

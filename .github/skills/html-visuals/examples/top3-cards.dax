@@ -1,0 +1,70 @@
+-- Source: html-visuals skill — full-frame HTML/SVG via htmlContent custom visual
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: TOP 3 / WORST 3 cards (HTML visual)
+-- Two measures — use one or both on the TOP/WORST page.
+--
+-- TOP 3: shows the 3 apps with highest cost (green cards)
+-- WORST 3: shows the 3 apps with highest cost increase vs PP (red cards)
+--
+-- Prerequisites:
+--   [TCO Actual TI], [TCO Delta% TI], [SCORE COSTO INFRASTRUTTURALE]
+--   'Anagrafica Applicazioni'[Applicazione]
+--   Set visual dataCategory = ImageUrl in TMDL.
+
+-- ── TOP 3 per costo ────────────────────────────────────────────────────────
+HTML Top3 Costo =
+VAR _base = SUMMARIZE(TCO, 'Anagrafica Applicazioni'[Applicazione])
+VAR _t3 = ADDCOLUMNS(
+    TOPN(3, _base, [TCO Actual TI], DESC),
+    "@sc", [SCORE COSTO INFRASTRUTTURALE],
+    "@co", [TCO Actual TI],
+    "@vr", [TCO Delta% TI]
+)
+VAR _cards = CONCATENATEX(
+    _t3,
+    "<div style='flex:1;min-width:180px;background:#F0FFF5;border-radius:10px;border:2px solid #038C25;padding:12px 14px;margin:4px'>"
+    & "<div style='font-size:11px;color:#038C25;font-weight:700;text-transform:uppercase'>🏅 Top Costo</div>"
+    & "<div style='font-size:16px;font-weight:700;color:#014029;margin:5px 0 2px'>" & 'Anagrafica Applicazioni'[Applicazione] & "</div>"
+    & "<div style='font-size:26px;font-weight:700;color:#038C25'>" & FORMAT([@co]/1000000,"#,##0.0") & "<span style='font-size:13px;color:#777'> M€</span></div>"
+    & "<div style='font-size:11px;color:#555;margin-top:5px;border-top:1px solid #D3E6CC;padding-top:5px'>"
+    & "Score: <b>" & FORMAT([@sc],"0.0") & "/100</b> &nbsp;ΔPP: <b style='color:" & IF([@vr]<=0,"#038C25","#C00000") & "'>"
+    & IF([@vr]<=0,"▼","▲") & FORMAT(ABS([@vr]),"0.0%") & "</b>"
+    & "</div></div>",
+    "",
+    [@co], DESC
+)
+RETURN
+"<style>*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;margin:0;padding:0}</style>"
+& "<div style='padding:10px'>"
+& "<div style='font-size:14px;font-weight:700;color:#014029;border-bottom:2px solid #6FD904;padding-bottom:5px;margin-bottom:10px'>🏆 TOP 3 — Costo più alto</div>"
+& "<div style='display:flex;gap:8px;flex-wrap:wrap'>" & _cards & "</div></div>"
+
+-- ── WORST 3 per variazione ─────────────────────────────────────────────────
+HTML Worst3 Variazione =
+VAR _base = SUMMARIZE(TCO, 'Anagrafica Applicazioni'[Applicazione])
+VAR _w3 = ADDCOLUMNS(
+    TOPN(3, _base, [TCO Delta% TI], DESC),
+    "@sc", [SCORE COSTO INFRASTRUTTURALE],
+    "@co", [TCO Actual TI],
+    "@vr", [TCO Delta% TI]
+)
+VAR _cards = CONCATENATEX(
+    _w3,
+    "<div style='flex:1;min-width:180px;background:#FFF5F5;border-radius:10px;border:2px solid #C00000;padding:12px 14px;margin:4px'>"
+    & "<div style='font-size:11px;color:#C00000;font-weight:700;text-transform:uppercase'>⚠️ Critico</div>"
+    & "<div style='font-size:16px;font-weight:700;color:#C00000;margin:5px 0 2px'>" & 'Anagrafica Applicazioni'[Applicazione] & "</div>"
+    & "<div style='font-size:26px;font-weight:700;color:#C00000'>" & IF([@vr]<=0,"▼","▲") & FORMAT(ABS([@vr]),"0.0%") & "<span style='font-size:12px;color:#777'> vs PP</span></div>"
+    & "<div style='font-size:11px;color:#555;margin-top:5px;border-top:1px solid #FDDEDE;padding-top:5px'>"
+    & "Costo: <b>" & FORMAT([@co]/1000000,"#,##0.0") & " M€</b> &nbsp;Score: <b>" & FORMAT([@sc],"0.0") & "</b>"
+    & "</div></div>",
+    "",
+    [@vr], DESC
+)
+RETURN
+"<style>*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;margin:0;padding:0}</style>"
+& "<div style='padding:10px'>"
+& "<div style='font-size:14px;font-weight:700;color:#C00000;border-bottom:2px solid #FDDEDE;padding-bottom:5px;margin-bottom:10px'>⚠️ WORST 3 — Maggior aumento</div>"
+& "<div style='display:flex;gap:8px;flex-wrap:wrap'>" & _cards & "</div></div>"
