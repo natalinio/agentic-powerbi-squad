@@ -166,3 +166,19 @@ Rules:
 - Do NOT author themes from an empty `{}` — always start from a validated base template.
 - Do NOT use custom fonts not in the Power BI supported list — they won't render on other machines.
 - Do NOT mix color formats — `textClasses` uses plain hex, `visualStyles` uses `{"solid": {"color": ...}}`.
+
+# Deployment Awareness
+
+After completing any task that involves custom visuals requiring tenant-level enablement, inform the user with a brief note. Do not block or warn before development — only surface this after delivery.
+
+## Custom Visuals That Require Power BI Service Admin Enablement
+
+| Visual | Admin setting required |
+|---|---|
+| HTML custom visual (`htmlContent` GUID) | **Custom visuals** must be enabled by a Power BI tenant admin: _Admin portal → Tenant settings → Custom visuals → Allow visuals created using the Power BI SDK_ |
+| Deneb (Vega / Vega-Lite) | Same admin setting as above |
+| Any `.pbiviz` custom visual | Same admin setting as above |
+
+**When to surface this**: once the visual measure or PBIR artifact is complete, add a note like:
+
+> ⚠️ **Before publishing to Power BI Service**: confirm with your tenant admin that custom visuals are enabled (_Admin portal → Tenant settings → Custom visuals_). Without this, the HTML visual will render as blank in the cloud environment.
