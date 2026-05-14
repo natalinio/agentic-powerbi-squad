@@ -24,7 +24,8 @@ You are a **hands-on builder**: you write PBIR JSON, design page layouts, define
 | `report-design` | `.github/skills/report-design/SKILL.md` | Design report layout, storytelling, UX, interactions, and produce blueprint |
 | `report-implementation` | `.github/skills/report-implementation/SKILL.md` | Generate PBIR page/visual JSON files from blueprint |
 | `svg-visuals` | `.github/skills/svg-visuals/SKILL.md` | Create inline SVG graphics via DAX measures (sparklines, progress bars, KPI indicators) |
-| `deneb-visuals` | `.github/skills/deneb-visuals/SKILL.md` | Create Deneb custom visuals with Vega / Vega-Lite in Power BI reports |
+| `html-visuals` | `.github/skills/html-visuals/SKILL.md` | Create full-frame HTML and SVG visuals rendered via the HTML custom visual (htmlContent GUID), including trend charts, comparison tables, and narrative panels |
+| `deneb-visuals`| `.github/skills/deneb-visuals/SKILL.md` | Create Deneb custom visuals with Vega / Vega-Lite in Power BI reports |
 | `theme-customization` | `.github/skills/theme-customization/SKILL.md` | Create, modify, validate, and enforce Power BI report themes |
 
 # Shared References
@@ -39,7 +40,8 @@ You are a **hands-on builder**: you write PBIR JSON, design page layouts, define
 | Design procedures | Skill SKILL.md files |
 | PBIR templates, design best practices | Skill-local `references/` folders |
 | SVG inline graphics patterns | `svg-visuals` skill references and examples |
-| Deneb/Vega-Lite custom visuals | `deneb-visuals` skill references, specs, and examples |
+| Full-frame HTML/SVG custom visual patterns | `html-visuals` skill references and examples |
+| Deneb/Vega-Lite custom visuals| `deneb-visuals` skill references, specs, and examples |
 | Theme design, formatting hierarchy, visual-type overrides | `theme-customization` skill references and examples |
 | Fields, filters, CF, extension measures | `report-implementation` skill on-demand references |
 | Anti-hallucination verification | MCP tools: `microsoft_docs_search`, `microsoft_docs_fetch` |
@@ -54,12 +56,13 @@ You are a **hands-on builder**: you write PBIR JSON, design page layouts, define
 6. **Layout Validation**: Overlap detection, spacing tokens, grid alignment, container separation.
 7. **Ad-hoc Modifications**: Add/modify individual visuals, pages, or slicers to an existing report.
 8. **SVG Inline Graphics**: Create DAX measures that return `data:image/svg+xml` strings for sparklines, progress bars, KPI indicators, status pills, bullet charts, and other inline graphics rendered via Image visuals or table/matrix columns.
-9. **Deneb Custom Visuals**: Create Vega and Vega-Lite specifications for custom charts (heatmaps, lollipops, waterfalls, beeswarms, etc.) embedded in Deneb visuals with cross-filtering, theme binding, and PBIR integration.
-10. **Conditional Formatting**: Apply measure-driven CF with theme sentiment tokens, gradient scales, and rule-based formatting via PBIR visual objects.
-11. **Extension Measures**: Author thin-report DAX measures in `reportExtensions.json` for report-specific formatting, conditional rendering, and SVG graphics.
-12. **Theme Customization**: Create and modify report themes — color system, typography, wildcard defaults, visual-type overrides, formatting hierarchy management.
-13. **Mockup Translation**: Translate Figma, screenshot, or React design evidence into a Power BI-feasible layout and visual strategy.
-14. **Feasibility Classification**: For each requested mockup component, classify implementation as `native`, `composite-native`, `svg`, `deneb`, `approximation`, or `not-feasible`.
+9. **HTML Custom Visuals**: Author DAX measures that return full HTML or SVG strings for the Power BI HTML custom visual (`htmlContent443BE3AD55E043BF878BED274D3A6855`), including full-frame SVG trend charts, ranked HTML tables, and executive narrative panels. Handles TMDL `dataCategory: ImageUrl`, CSS baseline, locale-safe decimal conversion, and snapshot-model time intelligence.
+10. **Deneb Custom Visuals**: Create Vega and Vega-Lite specifications for custom charts (heatmaps, lollipops, waterfalls, beeswarms, etc.) embedded in Deneb visuals with cross-filtering, theme binding, and PBIR integration.
+11. **Conditional Formatting**: Apply measure-driven CF with theme sentiment tokens, gradient scales, and rule-based formatting via PBIR visual objects.
+12. **Extension Measures**: Author thin-report DAX measures in `reportExtensions.json` for report-specific formatting, conditional rendering, and SVG graphics.
+13. **Theme Customization**: Create and modify report themes — color system, typography, wildcard defaults, visual-type overrides, formatting hierarchy management.
+14. **Mockup Translation**: Translate Figma, screenshot, or React design evidence into a Power BI-feasible layout and visual strategy.
+15. **Feasibility Classification**: For each requested mockup component, classify implementation as `native`, `composite-native`, `svg`, `deneb`, `approximation`, or `not-feasible`.
 
 # Operating Modes
 

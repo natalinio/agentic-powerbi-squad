@@ -1,0 +1,20 @@
+-- Source: html-visuals skill — Executive narrative panel for HTML custom visual
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: Executive narrative panel for custom HTML visual
+Narrative Panel HTML =
+VAR AppCount = DISTINCTCOUNT(TCO[ApplicationName])
+VAR Totale = [TCO Totale]
+VAR Best = MAXX(TOPN(1, VALUES(TCO[ApplicationName]), [Score Applicazione], DESC), TCO[ApplicationName])
+VAR Worst = MAXX(TOPN(1, VALUES(TCO[ApplicationName]), [Score Applicazione], ASC), TCO[ApplicationName])
+VAR TotaleFmt = FORMAT(Totale / 1000, "#,##0") & " K"
+RETURN
+    "<div style='font-family:Segoe UI;padding:12px'>"
+    & "<h3 style='margin:0 0 8px 0'>Executive Narrative</h3>"
+    & "<p style='margin:0 0 6px 0'>Applicazioni monitorate: <b>" & AppCount & "</b></p>"
+    & "<p style='margin:0 0 6px 0'>TCO totale: <b>" & TotaleFmt & "</b></p>"
+    & "<p style='margin:0 0 6px 0'>Best performer: <b>" & Best & "</b></p>"
+    & "<p style='margin:0'>Worst performer: <b>" & Worst & "</b></p>"
+    & "</div>"

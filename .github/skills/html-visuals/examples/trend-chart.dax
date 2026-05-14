@@ -1,0 +1,120 @@
+-- Source: html-visuals skill — Full-frame YoY SVG line chart via HTML custom visual
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: Year-vs-Year trend chart with complete SVG output.
+-- Prerequisites:
+-- 1) Date slicer table: 'Calendario filtro'[Date]
+-- 2) Fact columns: TCO[DataSnapshot], TCO[Totale]
+Trend Chart SVG =
+VAR DataFiltro = MAX('Calendario filtro'[Date])
+VAR AnnoFiltro = YEAR(DataFiltro)
+VAR AnnoPP = AnnoFiltro - 1
+
+-- Quarterly portfolio totals: current year (month = 1/4/7/10)
+VAR Q1c = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoFiltro && MONTH(TCO[DataSnapshot]) = 1))
+VAR Q2c = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoFiltro && MONTH(TCO[DataSnapshot]) = 4))
+VAR Q3c = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoFiltro && MONTH(TCO[DataSnapshot]) = 7))
+VAR Q4c = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoFiltro && MONTH(TCO[DataSnapshot]) = 10))
+
+-- Quarterly portfolio totals: previous year
+VAR Q1p = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoPP && MONTH(TCO[DataSnapshot]) = 1))
+VAR Q2p = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoPP && MONTH(TCO[DataSnapshot]) = 4))
+VAR Q3p = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoPP && MONTH(TCO[DataSnapshot]) = 7))
+VAR Q4p = CALCULATE(SUM(TCO[Totale]), REMOVEFILTERS(Calendario), FILTER(ALL(TCO[DataSnapshot]), YEAR(TCO[DataSnapshot]) = AnnoPP && MONTH(TCO[DataSnapshot]) = 10))
+
+-- SVG dimensions and margins
+VAR CW = 540
+VAR CH = 250
+VAR ML = 50
+VAR MT = 38
+VAR MB = 42
+VAR PW = CW - ML - 15
+VAR PH = CH - MT - MB
+VAR YBot = MT + PH
+
+-- X positions for Q1..Q4
+VAR XS = ROUNDDOWN(PW / 3, 0)
+VAR X0 = ML
+VAR X1 = ML + XS
+VAR X2 = ML + XS * 2
+VAR X3 = ML + PW
+
+-- Null-safe values
+VAR V1c = IF(ISBLANK(Q1c), 0, Q1c)
+VAR V2c = IF(ISBLANK(Q2c), 0, Q2c)
+VAR V3c = IF(ISBLANK(Q3c), 0, Q3c)
+VAR V4c = IF(ISBLANK(Q4c), 0, Q4c)
+VAR V1p = IF(ISBLANK(Q1p), 0, Q1p)
+VAR V2p = IF(ISBLANK(Q2p), 0, Q2p)
+VAR V3p = IF(ISBLANK(Q3p), 0, Q3p)
+VAR V4p = IF(ISBLANK(Q4p), 0, Q4p)
+
+-- Y scale across both years
+VAR MinCY = MIN(MIN(V1c, V2c), MIN(V3c, V4c))
+VAR MaxCY = MAX(MAX(V1c, V2c), MAX(V3c, V4c))
+VAR MinPP = MIN(MIN(V1p, V2p), MIN(V3p, V4p))
+VAR MaxPP = MAX(MAX(V1p, V2p), MAX(V3p, V4p))
+VAR YMinRaw = MIN(MinCY, MinPP)
+VAR YMaxRaw = MAX(MaxCY, MaxPP)
+VAR YPad = (YMaxRaw - YMinRaw) * 0.08
+VAR YMin = YMinRaw - YPad
+VAR YMax = YMaxRaw + YPad
+VAR YRange = YMax - YMin
+
+-- Y pixel positions
+VAR Yc1 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V1c - YMin, YRange, 0)), 0)
+VAR Yc2 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V2c - YMin, YRange, 0)), 0)
+VAR Yc3 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V3c - YMin, YRange, 0)), 0)
+VAR Yc4 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V4c - YMin, YRange, 0)), 0)
+VAR Yp1 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V1p - YMin, YRange, 0)), 0)
+VAR Yp2 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V2p - YMin, YRange, 0)), 0)
+VAR Yp3 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V3p - YMin, YRange, 0)), 0)
+VAR Yp4 = MT + ROUNDDOWN(PH * (1 - DIVIDE(V4p - YMin, YRange, 0)), 0)
+
+-- Polyline and area polygons
+VAR PL_CY = FORMAT(X0,"0") & "," & FORMAT(Yc1,"0") & " " & FORMAT(X1,"0") & "," & FORMAT(Yc2,"0") & " " & FORMAT(X2,"0") & "," & FORMAT(Yc3,"0") & " " & FORMAT(X3,"0") & "," & FORMAT(Yc4,"0")
+VAR PL_PP = FORMAT(X0,"0") & "," & FORMAT(Yp1,"0") & " " & FORMAT(X1,"0") & "," & FORMAT(Yp2,"0") & " " & FORMAT(X2,"0") & "," & FORMAT(Yp3,"0") & " " & FORMAT(X3,"0") & "," & FORMAT(Yp4,"0")
+VAR AR_CY = PL_CY & " " & FORMAT(X3,"0") & "," & FORMAT(YBot,"0") & " " & FORMAT(X0,"0") & "," & FORMAT(YBot,"0")
+VAR AR_PP = PL_PP & " " & FORMAT(X3,"0") & "," & FORMAT(YBot,"0") & " " & FORMAT(X0,"0") & "," & FORMAT(YBot,"0")
+
+-- CY labels (locale-safe)
+VAR LV1c = SUBSTITUTE(FORMAT(V1c / 1000000,"#0.0"),",",".") & "M"
+VAR LV2c = SUBSTITUTE(FORMAT(V2c / 1000000,"#0.0"),",",".") & "M"
+VAR LV3c = SUBSTITUTE(FORMAT(V3c / 1000000,"#0.0"),",",".") & "M"
+VAR LV4c = SUBSTITUTE(FORMAT(V4c / 1000000,"#0.0"),",",".") & "M"
+
+-- Grid labels
+VAR YG1 = MT + ROUNDDOWN(PH * 0.25, 0)
+VAR YG2 = MT + ROUNDDOWN(PH * 0.50, 0)
+VAR YG3 = MT + ROUNDDOWN(PH * 0.75, 0)
+VAR GL1 = SUBSTITUTE(FORMAT((YMin + YRange * 0.75) / 1000000,"#0.0"),",", ".")
+VAR GL2 = SUBSTITUTE(FORMAT((YMin + YRange * 0.50) / 1000000,"#0.0"),",", ".")
+VAR GL3 = SUBSTITUTE(FORMAT((YMin + YRange * 0.25) / 1000000,"#0.0"),",", ".")
+
+-- Component SVG strings
+VAR Title = "<text x='270' y='14' text-anchor='middle' font-size='12' font-weight='700' fill='#014029'>Andamento Costo TCO per Year - " & FORMAT(AnnoFiltro,"0") & " vs " & FORMAT(AnnoPP,"0") & "</text>"
+VAR LegCY = "<rect x='55' y='22' width='22' height='3' fill='#6FD904' rx='1'/><text x='81' y='27' font-size='10' fill='#014029' font-weight='700'>" & FORMAT(AnnoFiltro,"0") & "</text>"
+VAR LegPP = "<rect x='125' y='22' width='22' height='3' fill='#A0A0A0' rx='1'/><text x='151' y='27' font-size='10' fill='#777'>" & FORMAT(AnnoPP,"0") & "</text>"
+VAR YGrid = "<line x1='" & FORMAT(ML,"0") & "' y1='" & FORMAT(YG1,"0") & "' x2='" & FORMAT(CW-10,"0") & "' y2='" & FORMAT(YG1,"0") & "' stroke='#E8F0EC' stroke-width='1'/>" & "<line x1='" & FORMAT(ML,"0") & "' y1='" & FORMAT(YG2,"0") & "' x2='" & FORMAT(CW-10,"0") & "' y2='" & FORMAT(YG2,"0") & "' stroke='#E8F0EC' stroke-width='1'/>" & "<line x1='" & FORMAT(ML,"0") & "' y1='" & FORMAT(YG3,"0") & "' x2='" & FORMAT(CW-10,"0") & "' y2='" & FORMAT(YG3,"0") & "' stroke='#E8F0EC' stroke-width='1'/>"
+VAR Baseline = "<line x1='" & FORMAT(ML,"0") & "' y1='" & FORMAT(YBot,"0") & "' x2='" & FORMAT(CW-10,"0") & "' y2='" & FORMAT(YBot,"0") & "' stroke='#ccc' stroke-width='1'/>"
+VAR XLbls = "<text x='" & FORMAT(X0,"0") & "' y='" & FORMAT(YBot+13,"0") & "' text-anchor='middle' font-size='10' fill='#555'>Q1</text><text x='" & FORMAT(X1,"0") & "' y='" & FORMAT(YBot+13,"0") & "' text-anchor='middle' font-size='10' fill='#555'>Q2</text><text x='" & FORMAT(X2,"0") & "' y='" & FORMAT(YBot+13,"0") & "' text-anchor='middle' font-size='10' fill='#555'>Q3</text><text x='" & FORMAT(X3,"0") & "' y='" & FORMAT(YBot+13,"0") & "' text-anchor='middle' font-size='10' fill='#555'>Q4</text>"
+VAR YAxisLbls = "<text x='" & FORMAT(ML-3,"0") & "' y='" & FORMAT(YG1+4,"0") & "' text-anchor='end' font-size='9' fill='#999'>" & GL1 & "</text><text x='" & FORMAT(ML-3,"0") & "' y='" & FORMAT(YG2+4,"0") & "' text-anchor='end' font-size='9' fill='#999'>" & GL2 & "</text><text x='" & FORMAT(ML-3,"0") & "' y='" & FORMAT(YG3+4,"0") & "' text-anchor='end' font-size='9' fill='#999'>" & GL3 & "</text>"
+VAR Dots_PP = "<circle cx='" & FORMAT(X0,"0") & "' cy='" & FORMAT(Yp1,"0") & "' r='3' fill='#A0A0A0' stroke='#fff' stroke-width='1'/><circle cx='" & FORMAT(X1,"0") & "' cy='" & FORMAT(Yp2,"0") & "' r='3' fill='#A0A0A0' stroke='#fff' stroke-width='1'/><circle cx='" & FORMAT(X2,"0") & "' cy='" & FORMAT(Yp3,"0") & "' r='3' fill='#A0A0A0' stroke='#fff' stroke-width='1'/><circle cx='" & FORMAT(X3,"0") & "' cy='" & FORMAT(Yp4,"0") & "' r='3' fill='#A0A0A0' stroke='#fff' stroke-width='1'/>"
+VAR Dots_CY = "<circle cx='" & FORMAT(X0,"0") & "' cy='" & FORMAT(Yc1,"0") & "' r='4' fill='#6FD904' stroke='#fff' stroke-width='1.5'/><text x='" & FORMAT(X0,"0") & "' y='" & FORMAT(Yc1-8,"0") & "' text-anchor='middle' font-size='9' fill='#014029' font-weight='600'>" & LV1c & "</text><circle cx='" & FORMAT(X1,"0") & "' cy='" & FORMAT(Yc2,"0") & "' r='4' fill='#6FD904' stroke='#fff' stroke-width='1.5'/><text x='" & FORMAT(X1,"0") & "' y='" & FORMAT(Yc2-8,"0") & "' text-anchor='middle' font-size='9' fill='#014029' font-weight='600'>" & LV2c & "</text><circle cx='" & FORMAT(X2,"0") & "' cy='" & FORMAT(Yc3,"0") & "' r='4' fill='#6FD904' stroke='#fff' stroke-width='1.5'/><text x='" & FORMAT(X2,"0") & "' y='" & FORMAT(Yc3-8,"0") & "' text-anchor='middle' font-size='9' fill='#014029' font-weight='600'>" & LV3c & "</text><circle cx='" & FORMAT(X3,"0") & "' cy='" & FORMAT(Yc4,"0") & "' r='4' fill='#6FD904' stroke='#fff' stroke-width='1.5'/><text x='" & FORMAT(X3,"0") & "' y='" & FORMAT(Yc4-8,"0") & "' text-anchor='middle' font-size='9' fill='#014029' font-weight='600'>" & LV4c & "</text>"
+
+RETURN
+    "<style>*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0;padding:0;overflow:hidden}svg{display:block;width:100vw;height:100vh}</style>" &
+    "<svg width='100%' height='100%' viewBox='0 0 " & FORMAT(CW,"0") & " " & FORMAT(CH,"0") & "' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none' font-family='Segoe UI,Arial,sans-serif'>" &
+    "<defs><linearGradient id='aG' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='#6FD904' stop-opacity='0.20'/><stop offset='100%' stop-color='#6FD904' stop-opacity='0.01'/></linearGradient>" &
+    "<linearGradient id='aGP' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='#A0A0A0' stop-opacity='0.12'/><stop offset='100%' stop-color='#A0A0A0' stop-opacity='0.01'/></linearGradient></defs>" &
+    Title & LegCY & LegPP &
+    YGrid & Baseline &
+    "<polygon points='" & AR_PP & "' fill='url(#aGP)'/>" &
+    "<polyline points='" & PL_PP & "' fill='none' stroke='#A0A0A0' stroke-width='2' stroke-dasharray='6,3'/>" &
+    "<polygon points='" & AR_CY & "' fill='url(#aG)'/>" &
+    "<polyline points='" & PL_CY & "' fill='none' stroke='#6FD904' stroke-width='2.5'/>" &
+    XLbls & YAxisLbls &
+    Dots_PP & Dots_CY &
+    "</svg>"

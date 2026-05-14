@@ -39,6 +39,15 @@ Skills are domain knowledge packages consumed by agents. Each skill is a self-co
 └── scripts/              # Domain-specific utility scripts
 ```
 
+| Skill | Domain | Purpose |
+|---|---|---|
+| `report-design` | Report design | Storyboard layout, UX, information architecture, and blueprint generation |
+| `report-implementation` | Report implementation | Generate PBIR page/visual JSON files from blueprint |
+| `svg-visuals` | Report visuals | Inline SVG micro-charts via DAX measures for tables, matrices, and image visuals |
+| `html-visuals` | Report visuals | Full-frame HTML/SVG via DAX measures for htmlContent custom visual |
+| `deneb-visuals` | Report visuals | Vega / Vega-Lite custom charts embedded in Deneb visuals |
+| `theme-customization` | Report themes | Create, modify, and validate Power BI report themes |
+
 ## Shared References
 
 Cross-cutting references used by multiple agents live in `.github/references/`:

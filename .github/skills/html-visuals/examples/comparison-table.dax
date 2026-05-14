@@ -1,0 +1,32 @@
+-- Source: html-visuals skill — HTML ranked table with score colors and K cost formatting
+-- Visual type: htmlContent443BE3AD55E043BF878BED274D3A6855
+-- dataCategory: ImageUrl required on this measure in TMDL
+-- Adapt table/column references to match your model before use.
+--
+-- Template: HTML comparison table with score colors and K cost formatting
+Comparison Table HTML =
+VAR Righe =
+    ADDCOLUMNS(
+        TOPN(5, VALUES(TCO[ApplicationName]), [TCO Totale], DESC),
+        "Sc", [Score Applicazione],
+        "Co", [TCO Totale],
+        "De", [Delta QoQ]
+    )
+VAR Header = "<table style='border-collapse:collapse;width:100%;font-size:11px'><tr><th>App</th><th>Score</th><th>Costo</th><th>Delta</th></tr>"
+VAR Body =
+    CONCATENATEX(
+        Righe,
+        VAR ScoreColor = SWITCH(TRUE(), [Sc] >= 75, "#038C25", [Sc] >= 50, "#FFF3CD", "#C00000")
+        VAR CostoK = FORMAT([Co] / 1000, "#,##0") & " K"
+        VAR DeltaTxt = FORMAT([De], "+0.0%;-0.0%;0.0%")
+        RETURN
+            "<tr>"
+            & "<td>" & TCO[ApplicationName] & "</td>"
+            & "<td style='background:" & ScoreColor & "'>" & FORMAT([Sc], "0.0") & "</td>"
+            & "<td>" & CostoK & "</td>"
+            & "<td>" & DeltaTxt & "</td>"
+            & "</tr>",
+        ""
+    )
+RETURN
+    Header & Body & "</table>"
