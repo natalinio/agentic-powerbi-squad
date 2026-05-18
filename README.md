@@ -38,14 +38,51 @@ The squad supports **two operating modes**:
 
 Both modes share the same agents, skills, and project structure — the difference is whether you want full orchestration or direct control.
 
-### Public Repository Model
+### Installation Options
 
-This repository is published as a **public reference implementation** with a **fork-first collaboration model**:
+| Method | When to use |
+|--------|-------------|
+| **CLI** (recommended) | Install agents and skills into your workspace from the terminal — no fork or clone required |
+| **Fork / Clone** | For contributors who want to modify the agent system itself |
 
-- use a **fork** for experimentation, adaptation, and contributions
-- submit changes back through **pull requests**
-- do **not** use external setup tools or generated scaffolds to overwrite the repository-native `.github/agents`, `.github/skills`, `.github/prompts`, or instruction files
-- review [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before reusing adapted material outside your fork
+#### Option 1: CLI (npx)
+
+```bash
+# Install everything
+npx pbi-agent-squad install --all
+
+# Install only specific agents (dependencies auto-resolved)
+npx pbi-agent-squad install --agent pbi-report --agent pbi-qa
+
+# Install only specific skills
+npx pbi-agent-squad install --skill dax-development --skill svg-visuals
+
+# Install all agents (with their skill dependencies)
+npx pbi-agent-squad install --agents
+
+# List available components
+npx pbi-agent-squad list
+
+# Check what's installed
+npx pbi-agent-squad status
+
+# Update installed components
+npx pbi-agent-squad update --all
+
+# Uninstall a component
+npx pbi-agent-squad uninstall skill:dax-development
+```
+
+The CLI copies components into your workspace's `.github/` folder. GitHub Copilot automatically discovers the installed agents and skills.
+
+A lock file (`.github/.pbi-agent-squad.lock.json`) tracks installed components. User-modified files are never overwritten unless you pass `--force`.
+
+#### Option 2: Fork (for contributors)
+
+- Use a **fork** for experimentation, adaptation, and contributions
+- Submit changes back through **pull requests**
+- Do **not** use external setup tools or generated scaffolds to overwrite the repository-native `.github/agents`, `.github/skills`, `.github/prompts`, or instruction files
+- Review [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before reusing adapted material outside your fork
 
 ---
 
@@ -105,6 +142,17 @@ Cross-cutting references in `.github/references/`:
 ```bash
 pip install -r requirements.txt
 ```
+
+#### Optional: `pbir-cli`
+
+The local `pbir` CLI enhances report mutation workflows (faster visual/page operations, built-in validation). It is **not required** — all agents fall back to skill-guided file editing when the CLI is unavailable.
+
+To install (optional):
+```bash
+uv tool install pbir-cli
+```
+
+When `pbir` is detected, agents prefer it for report mutations and validation. When absent, they work normally via direct JSON editing.
 
 ### Two Operating Modes
 
@@ -239,6 +287,23 @@ The agentic workflow is observable through a combination of repository artifacts
 ---
 
 ## Getting Started
+
+### Quick Start (Marketplace)
+
+1. **Install the extension** from the VS Code Marketplace: search "Power BI Agent Squad"
+2. **Run** `Ctrl+Shift+P` → `Power BI Agent Squad: Install All`
+3. **Install Python dependencies** (for data generation and testing):
+   ```bash
+   pip install -r .github/skills/functional-testing/scripts/requirements.txt
+   ```
+4. **Open VS Code** with GitHub Copilot enabled on your Power BI project
+5. **Start with a specification** — use `[ProjectName]/spec/specification_template.md` as the template
+6. **Choose your mode**:
+   - **Full project**: `@delivery-lead Build from spec/my_spec.md`
+   - **Single task**: `@pbi-semantic-model Create a logical model for <requirements>`
+7. **Open the result** in Power BI Desktop: open the `.pbip` file from the `PBIP/` folder
+
+### Getting Started (Contributors / Fork)
 
 1. **Fork the repository** on GitHub.
 
