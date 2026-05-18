@@ -9,7 +9,7 @@
 
 ## What Is This?
 
-**Agentic Power BI Squad** is a **multi-agent system** for Power BI development that runs inside VS Code with GitHub Copilot. Instead of a single monolithic agent, it uses a team of **6 domain-specific agents** coordinated by an orchestrator, each backed by **15 modular skills** containing procedural knowledge, reference materials, and examples.
+**Agentic Power BI Squad** is a **multi-agent system** for Power BI development that runs inside VS Code with GitHub Copilot. Instead of a single monolithic agent, it uses a team of **6 domain-specific agents** coordinated by an orchestrator, each backed by **16 modular skills** containing procedural knowledge, reference materials, and examples.
 
 ![Agent squad Power BI Architecture](.github/docs/architecture.png)
 
@@ -21,7 +21,7 @@ You provide a functional specification in Markdown. The squad produces:
 - **Automated functional tests** with pass/fail reports
 - **Report blueprint** (design system, page layouts, visual specs)
 - **PBIR report files** (pages, visuals, slicers) ready for Power BI Desktop
-- **Custom visuals** via SVG inline graphics and Deneb (Vega/Vega-Lite)
+- **Custom visuals** via SVG inline graphics, HTML custom visual (full-frame), and Deneb (Vega/Vega-Lite)
 - **Report themes** with full formatting hierarchy
 - **Quality validation** at every step
 
@@ -62,7 +62,7 @@ This repository is published as a **public reference implementation** with a **f
 | `pbi-report` | Report Design & Implementation | Designs layouts, generates PBIR visuals, SVG graphics, Deneb charts, themes |
 | `pbi-qa` | Quality Assurance | Validates models (BPA), runs tests, reviews reports, checks SVG/Deneb/design quality |
 
-### Skills (15)
+### Skills (16)
 
 Skills are self-contained knowledge packages consumed by agents. Each skill has procedural instructions (`SKILL.md`), reference files, and examples.
 
@@ -75,7 +75,8 @@ Skills are self-contained knowledge packages consumed by agents. Each skill has 
 | `mock-data-generation` | data-generator | CSV dataset generation with referential integrity |
 | `report-design` | pbi-report | Layout, storytelling, chart selection, design system |
 | `report-implementation` | pbi-report | PBIR JSON generation from blueprint |
-| `svg-visuals` | pbi-report | Inline SVG graphics via DAX (sparklines, bars, KPI indicators) |
+| `svg-visuals` | pbi-report | Inline SVG micro-charts via DAX (sparklines, bars, KPI indicators) in table/matrix/card visuals |
+| `html-visuals` | pbi-report | Full-frame HTML and SVG visuals via DAX for the `htmlContent` custom visual (trend charts, comparison tables, narrative panels) |
 | `deneb-visuals` | pbi-report | Vega/Vega-Lite custom charts with PBIR integration |
 | `theme-customization` | pbi-report | Theme authoring, formatting hierarchy, visual-type overrides |
 | `code-review` | pbi-qa | TMDL quality, BPA compliance, naming conventions |
@@ -152,6 +153,10 @@ Invoke any agent directly for specific tasks:
 @pbi-report Create a Deneb heatmap for monthly sales by region
 
 @pbi-report Create an SVG sparkline measure for revenue trend
+
+@pbi-report Create an HTML custom visual with a YoY trend chart comparing current vs previous year
+
+@pbi-report Create an HTML narrative panel showing top/worst performers
 
 @pbi-report Create a custom theme with blue/orange palette and enterprise formatting
 
@@ -280,6 +285,18 @@ This repository includes original material plus adapted domain knowledge derived
 If you reuse or adapt material influenced by that project, preserve attribution and review the upstream reuse terms before distributing it outside a fork-based workflow.
 
 **Original project**: [https://github.com/data-goblins](https://github.com/data-goblins)
+
+---
+
+---
+
+## Custom Visual Deployment Note
+
+The `html-visuals` skill and the `deneb-visuals` skill produce visuals that require the Power BI HTML custom visual or Deneb custom visual. When publishing to **Power BI Service**, a tenant admin must enable custom visuals:
+
+> **Admin portal → Tenant settings → Custom visuals → Allow visuals created using the Power BI SDK**
+
+Without this setting, custom visuals render as blank tiles in the cloud. The `pbi-report` agent will remind you of this after completing any HTML or Deneb visual task.
 
 ---
 
