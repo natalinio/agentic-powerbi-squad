@@ -290,6 +290,50 @@ partition Dim_Date = entity
 - Use **Option 2** (replace partition source) for simpler models where the transition happens only once before production deployment.
 - For Fabric deployments, plan for **Option 3** (Direct Lake) from the beginning if your target data platform is Fabric Lakehouse.
 
+## ⚠️ Data Realism: Temporal Trend Requirement (CRITICAL)
+
+**Flat data will cause the report agent to fail.** When generating data for time-series dashboards:
+
+- Metrics that model business **improvement over time** (e.g., GAR %, sustainability scores, green ratios) MUST show a **directional quarterly trend** — not random noise.
+- Random seeding alone produces non-monotonic quarterly variation (e.g. Q1=31%, Q2=24%, Q3=22%, Q4=27%), which breaks bar charts and KPI delta visuals.
+
+**Fix pattern — enforce a target per quarter using exposure-weighted assignment:**
+```python
+# Target GAR% per quarter: gradual upward trend Q1→Q4
+targets = {'Q1': 0.23, 'Q2': 0.25, 'Q3': 0.27, 'Q4': 0.29}
+for q, target in targets.items():
+    idx = fact[fact['Quarter'] == q].index
+    total_q = fact.loc[idx, 'ExposureAmount'].sum()
+    target_green = total_q * target
+    fact.loc[idx, flag_col] = 0  # reset
+    cumsum = 0
+    for row_idx, row in fact.loc[idx].sort_values('ExposureAmount', ascending=False).iterrows():
+        if cumsum < target_green:
+            fact.loc[row_idx, flag_col] = 1
+            cumsum += row['ExposureAmount']
+        else:
+            break
+```
+
+**Business logic rules** (enforce after flag assignment):
+- Any row with `GreenAssetFlag=1` **must** also have `ESGFlag=1`
+- Validate with: `assert len(fact[(fact['GreenAssetFlag']==1) & (fact['ESGFlag']==0)]) == 0`
+
+## ⚠️ Python Environment Fallback (Windows)
+
+On Windows, the `.venv` path may not be directly accessible via PowerShell `&` operator if the repo path contains spaces. Use system Python as a reliable fallback:
+
+```powershell
+# Preferred: system Python (avoids space-in-path issues)
+$py = (Get-Command python -ErrorAction SilentlyContinue)?.Source
+# Fallback chain if venv is needed:
+$candidates = @(
+    "$repoRoot\.venv\Scripts\python.exe",
+    "C:\Users\$env:USERNAME\AppData\Local\Programs\Python\Python310\python.exe"
+)
+$py = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+```
+
 ## Validation Before Output
 - [ ] All FK values in fact tables exist in corresponding dimension PKs
 - [ ] CSV column names match TMDL `sourceColumn` values exactly
@@ -299,5 +343,8 @@ partition Dim_Date = entity
 - [ ] Post-processing repairs any orphan FK values before CSV export
 - [ ] CSV files are comma-delimited, UTF-8 encoded
 - [ ] Script runs without errors in the `.venv` environment
+- [ ] **Quarterly trend is directional** (not flat/random) for all time-series KPIs
+- [ ] **Business flag rules enforced** (e.g., GreenAsset → ESGFlag, no contradictions)
+- [ ] Print validation summary: total, ESG%, climate%, GAR%, rows per quarter
 
 Save all generated artifacts to disk.

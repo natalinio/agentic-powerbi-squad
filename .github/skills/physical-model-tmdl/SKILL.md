@@ -81,6 +81,61 @@ These objects are root-level (no indentation):
 - Object names with spaces, dots, equals, or colons MUST be enclosed in single quotes: `'Sales Amount'`
 - Single quotes in names are escaped by doubling: `'Customer''s Name'`
 
+### ⚠️ _Measures Table Partition — Use M Empty Table, NOT `calculated`
+
+The `_Measures` disconnected table **must** use an M partition pointing to an empty table. Using `partition _Measures = calculated` with `source = ""` is invalid and will cause a model load error in Power BI Desktop.
+
+**✅ CORRECT:**
+```tmdl
+	partition _Measures = m
+		mode: import
+		source =
+			```
+			let
+			    Source = #table(type table [_dummy = type text], {})
+			in
+			    Source
+			```
+```
+
+**❌ WRONG (causes error):**
+```tmdl
+	partition _Measures = calculated
+		mode: import
+		source = ""
+```
+
+### ⚠️ TMDL File Encoding — NO BOM (UTF-8 without BOM)
+
+TMDL files **must be UTF-8 without BOM**. Power BI Desktop will fail to parse files that start with the UTF-8 BOM sequence (`0xEF 0xBB 0xBF`).
+
+**PowerShell — write without BOM:**
+```powershell
+# CORRECT — explicit no-BOM UTF-8 encoder
+$enc = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($path, $content, $enc)
+
+# WRONG — [System.Text.Encoding]::UTF8 includes BOM
+[System.IO.File]::WriteAllText($path, $content, [System.Text.Encoding]::UTF8)
+```
+
+**Strip BOM from existing files:**
+```powershell
+$files = Get-ChildItem $tmdlDir -Recurse -Filter "*.tmdl"
+foreach ($f in $files) {
+    $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
+    if ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+        [System.IO.File]::WriteAllBytes($f.FullName, $bytes[3..($bytes.Length-1)])
+    }
+}
+```
+
+**Python — always safe:**
+```python
+with open(path, 'w', encoding='utf-8') as f:  # no BOM by default
+    f.write(content)
+```
+
 ## ⛔ CRITICAL: Ambiguous Path Prevention
 
 **BEFORE generating relationships.tmdl**, verify that your logical model does NOT have redundant Foreign Keys that would create ambiguous paths.
