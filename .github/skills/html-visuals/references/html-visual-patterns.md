@@ -227,15 +227,16 @@ CONCATENATEX(FILTER(RowsTable, NOT ISBLANK([Value])), ...)
 ### DAX Bar Height Formula
 
 ```dax
-VAR _DataMin = MIN(MIN(Q1, Q2), MIN(Q3, Q4))
-VAR _DataMax = MAX(MAX(Q1, Q2), MAX(Q3, Q4))
+-- Replace V1..V4 with your actual measure variables (e.g., SalesQ1, RevenueJan, etc.)
+VAR _DataMin = MIN(MIN(V1, V2), MIN(V3, V4))
+VAR _DataMax = MAX(MAX(V1, V2), MAX(V3, V4))
 VAR _Range   = _DataMax - _DataMin
 
 -- min bar = 40px, max bar = 310px, container = 360px
-VAR H1px = FORMAT(ROUND(40 + DIVIDE(Q1 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
-VAR H2px = FORMAT(ROUND(40 + DIVIDE(Q2 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
-VAR H3px = FORMAT(ROUND(40 + DIVIDE(Q3 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
-VAR H4px = FORMAT(ROUND(40 + DIVIDE(Q4 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
+VAR H1px = FORMAT(ROUND(40 + DIVIDE(V1 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
+VAR H2px = FORMAT(ROUND(40 + DIVIDE(V2 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
+VAR H3px = FORMAT(ROUND(40 + DIVIDE(V3 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
+VAR H4px = FORMAT(ROUND(40 + DIVIDE(V4 - _DataMin, IF(_Range=0,1,_Range)) * 270, 0), "0")
 ```
 
 ### Gridline Positions
@@ -344,12 +345,14 @@ Rules:
 ### DAX injection pattern
 
 ```dax
-VAR GARPct = FORMAT([Green Assets Ratio], "0.0%")
-VAR NeutralPct = FORMAT([ESG Neutral %], "0.0%")
+-- Replace measure references with actual model measures
+VAR KPI1Pct  = FORMAT([Primary KPI Measure], "0.0%")
+VAR KPI2Pct  = FORMAT([Secondary KPI Measure], "0.0%")
+VAR TrendDir = IF([Primary KPI Measure] > [Previous Period KPI], "▲", "▼")
 
 RETURN
   "<div style='...'>..." &
-  "<p style='font-size:12px;color:#ccc'>GAR reached <span style='color:#FA9600;font-weight:bold'>" & GARPct & "</span> this period.</p>" &
+  "<p style='font-size:12px;color:#ccc'>KPI reached <span style='color:#FA9600;font-weight:bold'>" & KPI1Pct & "</span> " & TrendDir & " this period.</p>" &
   "...</div>"
 ```
 

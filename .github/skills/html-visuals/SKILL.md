@@ -143,16 +143,17 @@ Use this pattern for vertical bar charts. Do NOT use `height:X%` — it resolves
 
 ### DAX — Normalized Heights
 ```dax
+-- Replace V1..V4 with your actual measure variables (e.g., SalesQ1, RevenueJan)
 -- Use scalar MIN/MAX chains (not MINX on table literal)
-VAR _Min12 = MIN(Q1, Q2)
-VAR _Min34 = MIN(Q3, Q4)
+VAR _Min12 = MIN(V1, V2)
+VAR _Min34 = MIN(V3, V4)
 VAR _DataMin = MIN(_Min12, _Min34)
-VAR _Max12 = MAX(Q1, Q2)
-VAR _Max34 = MAX(Q3, Q4)
+VAR _Max12 = MAX(V1, V2)
+VAR _Max34 = MAX(V3, V4)
 VAR _DataMax = MAX(_Max12, _Max34)
 VAR _Range = _DataMax - _DataMin
 -- height_px = 40 (min visible) + normalized * 180 (scale range)
-VAR H1px = FORMAT(ROUND(40 + DIVIDE(Q1 - _DataMin, IF(_Range=0,1,_Range)) * 180, 0), "0")
+VAR H1px = FORMAT(ROUND(40 + DIVIDE(V1 - _DataMin, IF(_Range=0,1,_Range)) * 180, 0), "0")
 ```
 
 ### HTML Structure
