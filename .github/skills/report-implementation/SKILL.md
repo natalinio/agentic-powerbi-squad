@@ -387,6 +387,18 @@ Recommended validation:
 - verify JSON parses cleanly before ending the step
 - convert any generalized lesson from this validation into `.github/skills/report-implementation/references/pbir-visual-templates.md` or `.github/references/pbip-folder-structure.md`
 
+#### PowerShell BOM Warning (CRITICAL)
+When using PowerShell to write JSON files, `[System.Text.Encoding]::UTF8` produces UTF-8 WITH BOM.
+Power BI Desktop rejects BOM-prefixed PBIR files with: "Only text with UTF8 encoding without BOM is supported."
+
+**Always use the BOM-free encoder:**
+```powershell
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+```
+
+Never use: `[System.IO.File]::WriteAllText($path, $content, [System.Text.Encoding]::UTF8)`
+
 ### 9.8 Apply Layout Tokens and Resolve Overlaps
 
 Before writing the final PBIR files:
@@ -454,6 +466,15 @@ For basic reports, the existing `report.json` from Step 00 is sufficient.
 9. **Strategy Mismatch**:
    - **Cause**: Blueprint declares `native` or `composite-native`, but implementation would require `svg` or `deneb` to preserve the intended behavior.
    - **Action**: STOP. Report the mismatch and require a blueprint update instead of silently changing the implementation mode.
+
+10. **BOM in PBIR JSON files**:
+    - **Cause**: PowerShell System.Text.Encoding.UTF8 writes UTF-8 with BOM by default.
+    - **Error**: "Only text with UTF8 encoding without BOM (byte order marks) is supported. Detected BOM: 'UTF-8'"
+    - **Action**: Use New-Object System.Text.UTF8Encoding $false as the encoder for all file writes. Run a post-write BOM scan: check first 3 bytes for  xEF 0xBB 0xBF.
+
+11. **Page background not visible**:
+    - **Cause**: PBIR eport.json /objects does not support ackground or wallpaper properties.
+    - **Action**: Use a asicShape visual at z=0, x=0, y=0, width=pageWidth, height=pageHeight with the desired fill color. Set drillFilterOtherVisuals: false on this visual.
 
 ---
 
