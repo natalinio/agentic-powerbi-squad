@@ -271,3 +271,53 @@ After saving, the folder structure above is automatically created by Power BI De
 - Install the **TMDL VS Code extension** (`analysis-services.TMDL`) for syntax highlighting and basic validation.
 - Invalid TMDL edits cause Power BI Desktop to show an error with the file location on next open.
 - Do NOT mix PBIR and PBIR-Legacy in the same report item: `<ProjectName>.Report/report.json` (root) must not exist when using `definition/` PBIR format.
+
+---
+
+## ⚠️ Critical Agent Anti-Patterns (Desktop April 2026 Validated)
+
+### `.pbip` — Do NOT add a `settings` block
+
+The `.pbip` v1.0 schema has **no allowed child properties** inside `settings`. Desktop will reject the file with:
+> *"Property 'enableTmdlSaveFormat' has not been defined and the schema does not allow additional properties"*
+
+```json
+// ✅ CORRECT — minimal valid .pbip
+{
+  "version": "1.0",
+  "artifacts": [
+    { "report": { "path": "MyProject.Report" } }
+  ]
+}
+
+// ❌ WRONG — settings block is invalid
+{
+  "version": "1.0",
+  "artifacts": [...],
+  "settings": {
+    "enableTmdlSaveFormat": true
+  }
+}
+```
+
+### Report pointer — MUST be `definition.pbir`, NOT `report.pbir`
+
+The filename is fixed. Desktop with `PBI_enhancedReportFormat` enabled searches for exactly `definition.pbir`:
+> *"Required artifact is missing in '...definition.pbir'"*
+
+| Artifact | Pointer filename |
+|---|---|
+| SemanticModel | `definition.pbism` |
+| Report | `definition.pbir` ← exact filename required |
+
+```
+MyProject.Report/
+├── definition.pbir     ← ✅ CORRECT filename
+└── definition/
+    ├── report.json
+    └── pages/
+
+// ❌ WRONG — Desktop won't find it
+MyProject.Report/
+├── report.pbir         ← rejected silently
+```

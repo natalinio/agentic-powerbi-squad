@@ -134,6 +134,40 @@ VAR ScoreColor = SWITCH(TRUE(), score >= 75, "#038C25", score >= 50, "#FFF3CD", 
 5. Never use `height:100%` on body in the CSS baseline — use `100vh`.
 6. Test output with at least one low, one medium, and one high sample value.
 7. After any TMDL edit, verify the file opens in Power BI Desktop without errors.
+8. Bar chart heights: Do NOT use `height:X%` on bar divs inside flex containers — use fixed pixel heights computed as `minPx + normalizedValue * rangePx` where `normalizedValue = (val - dataMin) / (dataMax - dataMin)`. Set a fixed px height on the chart container.
+9. Full-height card fill: Use `display:flex;flex-direction:column` on the outer container with `height:100%;box-sizing:border-box`. Use `justify-content:space-between` to push sections apart vertically.
+
+## Bar Chart Pattern (Fixed Pixel Heights)
+
+Use this pattern for vertical bar charts. Do NOT use `height:X%` — it resolves to `auto` inside PBI iframes.
+
+### DAX — Normalized Heights
+```dax
+-- Replace V1..V4 with your actual measure variables (e.g., SalesQ1, RevenueJan)
+-- Use scalar MIN/MAX chains (not MINX on table literal)
+VAR _Min12 = MIN(V1, V2)
+VAR _Min34 = MIN(V3, V4)
+VAR _DataMin = MIN(_Min12, _Min34)
+VAR _Max12 = MAX(V1, V2)
+VAR _Max34 = MAX(V3, V4)
+VAR _DataMax = MAX(_Max12, _Max34)
+VAR _Range = _DataMax - _DataMin
+-- height_px = 40 (min visible) + normalized * 180 (scale range)
+VAR H1px = FORMAT(ROUND(40 + DIVIDE(V1 - _DataMin, IF(_Range=0,1,_Range)) * 180, 0), "0")
+```
+
+### HTML Structure
+```html
+<div style="height:240px;display:flex;align-items:flex-end;justify-content:space-around">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <span style="font-size:12px;color:#FA9600;font-weight:700">VALUE_LABEL</span>
+    <div style="width:56px;height:HEIGHT_PXpx;background:#FA9600;border-radius:4px 4px 0 0"></div>
+    <span style="font-size:11px;color:rgba(255,255,255,0.5)">CATEGORY_LABEL</span>
+  </div>
+</div>
+```
+
+Container height fixed (e.g. 240px) + `align-items:flex-end` → bars grow upward from the baseline.
 
 ## References
 
