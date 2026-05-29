@@ -256,10 +256,6 @@ Each agent automatically discovers the project context (TMDL files, existing vis
 └── workflow_state.json            # Orchestrator state (workflow mode)
 ```
 
-The repository also contains a worked sample project:
-
-- `intesa-sustainability-dashboard/` — end-to-end example with generated semantic model, report, data, tests, and workflow state
-
 ---
 
 ## Workflow Observability
@@ -288,20 +284,22 @@ The agentic workflow is observable through a combination of repository artifacts
 
 ## Getting Started
 
-### Quick Start (Marketplace)
+### Quick Start (CLI)
 
-1. **Install the extension** from the VS Code Marketplace: search "Power BI Agent Squad"
-2. **Run** `Ctrl+Shift+P` → `Power BI Agent Squad: Install All`
-3. **Install Python dependencies** (for data generation and testing):
+1. **Install the toolkit** into your target workspace:
+   ```bash
+   npx pbi-agent-squad install --all
+   ```
+2. **Install Python dependencies** (for data generation and testing):
    ```bash
    pip install -r .github/skills/functional-testing/scripts/requirements.txt
    ```
-4. **Open VS Code** with GitHub Copilot enabled on your Power BI project
-5. **Start with a specification** — use `[ProjectName]/spec/specification_template.md` as the template
-6. **Choose your mode**:
+3. **Open VS Code** with GitHub Copilot enabled on your Power BI project
+4. **Start with a specification** — use `[ProjectName]/spec/specification_template.md` as the template
+5. **Choose your mode**:
    - **Full project**: `@delivery-lead Build from spec/my_spec.md`
    - **Single task**: `@pbi-semantic-model Create a logical model for <requirements>`
-7. **Open the result** in Power BI Desktop: open the `.pbip` file from the `PBIP/` folder
+6. **Open the result** in Power BI Desktop: open the `.pbip` file from the `PBIP/` folder
 
 ### Getting Started (Contributors / Fork)
 
@@ -332,14 +330,15 @@ The agentic workflow is observable through a combination of repository artifacts
 
 ## Reference Assets
 
-The repository includes both reusable templates and a committed worked example. Use these assets as the starting point:
+The repository includes reusable templates only. Use these assets as the starting point:
 
 - `[ProjectName]/` for expected project folder layout
 - `spec/specification_template.md` for the empty specification template
 - `spec/sample_spec.md` for a completed example specification
-- `intesa-sustainability-dashboard/` for a generated end-to-end sample project with PBIP, data, tests, and workflow state
 
-Generated semantic model, report, data, and test artifacts are created when you run the workflow or the specialist agents against your own project folder. The committed sample project is provided as a concrete reference implementation, not as a substitute for your own project workspace.
+Generated semantic model, report, data, and test artifacts are created when you run the workflow or the specialist agents against your own project folder.
+
+For local-only experiments, client prototypes, and generated project artifacts that must not be published, keep them under ignored folders such as `_local/`, `local-experiments/`, or `sandbox/`.
 
 ---
 

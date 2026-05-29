@@ -23,14 +23,18 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
+# Local-only project folders and experiments
+_local/
+local-experiments/
+sandbox/
+
 # Project folders (user-created Power BI projects)
-# Uncomment lines below to exclude your project folders from source control:
-SalesOverview/
-SalesAnalyticsPerformance/
-intesa-sustainability-dashboard/
+# Add explicit folder names below when you want to keep them local only.
+# Keep [ProjectName]/ tracked as it's the template.
+# SalesOverview/
+# SalesAnalyticsPerformance/
 # FinanceReport/
 # CustomerAnalytics/
-# (Keep [ProjectName]/ tracked as it's the template)
 
 # Generated mock data (project-level data folders)
 # Uncomment below to exclude CSVs from source control:
